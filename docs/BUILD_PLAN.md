@@ -8,10 +8,10 @@ The project is intentionally implemented one phase at a time. After each phase, 
 
 ## Current State
 
-- **Current phase:** Phase 3 - Career Advisor skill complete; no later phase is active.
+- **Current phase:** Phase 4 - Operational evaluation complete; no later phase is active.
 - **Repository state:** Tracked foundation documentation, the canonical SelfContext skill, and the Career Advisor Pack are present alongside the original `LICENSE` and funding configuration.
 - **Private vault state:** No `vault/` directory is present. This is expected; the repository must not depend on an ignored empty directory.
-- **Next authorized phase:** Phase 4 - Operational evaluation, only after the user explicitly says to continue.
+- **Next authorized phase:** Phase 5 - First-run dry run and v0.1 completion, only after the user explicitly says to continue.
 
 ## Non-Negotiable Constraints
 
@@ -83,9 +83,9 @@ Implementation and validation recorded for this phase:
 - The installed `skill-creator` `quick_validate.py` passed after loading its missing `PyYAML` dependency into an isolated temporary directory; no project dependency was added.
 - The linter passed an ephemeral clean synthetic vault and correctly reported a broken link, stale claim, and unverified observation in an invalid synthetic vault.
 - `lint_vault.py` syntax, both JSON eval files, and `SKILL.md` frontmatter all validated successfully.
-- A trigger-evaluation set is tracked under `evals/trigger-evals.json`. The installed trigger runner could not produce a meaningful score because the local Claude CLI is unauthenticated; `claude -p` returned `Not logged in`. Full trigger and operational evaluation remains Phase 4 work.
+- A trigger-evaluation set is tracked under `evals/trigger-evals.json`. The optional trigger evaluator was not available in this environment, so the cases were reviewed manually. Full operational evaluation remained a separate Phase 4 activity.
 - `git diff --check` passed, no `vault/` directory exists, and no vault content is tracked.
-- Phase 2 follow-up: `.gitignore` now excludes Python caches and test artifacts, temporary Claude/eval workspaces, generated skill/build packages, and common OS/editor files. Synthetic evals use `John Doe`/`John` and `MyContext Systems` as fictional placeholders.
+- Phase 2 follow-up: `.gitignore` now excludes Python caches and test artifacts, temporary skill-evaluation workspaces, generated skill/build packages, and common OS/editor files. Synthetic evals use `John Doe`/`John` and `MyContext Systems` as fictional placeholders.
 
 ### Phase 3 - Career Advisor Skill
 
@@ -109,14 +109,27 @@ Implementation and validation recorded for this phase:
 - Synthetic behavior and trigger evals use no personal vault data and cover positioning, artifacts, path comparison, insufficient evidence, interview stories, transitions, strengths, bios, networking, talks, opportunities, and near-miss prompts.
 - `skill-creator` `quick_validate.py`, both Career Advisor JSON eval files, SKILL frontmatter, and `git diff --check` all passed.
 - Independent boundary review found no material remaining defects after the metadata and trigger-coverage revisions.
-- Executable trigger scoring and end-to-end vault scenarios remain deferred to Phase 4 because the local Claude CLI is unauthenticated and the synthetic operational workspace must be evaluated separately.
+- The optional trigger evaluator was not available in this environment; operational scenarios were evaluated separately in Phase 4.
 - No `vault/` directory was created or accessed.
 
 ### Phase 4 - Operational Evaluation
 
-**Status:** Pending.
+**Status:** Complete.
 
 Use synthetic scenarios and the skill-creator evaluation workflow where practical. Exercise first-run initialization, updates, links, trivial and substantial queries, unverified observations, corrections, stale context, lint failures, grounded and under-evidenced career advice, fresh-session orientation, copied vaults, and natural-language trigger boundaries.
+
+Evaluation results:
+
+- All runs used isolated temporary workspaces containing only synthetic John Doe/MyContext Systems data. The repository root and real `vault/` were not accessed or modified.
+- First ingest with SelfContext initialized a self-describing linked vault, preserved the supplied source, created normalized career pages, and logged the operation. The paired baseline omitted the required portable control structure and frontmatter.
+- Second ingest updated existing role/project/mentoring concepts without duplicates, preserved conflicting two-versus-three-intern source evidence, and created a reviewable contradiction observation. The paired baseline preserved much of the evidence but introduced an invalid assertion value detected by lint.
+- Simple retrieval returned the answer without creating a derived page. Deep synthesis created linked `derived_synthesis` material and left the stated goal unchanged.
+- Review and lint identified the intentionally stale goal, broken Markdown link, stale observation, and unverified observations without silently repairing them.
+- Human correction updated the existing goal in place, marked it verified, preserved useful history, and logged the correction.
+- Fresh-session orientation used `SCHEMA.md`, `index.md`, recent `log.md`, and targeted career pages before answering; the vault remained unchanged.
+- Grounded Career Advisor reasoning recommended evidence-calibrated Senior-versus-Staff positioning, explicitly identified missing scope and outcome evidence, and did not change the goal. The insufficient-evidence scenario declined to invent a Director-level assessment.
+- SelfContext lints on with-skill generated vaults reported zero errors; expected warnings were limited to intentionally unverified observations. Trigger eval JSON sets were reviewed for positive and near-miss coverage, but optional trigger invocation was not measured.
+- Remaining limitations: these are qualitative paired agent runs rather than a formal timing benchmark; trigger invocation was not measured; full end-to-end first-run/Obsidian inspection remains Phase 5.
 
 ### Phase 5 - First-Run Dry Run and v0.1 Completion
 

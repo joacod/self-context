@@ -1,8 +1,7 @@
 # Private Context Vault data. Never force-add files from this directory.
 /vault/
 
-# Temporary harness and skill evaluation artifacts.
-/.claude/
+# Temporary skill evaluation workspaces.
 *-workspace/
 
 # Python tooling artifacts.
