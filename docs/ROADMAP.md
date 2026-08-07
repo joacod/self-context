@@ -2,6 +2,10 @@
 
 This roadmap describes intended experiments, not promises. Each phase is completed only after its behavior is validated and the build plan is updated.
 
+The v0.1 bootstrap is complete. The next practical experiment is to dogfood the
+skills with real career information while keeping the private vault local and
+separate from tracked project files.
+
 ## v0.1
 
 - Portable vault format.

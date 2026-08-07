@@ -8,10 +8,10 @@ The project is intentionally implemented one phase at a time. After each phase, 
 
 ## Current State
 
-- **Current phase:** Phase 4 - Operational evaluation complete; no later phase is active.
+- **Current phase:** Phase 5 - First-run dry run and v0.1 bootstrap complete; no later bootstrap phase is active.
 - **Repository state:** Tracked foundation documentation, the canonical SelfContext skill, and the Career Advisor Pack are present alongside the original `LICENSE` and funding configuration.
 - **Private vault state:** No `vault/` directory is present. This is expected; the repository must not depend on an ignored empty directory.
-- **Next authorized phase:** Phase 5 - First-run dry run and v0.1 completion, only after the user explicitly says to continue.
+- **Next experiment:** Dogfood SelfContext with real career information, only after explicit user direction. This is not another bootstrap phase.
 
 ## Non-Negotiable Constraints
 
@@ -133,9 +133,20 @@ Evaluation results:
 
 ### Phase 5 - First-Run Dry Run and v0.1 Completion
 
-**Status:** Pending.
+**Status:** Complete.
 
 Run the complete synthetic workflow from a nonexistent vault through initialization, ingest, cross-linking, query, review, lint, career advice, and conceptual fresh-session continuity. Inspect the result as plain Markdown and in the Obsidian compatibility model. Remove the synthetic private vault, polish documentation, record limitations, and identify dogfooding with real career information as the next experiment.
+
+Completion results:
+
+- Started from an absent vault in an isolated temporary workspace and completed initialization, source preservation, normalization, linking, query, derived synthesis, review, lint, career positioning, and fresh-session orientation.
+- The final synthetic vault contained `SCHEMA.md`, `index.md`, `log.md`, core/career/review/source/derived areas, YAML frontmatter, provenance links, and one intentionally unverified observation.
+- The final linter result was zero errors with one expected warning for that unverified observation.
+- Plain Markdown inspection found standard relative links only; no Obsidian wikilinks were used. The structure is suitable to open as an Obsidian vault without depending on Obsidian.
+- The synthetic workspace was deleted after inspection. No real `vault/` directory was created, accessed, or tracked.
+- README, architecture, roadmap, and build-plan documentation now reflect the implemented v0.1 behavior.
+- Known limitations remain: trigger invocation was not measured, evaluation runs were qualitative rather than a formal benchmark, and Guided Discovery is not implemented.
+- Next experiment: dogfood with real career information while preserving the private-vault boundary and the user's provider/privacy responsibility.
 
 ## Key Decisions
 

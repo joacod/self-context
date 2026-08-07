@@ -4,6 +4,8 @@ SelfContext is a **portable personal-context format and lifecycle**. It stores d
 
 The model and harness provide intelligence and execution. SelfContext provides the data format, organization, lifecycle, and operating instructions.
 
+> Status: v0.1 bootstrap complete. The project remains experimental and local-first; the next useful experiment is dogfooding with real career information.
+
 ## What It Is
 
 SelfContext is a **local Context Vault** made from:
@@ -29,7 +31,7 @@ git clone <repository-url> self-context
 cd self-context
 ```
 
-The harness should be opened from the repository root. Once the SelfContext skill is available, ask for work naturally, for example:
+The harness should be opened from the repository root. With the project-local skills available, ask for work naturally, for example:
 
 ```text
 ingest my resume into SelfContext
@@ -77,7 +79,7 @@ Guided Discovery, additional verticals, additional Advisor Packs, sync, encrypti
 
 ```text
 self-context/
-|-- .agents/                  # Project-local operational skills, added in later phases
+|-- .agents/                  # Project-local operational skills
 |-- docs/                     # Product, architecture, roadmap, build plan, and ADRs
 |-- AGENTS.md                 # Repository-level harness guidance
 |-- README.md
@@ -95,4 +97,4 @@ The tracked operational project and private vault share a working directory but 
 - [Build plan](docs/BUILD_PLAN.md): phased implementation status and acceptance criteria.
 - [Architectural decisions](docs/decisions/): decisions that preserve the reasoning behind the design.
 
-This project prefer simple, portable files and explicit user confirmation over infrastructure or inferred certainty.
+This project prefers simple, portable files and explicit user confirmation over infrastructure or inferred certainty.

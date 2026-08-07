@@ -64,7 +64,9 @@ vault/
 `-- derived/        # reusable query/advice synthesis, visibly derived
 ```
 
-The final skill may refine this layout, but it must keep the vault understandable as ordinary files. Any generated index or cache must be disposable and must not become canonical.
+The v0.1 skill may create additional domain subdirectories on demand, but it
+keeps the vault understandable as ordinary files. Any generated index or cache
+must be disposable and must not become canonical.
 
 Canonical content uses Markdown, YAML frontmatter, and standard relative Markdown links. Obsidian may display and edit the same files, but Obsidian syntax is not required.
 
