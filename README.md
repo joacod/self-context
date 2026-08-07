@@ -49,6 +49,18 @@ If a Context Vault already exists, copy it into `self-context/vault/`. The skill
 
 Never force-add files from `vault/`.
 
+## Usage Boundary
+
+Normal use changes only the private vault and the answer to the user's request.
+Ingesting, querying, reviewing, linting, or receiving career advice does not
+modify skills, documentation, evaluations, architecture, or repository
+structure, and does not create an improvement log.
+
+To change how SelfContext operates, explicitly ask to diagnose or improve the
+project itself. Operational discussions must use synthetic or abstract
+examples; real vault information must never be copied into tracked project
+files.
+
 ## Obsidian
 
 Obsidian is an **optional human viewer** and editor. Open `self-context/vault/` as the Obsidian vault, not the repository root.

@@ -28,6 +28,25 @@ operational skills -> vault
 
 The vault must never depend on a specific harness implementation.
 
+## User Mode and Project Maintenance
+
+SelfContext has two deliberately separate modes:
+
+- **User mode:** Normal ingest, query, review, lint, and advice read or update
+  the private vault and produce the user's response. They do not modify the
+  tracked operational project, create an improvement log, or start an
+  architectural review.
+- **Project-maintenance mode:** Skill, schema, documentation, evaluation,
+  script, or architecture changes happen only after the user explicitly asks to
+  diagnose or improve SelfContext itself.
+
+The data boundary is one-way. Personal vault evidence may inform a user-facing
+answer, but it must never be copied, quoted, paraphrased, or used as a personal
+example in tracked skills, documentation, evals, tests, scripts, or ADRs. Any
+operational reproduction uses synthetic or abstract data. A suspected issue
+may be explained when the user specifically asks about operations; routine use
+does not turn it into a project task.
+
 ## Repository and Vault Boundary
 
 The repository contains tracked operational instructions and documentation. The root `vault/` directory contains the user's private Context Vault and is ignored in its entirety by Git.
@@ -113,4 +132,4 @@ SelfContext v0.1 requires no cloud service, server, database, vector database, e
 
 These exclusions keep the durable asset portable, local, inspectable, and replaceable. Future disposable search indexes or user-controlled synchronization can be considered only without changing the vault's canonical role.
 
-See the [architectural decisions](decisions/) for the reasoning behind these boundaries.
+See the [architectural decisions](decisions/) for the reasoning behind these boundaries, including the [user-mode and project-maintenance separation](decisions/0007-user-mode-project-maintenance.md).

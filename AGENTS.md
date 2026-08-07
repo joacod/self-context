@@ -10,6 +10,24 @@ This repository exists to build, maintain, and use SelfContext: a portable perso
 
 Do not invent a competing vault schema or lifecycle ad hoc. Follow the SelfContext skill and the vault's `SCHEMA.md` once they exist. Prefer natural-language interaction; commands are optional conveniences, never the canonical interface.
 
+## Operating Modes
+
+Normal vault use is **user mode**. Ingest, query, review, lint, and career
+advice operate on the private vault and the user's response only. They must not
+modify skills, schemas, architecture, documentation, evals, scripts,
+`.gitignore`, or repository structure as a side effect. Do not create a
+learning log, improvement log, or automatic operations backlog.
+
+Enter **project-maintenance mode** only when the user explicitly asks to
+diagnose, change, improve, evaluate, or redesign SelfContext's operational
+behavior. If the user specifically asks about an operational issue, explain it
+separately from their personal answer and use synthetic or abstract examples.
+
+Never copy, quote, paraphrase, or derive real personal vault content into
+tracked skills, docs, evals, tests, scripts, ADRs, or other operational files.
+Personal vault evidence may be used to answer the user's request, but any
+operational reproduction must use fictional data.
+
 ## Boundaries
 
 - Treat `vault/` as private data. It is Git-ignored; never commit it or force-add files from it.

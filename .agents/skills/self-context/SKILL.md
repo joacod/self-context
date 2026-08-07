@@ -40,6 +40,24 @@ skill, the current harness, the model, Obsidian, or a search tool disappears.
 - Never put personal vault content in tracked project files, and never force-add
   anything from `vault/`.
 
+## User Mode Boundary
+
+Default to user mode. Normal ingest, query, review, lint, and evidence work may
+read or update the private vault according to this skill, but must not change
+the project skills, schema instructions, docs, evals, scripts, or repository
+layout. Do not create a learning log or suggest an operational redesign as a
+side effect of ordinary use.
+
+Switch to project-maintenance mode only when the user explicitly asks to
+diagnose or improve SelfContext itself. If the user specifically asks why an
+operation behaves a certain way, explain the operational issue separately. Use
+synthetic or abstract examples for any proposed reproduction or change.
+
+Never copy, quote, paraphrase, or encode real vault facts, names, stories, or
+examples into tracked operational files. Vault evidence may appear in the
+user-facing answer when relevant, but it must not enter skills, docs, evals,
+tests, scripts, or architecture decisions.
+
 ## Select the Operation
 
 Infer the operation from natural language:

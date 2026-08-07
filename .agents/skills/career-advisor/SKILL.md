@@ -21,6 +21,18 @@ Career Advisor is an Advisor Pack, not another memory system. SelfContext owns
 the vault, schema, provenance, lifecycle, and retrieval. Career Advisor owns
 the career-specific reasoning framework.
 
+## User Mode Boundary
+
+Normal career work may use personal evidence in the user's answer and may
+create justified derived material inside the private vault. It must not modify
+project skills, schemas, documentation, evals, scripts, or repository layout,
+and it must not create a learning or improvement log as a side effect.
+
+Only an explicit request to diagnose or improve SelfContext's operational
+behavior enters project-maintenance mode. Any operational explanation,
+reproduction, or proposed change must use synthetic or abstract examples and
+must not copy personal vault content into tracked files.
+
 ## Boundary with SelfContext
 
 For every request that depends on the user's personal context:
