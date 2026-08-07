@@ -8,10 +8,10 @@ The project is intentionally implemented one phase at a time. After each phase, 
 
 ## Current State
 
-- **Current phase:** Phase 2 - Core SelfContext skill complete; no later phase is active.
-- **Repository state:** Tracked foundation documentation and the canonical project-local SelfContext skill are present alongside the original `LICENSE` and funding configuration.
+- **Current phase:** Phase 3 - Career Advisor skill complete; no later phase is active.
+- **Repository state:** Tracked foundation documentation, the canonical SelfContext skill, and the Career Advisor Pack are present alongside the original `LICENSE` and funding configuration.
 - **Private vault state:** No `vault/` directory is present. This is expected; the repository must not depend on an ignored empty directory.
-- **Next authorized phase:** Phase 3 - Career Advisor skill, only after the user explicitly says to continue.
+- **Next authorized phase:** Phase 4 - Operational evaluation, only after the user explicitly says to continue.
 
 ## Non-Negotiable Constraints
 
@@ -89,9 +89,28 @@ Implementation and validation recorded for this phase:
 
 ### Phase 3 - Career Advisor Skill
 
-**Status:** Pending.
+**Status:** Complete.
 
 Use the installed `skill-creator` workflow to create `.agents/skills/career-advisor/`. It must consume evidence retrieved through SelfContext, distinguish evidence from uncertainty and recommendations, and avoid inventing experience or silently changing user goals.
+
+Acceptance criteria:
+
+- The skill triggers for personal-context career direction, role positioning, transitions, resumes, profiles, interviews, professional storytelling, strengths, gaps, opportunities, talks, and networking.
+- SelfContext remains responsible for retrieval, schema, provenance, lifecycle, and factual career pages.
+- Career Advisor distinguishes verified/source-derived evidence, observations, stale or contradictory context, derived material, and missing evidence.
+- Recommendations and professional drafts never invent experience, psychoanalyze, or silently change user goals.
+- Substantial reusable advice may be stored only as linked `derived_synthesis` content; ordinary advice remains ephemeral.
+
+Implementation and validation recorded for this phase:
+
+- `.agents/skills/career-advisor/SKILL.md` is a concise control plane with two progressive-disclosure references for evidence/reasoning and output/persistence.
+- The pack explicitly invokes SelfContext first and contains no duplicate vault schema, ingestion workflow, or memory store.
+- Metadata inclusion rules cover active, draft, review, archived, superseded, source-record, agent-inference, and derived-synthesis pages, including stale context.
+- Synthetic behavior and trigger evals use no personal vault data and cover positioning, artifacts, path comparison, insufficient evidence, interview stories, transitions, strengths, bios, networking, talks, opportunities, and near-miss prompts.
+- `skill-creator` `quick_validate.py`, both Career Advisor JSON eval files, SKILL frontmatter, and `git diff --check` all passed.
+- Independent boundary review found no material remaining defects after the metadata and trigger-coverage revisions.
+- Executable trigger scoring and end-to-end vault scenarios remain deferred to Phase 4 because the local Claude CLI is unauthenticated and the synthetic operational workspace must be evaluated separately.
+- No `vault/` directory was created or accessed.
 
 ### Phase 4 - Operational Evaluation
 

@@ -1,0 +1,90 @@
+[
+  {
+    "query": "Based on my career context, how should I position myself for Staff Engineer roles?",
+    "should_trigger": true
+  },
+  {
+    "query": "I am deciding between a technical leadership path and engineering management. Compare them using my history and preferences.",
+    "should_trigger": true
+  },
+  {
+    "query": "Rewrite my LinkedIn About section from the professional evidence in my vault, but do not invent achievements.",
+    "should_trigger": true
+  },
+  {
+    "query": "Which examples from my past work would make the strongest interview stories for a principal-level role?",
+    "should_trigger": true
+  },
+  {
+    "query": "What gaps in my context would make a Director-role assessment unreliable?",
+    "should_trigger": true
+  },
+  {
+    "query": "Help me turn my real project experience into a talk proposal for a technical audience.",
+    "should_trigger": true
+  },
+  {
+    "query": "I copied my career vault to this checkout. Use it to help me prepare for an interview at a new company.",
+    "should_trigger": true
+  },
+  {
+    "query": "I am considering leaving my current role. Use my goals, constraints, and professional history to help me think through the transition.",
+    "should_trigger": true
+  },
+  {
+    "query": "What recurring strengths and possible gaps appear in my career evidence when I look at the kind of role I want next?",
+    "should_trigger": true
+  },
+  {
+    "query": "Draft a short professional bio from my actual work and public contributions, and mark any claims that need my confirmation.",
+    "should_trigger": true
+  },
+  {
+    "query": "Help me write a networking message for a role I am considering using my real experience and goals.",
+    "should_trigger": true
+  },
+  {
+    "query": "Which parts of my career history could support a technical talk, and what evidence is missing?",
+    "should_trigger": true
+  },
+  {
+    "query": "Use the evidence in my resume and vault to improve the way I present my experience for a senior engineering opportunity.",
+    "should_trigger": true
+  },
+  {
+    "query": "Compare a Lead Engineer path with a Staff Engineer path using my actual projects, scope, and preferences.",
+    "should_trigger": true
+  },
+  {
+    "query": "I have an opportunity at another company. Help me assess how well it fits my documented goals and experience.",
+    "should_trigger": true
+  },
+  {
+    "query": "Give me generic motivational advice for changing careers. Do not use any personal context.",
+    "should_trigger": false
+  },
+  {
+    "query": "Write a fictional resume for John Doe, a software engineer with ten years of experience.",
+    "should_trigger": false
+  },
+  {
+    "query": "Summarize the requirements in this public job description without comparing them to my background.",
+    "should_trigger": false
+  },
+  {
+    "query": "Explain the difference between Staff Engineer and Engineering Manager in general terms for a career blog.",
+    "should_trigger": false
+  },
+  {
+    "query": "Make this fictional LinkedIn profile sound more polished; do not read my vault.",
+    "should_trigger": false
+  },
+  {
+    "query": "Where did I work before MyContext Systems? Just retrieve the fact from my vault without giving career advice.",
+    "should_trigger": false
+  },
+  {
+    "query": "Write a generic resume summary for a software engineer; do not use my background or any personal files.",
+    "should_trigger": false
+  }
+]

@@ -1,0 +1,61 @@
+{
+  "skill_name": "career-advisor",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Based on my SelfContext career evidence, how should I position myself for Staff Engineer roles? Separate what the evidence proves from what is only a reasonable interpretation, and call out missing evidence.",
+      "expected_output": "The advisor retrieves relevant evidence through SelfContext, gives grounded positioning advice, and distinguishes evidence, interpretation, uncertainty, and recommendation.",
+      "files": [],
+      "expectations": [
+        "The answer uses SelfContext evidence rather than generic career advice.",
+        "Verified/source-supported claims are distinguished from interpretations.",
+        "Missing or stale evidence is explicitly identified.",
+        "The recommendation does not change the user's goals."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Improve my LinkedIn summary using my career context. Keep every factual claim grounded in the vault, preserve my actual scope, and mark anything that needs confirmation instead of making it sound more impressive.",
+      "expected_output": "The advisor produces a clearer professional draft grounded in retrieved context and flags unsupported claims or missing details.",
+      "files": [],
+      "expectations": [
+        "The draft is based on retrieved context.",
+        "Unsupported metrics, dates, ownership, and outcomes are not invented.",
+        "Claims needing confirmation are clearly marked."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Should I pursue an Engineering Manager path or a Staff Engineer path? Use my context, compare the evidence and tradeoffs, and do not assume that a recommendation means I changed my goal.",
+      "expected_output": "The advisor compares both paths against evidence, preferences, and gaps without psychoanalyzing or silently changing the user's goals.",
+      "files": [],
+      "expectations": [
+        "Both paths are compared against relevant evidence and tradeoffs.",
+        "The response distinguishes current goals from advisor recommendations.",
+        "The advisor identifies uncertainty rather than manufacturing a preference."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Can you tell me whether I am ready for a Director role? My vault has only one role summary and no leadership examples. Please be honest about what cannot be answered.",
+      "expected_output": "The advisor explicitly states that the evidence is insufficient, explains what is missing, and avoids generic confidence or invented experience.",
+      "files": [],
+      "expectations": [
+        "Insufficient evidence is stated clearly.",
+        "The response distinguishes missing context from evidence of a weakness.",
+        "No experience or career story is invented."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Select two real examples from my career context that I can use in a systems-design interview. Do not create a new story; explain why each example fits and what details I still need to confirm.",
+      "expected_output": "The advisor selects existing evidence, explains relevance, and identifies missing interview details without fabricating events or outcomes.",
+      "files": [],
+      "expectations": [
+        "Examples are selected from existing context.",
+        "The rationale connects each example to the interview objective.",
+        "Missing metrics or details are presented as questions or gaps."
+      ]
+    }
+  ]
+}
