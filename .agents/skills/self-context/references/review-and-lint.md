@@ -33,9 +33,12 @@ The script checks:
 
 - required control files;
 - frontmatter delimiters and required metadata on durable pages;
+- required `description` and `tags` fields on durable pages;
 - allowed type, status, and assertion values;
 - malformed or broken local Markdown links;
 - source references that do not resolve;
+- path-aware exemptions for root controls and index pages;
+- explicit exclusion of `.obsidian/` viewer state;
 - duplicate IDs when present and duplicate titles as warnings;
 - invalid or expired `stale_after` dates; and
 - unverified observations or inference pages.

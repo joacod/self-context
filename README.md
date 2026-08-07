@@ -63,7 +63,7 @@ files.
 
 ## Obsidian
 
-Obsidian is an **optional human viewer** and editor. Open `self-context/vault/` as the Obsidian vault, not the repository root.
+Obsidian is an **optional human viewer** and editor. Open `self-context/vault/` as the Obsidian vault, not the repository root. Obsidian may create a `.obsidian/` viewer-state directory there; it is noncanonical and ignored by SelfContext.
 
 The canonical format remains ordinary Markdown and standard Markdown links, so the vault is not dependent on Obsidian but totally compatible.
 

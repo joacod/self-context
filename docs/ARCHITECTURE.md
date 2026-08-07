@@ -89,9 +89,17 @@ must be disposable and must not become canonical.
 
 Canonical content uses Markdown, YAML frontmatter, and standard relative Markdown links. Obsidian may display and edit the same files, but Obsidian syntax is not required.
 
+When a vault is opened in Obsidian, the application may create `.obsidian/`
+viewer state. That directory is optional, noncanonical, and ignored by
+SelfContext discovery and validation; it is not personal context.
+
 ## Concepts and Metadata
 
-The smallest useful schema needs to support more than a title and body. Where relevant, concepts should carry metadata for type, title, description, tags, status, generation, verification, sources, assertion kind, and freshness. Fields are not required merely for ceremony; requirements vary by concept.
+The smallest useful schema needs to support more than a title and body. Durable
+pages carry shared metadata for type, title, description, tags, status,
+generation, verification, sources, assertion kind, and freshness. Values may be
+empty or null where the category allows it, but the metadata shape stays
+consistent so generic tools can validate and navigate the vault.
 
 At minimum, the lifecycle distinguishes:
 

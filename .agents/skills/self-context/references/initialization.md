@@ -36,6 +36,13 @@ initialized schema. Preserve its knowledge and orient before changing it.
 Existing-vault support means the user can continue immediately; it does not
 mean silently migrating or flattening their data.
 
+## Obsidian Viewer State
+
+Opening `vault/` in Obsidian may create `.obsidian/`. Do not create this
+directory during initialization. If it already exists, preserve it as viewer
+configuration, but ignore it during vault orientation, indexing, ingest, review,
+and linting. It is not a source, concept, or other canonical vault page.
+
 ## Initialization Templates
 
 Use these as content shapes, replacing `YYYY-MM-DD` with the current date. The

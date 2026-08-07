@@ -16,6 +16,8 @@ REQUIRED_ROOT_FILES = ("SCHEMA.md", "index.md", "log.md")
 REQUIRED_FIELDS = (
     "type",
     "title",
+    "description",
+    "tags",
     "status",
     "generated",
     "verified",
@@ -23,7 +25,14 @@ REQUIRED_FIELDS = (
     "assertion_kind",
     "stale_after",
 )
-REQUIRED_NON_NULL_FIELDS = {"type", "title", "status", "generated", "assertion_kind"}
+REQUIRED_NON_NULL_FIELDS = {
+    "type",
+    "title",
+    "description",
+    "status",
+    "generated",
+    "assertion_kind",
+}
 ALLOWED_TYPES = {"concept", "observation", "source", "synthesis"}
 ALLOWED_STATUSES = {"active", "draft", "review", "archived", "superseded"}
 ALLOWED_ASSERTIONS = {
@@ -125,6 +134,15 @@ def relative_label(path: Path, root: Path) -> str:
     return str(path.relative_to(root))
 
 
+def is_under_obsidian(path: Path, root: Path) -> bool:
+    return ".obsidian" in path.relative_to(root).parts
+
+
+def is_non_durable_page(path: Path, root: Path) -> bool:
+    relative = path.relative_to(root)
+    return relative in {Path("SCHEMA.md"), Path("log.md")} or path.name == "index.md"
+
+
 def parse_iso_date(value: Any) -> Optional[date.date]:
     if not isinstance(value, str) or not value.strip():
         return None
@@ -165,7 +183,9 @@ def lint_vault(root: Path, today: date.date) -> Tuple[List[str], List[str]]:
                 f"{schema_match.group(1)}.{schema_match.group(2)}"
             )
 
-    markdown_files = sorted(root.rglob("*.md"))
+    markdown_files = sorted(
+        path for path in root.rglob("*.md") if not is_under_obsidian(path, root)
+    )
     titles: Dict[str, Path] = {}
     ids: Dict[str, Path] = {}
 
@@ -191,7 +211,7 @@ def lint_vault(root: Path, today: date.date) -> Tuple[List[str], List[str]]:
             if not target.is_file():
                 errors.append(f"{relative}: broken link: {destination}")
 
-        if path.name in {"SCHEMA.md", "index.md", "log.md"}:
+        if is_non_durable_page(path, root):
             continue
 
         fields, frontmatter_errors = parse_frontmatter(path)
@@ -254,6 +274,11 @@ def lint_vault(root: Path, today: date.date) -> Tuple[List[str], List[str]]:
                 warnings.append(f"{relative}: observation or inference is unverified")
             if status != "review":
                 warnings.append(f"{relative}: observation or inference should normally have status: review")
+
+        if "description" in fields and not isinstance(fields.get("description"), str):
+            errors.append(f"{relative}: description must be a YAML string")
+        if "tags" in fields and not isinstance(fields.get("tags"), list):
+            errors.append(f"{relative}: tags must be a YAML list (use [] when empty)")
 
         sources = as_list(fields.get("sources"))
         if isinstance(assertion, str) and assertion in {"source_derived_fact", "derived_synthesis"} and not sources:

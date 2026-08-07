@@ -26,6 +26,8 @@ indexes and pages for names, organizations, roles, dates, projects, skills, and
 distinctive phrases from the new information. Follow links only as far as
 needed to understand relationships.
 
+Do not search `.obsidian/` or treat viewer configuration as supplied context.
+
 Prefer an existing concept when the identity and subject match. A new page is
 appropriate when it represents a distinct durable concept, not merely a new
 sentence about an existing one.

@@ -39,6 +39,9 @@ skill, the current harness, the model, Obsidian, or a search tool disappears.
   reusable syntheses only when they are worth maintaining.
 - Never put personal vault content in tracked project files, and never force-add
   anything from `vault/`.
+- Treat `.obsidian/` and other viewer metadata as noncanonical vault state.
+  Ignore it during discovery, indexing, review, and linting; preserve it unless
+  the user explicitly asks to manage viewer configuration.
 
 ## User Mode Boundary
 
@@ -84,6 +87,7 @@ context under `core/` and career-specific context under `career/`.
 3. If the vault exists, read `SCHEMA.md`, `index.md`, and the most recent
    entries in `log.md` before a significant operation. Then search only the
    relevant indexes, metadata, filenames, and linked pages needed for the task.
+   Do not scan `.obsidian/`; it is optional viewer state, not personal context.
 4. Read the relevant reference procedure before writing or validating content:
    - [Vault schema](references/vault-schema.md) for paths, frontmatter, links,
      and assertion categories.

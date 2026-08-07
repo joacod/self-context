@@ -45,6 +45,17 @@
         "Errors and warnings are reported with file paths.",
         "Unverified observations and stale claims are surfaced without being silently changed."
       ]
+    },
+    {
+      "id": 5,
+      "prompt": "I opened my Context Vault in Obsidian and it created a .obsidian folder. Please lint the vault and check that durable Markdown pages have the required frontmatter without treating Obsidian viewer files as personal context.",
+      "expected_output": "The skill ignores .obsidian viewer state, validates frontmatter on durable pages, allows documented control and index pages without frontmatter, and reports any real structural problems.",
+      "files": [],
+      "expectations": [
+        "The .obsidian directory is not indexed or treated as context.",
+        "Durable pages are checked for required frontmatter including description and tags.",
+        "Root control and index pages remain valid without frontmatter."
+      ]
     }
   ]
 }
