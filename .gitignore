@@ -1,0 +1,5 @@
+# Private Context Vault data. Never force-add files from this directory.
+/vault/
+
+# macOS-specific files
+.DS_Store

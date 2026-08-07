@@ -1,0 +1,112 @@
+# SelfContext Architecture
+
+## Layers
+
+SelfContext has a replaceable execution layer above a durable file layer:
+
+```text
+user
+  |
+  v
+existing harness + selected model
+  |
+  +--> SelfContext skill
+  |
+  +--> Advisor Packs, such as Career Advisor
+  |
+  v
+Context Vault: Markdown + YAML frontmatter + standard Markdown links
+```
+
+The model and harness are already the agent. SelfContext does not ship a custom agent runtime or dedicated SelfContext subagents. Advisor Packs specialize how the current model reasons over retrieved context; they do not own a second memory format.
+
+Dependency direction is always:
+
+```text
+operational skills -> vault
+```
+
+The vault must never depend on a specific harness implementation.
+
+## Repository and Vault Boundary
+
+The repository contains tracked operational instructions and documentation. The root `vault/` directory contains the user's private Context Vault and is ignored in its entirety by Git.
+
+```text
+self-context/
+|-- tracked operational project
+|   |-- .agents/
+|   |-- docs/
+|   |-- AGENTS.md
+|   `-- README.md
+`-- private untracked data
+    `-- vault/
+```
+
+Git ignore is a commit-safety boundary, not a promise that a provider cannot see data supplied to it by the user. The vault should also be independently copyable without the repository.
+
+The repository must not depend on an ignored empty directory being present after clone. The SelfContext skill owns first-run initialization and must also accept an existing vault copied into `vault/`.
+
+## Portable Vault
+
+The exact v0.1 taxonomy and schema are defined by the SelfContext skill in Phase 2. At minimum, an initialized vault will contain self-description equivalent to:
+
+```text
+vault/
+|-- SCHEMA.md       # organization, metadata, and lifecycle rules
+|-- index.md        # navigation and concept entry points
+|-- log.md          # recent operations and continuity notes
+|-- core/           # cross-domain personal context
+|-- career/         # the v0.1 vertical
+|-- sources/        # retained source or recollection material where useful
+`-- derived/        # reusable query/advice synthesis, visibly derived
+```
+
+The final skill may refine this layout, but it must keep the vault understandable as ordinary files. Any generated index or cache must be disposable and must not become canonical.
+
+Canonical content uses Markdown, YAML frontmatter, and standard relative Markdown links. Obsidian may display and edit the same files, but Obsidian syntax is not required.
+
+## Concepts and Metadata
+
+The smallest useful schema needs to support more than a title and body. Where relevant, concepts should carry metadata for type, title, description, tags, status, generation, verification, sources, assertion kind, and freshness. Fields are not required merely for ceremony; requirements vary by concept.
+
+At minimum, the lifecycle distinguishes:
+
+- **User-stated facts:** directly stated or confirmed by the user.
+- **Source-derived facts:** supported by a retained or referenced external source.
+- **Agent inferences:** interpretations that remain visibly unverified until the user confirms them.
+- **Derived syntheses:** analyses, queries, or advice created by combining existing evidence.
+
+Inferences belong in a reviewable observation area until confirmed or rejected. Derived advice must never silently change a user's goals or other factual context.
+
+## Core and Vertical Context
+
+Core context contains information that may matter across domains, such as goals, values, communication patterns, decision patterns, preferences, and recurring constraints. Vertical context contains domain-specific concepts.
+
+Career is the only v0.1 vertical. It may include roles, history, projects, skills, achievements, leadership examples, mentoring, public work, and professional goals. The architecture exposes a place for verticals without hardcoding the entire system around career or prematurely designing hypothetical domains.
+
+## Core Operations
+
+The SelfContext skill recognizes natural-language intent and applies a lifecycle rather than a command vocabulary:
+
+1. **Ingest** or update information, preserve useful provenance, avoid duplicate concepts, connect meaningful links, update navigation, and log the operation.
+2. **Query** through orientation, indexes, targeted file search, metadata, and link traversal. A trivial retrieval returns an answer without creating a page; a substantial reusable synthesis may be stored under derived material.
+3. **Review** unresolved inferences, stale context, contradictions, ambiguous claims, missing provenance, and important changes needing attention.
+4. **Lint** structural and epistemic integrity, including frontmatter, links, indexes, duplicates, metadata consistency, freshness, and schema drift.
+5. **Advise** through an Advisor Pack that retrieves evidence from the core skill and applies a domain-specific reasoning framework.
+
+Before a significant operation on an existing vault, the skill orients from `SCHEMA.md`, `index.md`, and recent `log.md` entries. This reduces duplicate concepts, missed connections, schema drift, and accidental contradictions without requiring a full-vault scan every time.
+
+## Provenance and Persistence
+
+Important ingested information should retain enough source or raw material to explain where it came from. A substantial recollection may be preserved separately from normalized concepts; small conversational facts need not acquire unnecessary ceremony.
+
+Queries and advice are not all permanent documents. Every meaningful operation may be recorded in the log, but only a substantial reusable synthesis or advice result should become derived material. Derived pages must link to their evidence and remain visibly derived.
+
+## Privacy and Rejected Infrastructure
+
+SelfContext v0.1 requires no cloud service, server, database, vector database, embeddings, MCP server, background service, custom chat interface, authentication system, sync service, telemetry, or analytics. A tiny deterministic validator may be added only when it materially improves reliability; it remains subordinate to the Markdown vault.
+
+These exclusions keep the durable asset portable, local, inspectable, and replaceable. Future disposable search indexes or user-controlled synchronization can be considered only without changing the vault's canonical role.
+
+See the [architectural decisions](decisions/) for the reasoning behind these boundaries.
