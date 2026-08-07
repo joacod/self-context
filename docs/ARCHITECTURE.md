@@ -49,7 +49,9 @@ The repository must not depend on an ignored empty directory being present after
 
 ## Portable Vault
 
-The exact v0.1 taxonomy and schema are defined by the SelfContext skill in Phase 2. At minimum, an initialized vault will contain self-description equivalent to:
+The v0.1 taxonomy and schema are defined by the Phase 2 SelfContext skill in
+`.agents/skills/self-context/references/vault-schema.md`. At minimum, an
+initialized vault will contain self-description equivalent to:
 
 ```text
 vault/
@@ -105,7 +107,7 @@ Queries and advice are not all permanent documents. Every meaningful operation m
 
 ## Privacy and Rejected Infrastructure
 
-SelfContext v0.1 requires no cloud service, server, database, vector database, embeddings, MCP server, background service, custom chat interface, authentication system, sync service, telemetry, or analytics. A tiny deterministic validator may be added only when it materially improves reliability; it remains subordinate to the Markdown vault.
+SelfContext v0.1 requires no cloud service, server, database, vector database, embeddings, MCP server, background service, custom chat interface, authentication system, sync service, telemetry, or analytics. The core skill includes a small dependency-free deterministic linter for structural checks; it remains subordinate to the Markdown vault and does not replace semantic review.
 
 These exclusions keep the durable asset portable, local, inspectable, and replaceable. Future disposable search indexes or user-controlled synchronization can be considered only without changing the vault's canonical role.
 

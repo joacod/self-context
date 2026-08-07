@@ -1,0 +1,50 @@
+{
+  "skill_name": "self-context",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have no Context Vault yet. Capture this fictional resume for John Doe: he worked at MyContext Systems from 2021 to 2024, led the migration of the Atlas service, and mentored two engineers. Preserve the supplied resume as a source and organize the durable career context.",
+      "expected_output": "The skill initializes a missing vault, preserves a source record, creates coherent linked career concepts, updates indexes, logs the ingest, and does not invent additional experience.",
+      "files": [],
+      "expectations": [
+        "A missing vault is initialized automatically.",
+        "The fictional resume is preserved as a source record.",
+        "Normalized career pages link back to the source and to related concepts.",
+        "The operation is recorded in log.md."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I just remembered that John Doe mentored two engineers while leading the Atlas migration at MyContext Systems. Add this to the existing context without creating duplicate pages, and keep anything that is an interpretation visibly unverified.",
+      "expected_output": "The skill finds and updates existing concepts, adds meaningful links and provenance, avoids duplicates, and stores any agent interpretation as a reviewable observation rather than fact.",
+      "files": [],
+      "expectations": [
+        "Existing related concepts are updated instead of duplicated.",
+        "The mentoring recollection is distinguished from unsupported inference.",
+        "Indexes and the operation log are maintained."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Where did John work before MyContext Systems, and what evidence supports the answer? Just answer from the Context Vault; do not create a new permanent page for this simple lookup.",
+      "expected_output": "The skill performs targeted retrieval, cites the relevant evidence and uncertainty, and does not create a derived page for a trivial lookup.",
+      "files": [],
+      "expectations": [
+        "The answer is grounded in existing vault evidence.",
+        "The skill does not create a permanent knowledge page for the simple retrieval.",
+        "The response distinguishes unknown or stale information when relevant."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Please lint my Context Vault and tell me what needs attention. I care about broken Markdown links, missing frontmatter, stale claims, and observations that have never been verified.",
+      "expected_output": "The skill runs the deterministic linter, reports structural findings, and separates lint findings from the semantic review a human still needs to perform.",
+      "files": [],
+      "expectations": [
+        "The bundled lint_vault.py script is used when available.",
+        "Errors and warnings are reported with file paths.",
+        "Unverified observations and stale claims are surfaced without being silently changed."
+      ]
+    }
+  ]
+}

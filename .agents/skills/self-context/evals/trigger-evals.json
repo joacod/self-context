@@ -1,0 +1,58 @@
+[
+  {
+    "query": "I just remembered something about my time at MyContext Systems. Add it to my context and connect it to the relevant project and role.",
+    "should_trigger": true
+  },
+  {
+    "query": "Please capture the important facts from my resume so I can use them in future sessions, keeping the resume as evidence.",
+    "should_trigger": true
+  },
+  {
+    "query": "What does my context say about examples of technical leadership, and which claims are actually supported by evidence?",
+    "should_trigger": true
+  },
+  {
+    "query": "I think one of my current goals may be stale. Review my personal context and show me what needs confirmation.",
+    "should_trigger": true
+  },
+  {
+    "query": "Can you reconcile these two pages in my Context Vault and preserve any uncertainty instead of choosing a version silently?",
+    "should_trigger": true
+  },
+  {
+    "query": "Based on my career context, gather the evidence I should give to a career advisor for a Staff Engineer discussion.",
+    "should_trigger": true
+  },
+  {
+    "query": "I copied an existing Context Vault into this checkout. Orient yourself from its schema, index, and recent log, then help me continue.",
+    "should_trigger": true
+  },
+  {
+    "query": "I want to move my personal context to another computer. Check that the vault remains portable and tell me what, if anything, needs attention.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write a generic resume summary for a fictional software engineer named John Doe. Do not use any personal files.",
+    "should_trigger": false
+  },
+  {
+    "query": "How should I organize a generic project-notes vault in Obsidian?",
+    "should_trigger": false
+  },
+  {
+    "query": "Review this public job description and list its required qualifications. It is not about my background.",
+    "should_trigger": false
+  },
+  {
+    "query": "What is the correct Git syntax for ignoring a directory named vault?",
+    "should_trigger": false
+  },
+  {
+    "query": "Design a database schema for storing generic employee profiles and career histories.",
+    "should_trigger": false
+  },
+  {
+    "query": "Draft a fictional interview story about an engineer resolving a production incident without reading my context.",
+    "should_trigger": false
+  }
+]

@@ -8,10 +8,10 @@ The project is intentionally implemented one phase at a time. After each phase, 
 
 ## Current State
 
-- **Current phase:** Phase 1 - Repository foundation complete; no later phase is active.
-- **Repository state:** Tracked foundation documentation is present alongside the original `LICENSE` and funding configuration.
+- **Current phase:** Phase 2 - Core SelfContext skill complete; no later phase is active.
+- **Repository state:** Tracked foundation documentation and the canonical project-local SelfContext skill are present alongside the original `LICENSE` and funding configuration.
 - **Private vault state:** No `vault/` directory is present. This is expected; the repository must not depend on an ignored empty directory.
-- **Next authorized phase:** Phase 2 - Core SelfContext skill, only after the user explicitly says to continue.
+- **Next authorized phase:** Phase 3 - Career Advisor skill, only after the user explicitly says to continue.
 
 ## Non-Negotiable Constraints
 
@@ -62,7 +62,7 @@ Validation recorded for this phase:
 
 ### Phase 2 - Core SelfContext Skill
 
-**Status:** Pending explicit user approval.
+**Status:** Complete.
 
 Use the installed `skill-creator` workflow to create `.agents/skills/self-context/`. Define the v0.1 vault schema and implement instructions for initialization, existing-vault orientation, ingest, query, review, lint, lifecycle, provenance, links, indexes, logs, epistemic separation, and substantial-query persistence. Add a minimal deterministic validator only if the skill-creator evaluation shows that it materially improves reliability.
 
@@ -74,6 +74,18 @@ Acceptance criteria:
 - Queries remain targeted and trivial retrievals do not pollute the vault.
 - Review and lint surface important structural, provenance, freshness, inference, and contradiction issues.
 - The skill remains portable and career-aware without making career the core schema.
+
+Implementation and validation recorded for this phase:
+
+- `.agents/skills/self-context/SKILL.md` is the concise control plane; detailed schema, initialization, ingest, query, and review/lint procedures are progressively disclosed through five direct references.
+- The v0.1 vault contract defines `SCHEMA.md`, `index.md`, `log.md`, core/career/review/source/derived areas, standard relative Markdown links, YAML frontmatter, provenance, freshness, and epistemic categories.
+- `scripts/lint_vault.py` is dependency-free and checks required control files, frontmatter, metadata values, local links, source containment, schema version declarations, stale dates, duplicate IDs/titles, and unverified observations.
+- The installed `skill-creator` `quick_validate.py` passed after loading its missing `PyYAML` dependency into an isolated temporary directory; no project dependency was added.
+- The linter passed an ephemeral clean synthetic vault and correctly reported a broken link, stale claim, and unverified observation in an invalid synthetic vault.
+- `lint_vault.py` syntax, both JSON eval files, and `SKILL.md` frontmatter all validated successfully.
+- A trigger-evaluation set is tracked under `evals/trigger-evals.json`. The installed trigger runner could not produce a meaningful score because the local Claude CLI is unauthenticated; `claude -p` returned `Not logged in`. Full trigger and operational evaluation remains Phase 4 work.
+- `git diff --check` passed, no `vault/` directory exists, and no vault content is tracked.
+- Phase 2 follow-up: `.gitignore` now excludes Python caches and test artifacts, temporary Claude/eval workspaces, generated skill/build packages, and common OS/editor files. Synthetic evals use `John Doe`/`John` and `MyContext Systems` as fictional placeholders.
 
 ### Phase 3 - Career Advisor Skill
 
@@ -104,4 +116,4 @@ Run the complete synthetic workflow from a nonexistent vault through initializat
 
 ## Phase Handoff Rules
 
-The phase currently marked in progress is the only phase being implemented. A later session should first read this document, inspect the worktree, and verify the user's explicit instruction before proceeding. User review, optional fixes, and user-managed commits happen between phases.
+Only the phase explicitly marked in progress may be implemented. A later session should first read this document, inspect the worktree, and verify the user's explicit instruction before proceeding. User review, optional fixes, and user-managed commits happen between phases.

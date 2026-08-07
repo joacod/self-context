@@ -1,5 +1,33 @@
 # Private Context Vault data. Never force-add files from this directory.
 /vault/
 
-# macOS-specific files
+# Temporary harness and skill evaluation artifacts.
+/.claude/
+*-workspace/
+
+# Python tooling artifacts.
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.venv/
+venv/
+*.egg-info/
+.coverage
+coverage.xml
+htmlcov/
+
+# Generated packages and build output.
+*.skill
+build/
+dist/
+
+# macOS and editor files.
 .DS_Store
+Thumbs.db
+*.swp
+*.swo
