@@ -20,6 +20,34 @@ Never use an agent inference or derived advice as if it were independent source
 evidence. If the vault is insufficient, say so and identify the missing context
 instead of guessing.
 
+## Verification and Freshness at Query Time
+
+Treat verification and freshness as separate dimensions:
+
+- An active page with `verified: null` is usable as source-derived or user-stated
+  evidence when its status and provenance are appropriate, but describe it as
+  unconfirmed rather than presenting it as explicitly verified.
+- A page with `status: review` is provisional. Use it to identify a question or
+  uncertainty, not as settled evidence for a confident answer. If it is decisive
+  to the question, give the user the supported conditional answer and ask one
+  bounded confirmation question rather than silently promoting it.
+- A page past `stale_after` may remain useful historical evidence, but do not use
+  it as current without labeling the freshness problem or asking the user.
+- `stale_after: null` means there is no automated deadline. It does not prove
+  that dynamic information is current; if currentness is decisive, identify the
+  freshness as unknown and ask a bounded question.
+
+When a user confirms that an expired current-state claim is still true, update
+the page's `verified` date when the claim was explicitly confirmed and set
+`stale_after` from the current date using the selected or default horizon. If
+the user reports a change, follow the correction workflow and preserve the old
+evidence rather than silently rewriting it. Reading or citing a page alone must
+not renew either field.
+
+If a user defers or leaves a review item unconfirmed, do not repeat the prompt in
+unrelated answers. Surface it again during an explicit review or when it becomes
+decisive to the requested answer.
+
 ## Persistence Decision
 
 Use the smallest durable result that serves the request:

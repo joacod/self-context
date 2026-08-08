@@ -30,6 +30,15 @@ skill, the current harness, the model, Obsidian, or a search tool disappears.
   syntheses as different kinds of knowledge.
 - Preserve useful provenance and freshness metadata without adding ceremony to
   trivial conversational details.
+- Treat `verified: null` as "not explicitly confirmed," not as false and not as
+  an automatic review item. Use `status: review` for selected items that need
+  human attention.
+- Use a bounded confirmation step for high-impact, ambiguous, contradictory, or
+  inferred context. Batch questions after an ingest instead of interrupting
+  extraction claim by claim.
+- Keep `stale_after: null` as the default. Assign a 90-day review deadline only
+  to narrow, important current-state anchors when the context clearly describes
+  something current and likely to affect future answers.
 - Prefer updating an existing concept over creating a duplicate.
 - Use standard relative Markdown links. Never use `[[wikilinks]]` as the
   canonical format.
@@ -75,6 +84,33 @@ Infer the operation from natural language:
 
 Career is the first vertical, but it is not the core schema. Keep cross-domain
 context under `core/` and career-specific context under `career/`.
+
+## Attention and Confirmation
+
+Importance and verification are separate decisions. The agent may identify a
+claim as worth the user's attention, but it must not turn relevance, repetition,
+source presence, or model confidence into verification.
+
+- Normal source-derived or user-stated pages may remain `status: active` with
+  `verified: null`.
+- Selected high-impact, ambiguous, contradictory, or inferred pages may use
+  `status: review` and remain unverified until the user confirms, revises,
+  rejects, or explicitly defers them.
+- During ingest, ask at most one concise, batched follow-up for selected items.
+  Silence does not confirm anything.
+- A direct user statement can remain `verified: null` under the same policy;
+  preserve its `assertion_kind` and ask for explicit confirmation only when the
+  item is important enough to justify the interruption.
+- An agent may set `verified` after an explicit user request to confirm a named
+  page or claim against specified evidence, including a source the user has
+  explicitly designated as authoritative. It must not do so autonomously.
+- Treat page-level verification as covering the coherent claims on that page.
+  Split mixed concepts rather than marking unrelated claims verified together.
+
+At query time, use active unverified evidence with an explicit source-derived or
+user-stated label. Treat review pages as provisional. If a stale or dynamically
+untracked claim is decisive to a current answer, ask one bounded freshness or
+confirmation question instead of silently using it as current.
 
 ## Start Every Vault Operation
 

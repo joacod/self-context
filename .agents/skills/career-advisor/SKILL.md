@@ -61,11 +61,20 @@ alone is not permission to fabricate context.
 - Check `status`, `verified`, `sources`, and `stale_after` before treating a
   claim as current.
 - Treat `active` user-stated or source-derived facts as primary evidence when
-  they are current. Treat `draft` or `review` pages as provisional context,
+  they are current, even when `verified: null`; label them as unconfirmed
+  source-supported or user-stated evidence rather than explicitly verified.
+  Treat `draft` or `review` pages as provisional context,
   `agent_inference` as an observation rather than evidence, and
   `archived`/`superseded` pages as historical unless the user asks about them.
   A `source_record` supports traceability but is not itself a normalized fact;
   a `derived_synthesis` is not independent evidence.
+- Treat an expired page as historical or ask for a bounded freshness
+  confirmation before using it for a current recommendation. A dynamic page
+  with `stale_after: null` has unknown freshness when currentness is decisive;
+  do not silently treat null as current.
+- A confirmed `agent_inference` is not evidence until SelfContext promotes the
+  confirmed factual scope to the appropriate assertion kind, normally
+  `user_stated_fact`.
 - Surface contradictions and unresolved observations instead of choosing a
   convenient version silently.
 - Prefer concrete examples and outcomes over broad labels such as

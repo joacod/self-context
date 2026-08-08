@@ -8,12 +8,24 @@ does not prove that a claim is true.
 
 Orient from the schema, root index, and recent log. Then inspect:
 
-- pages under `review/observations/` and any `agent_inference` pages;
+- durable pages with `status: review`, pages under `review/observations/`, and
+  any `agent_inference` pages;
 - claims whose `stale_after` date has passed;
-- current goals, role descriptions, or projects with missing freshness metadata;
+- relevant current goals, role descriptions, or projects with missing freshness
+  metadata;
 - contradictions, ambiguous dates, and competing versions of a claim;
 - important pages without a source or user verification;
 - new changes that were not linked from affected indexes.
+
+Treat `verified: null` as an ordinary unconfirmed state, not as a finding by
+itself. Surface it when the claim is important, current-sensitive, ambiguous,
+contradictory, explicitly requested for review, or otherwise likely to affect a
+future answer. Do not turn a broad vault review into a prompt for every page.
+
+For selected current-state items without an explicit deadline, report unknown
+freshness only when the page is relevant to the review or query. The default
+ingest policy assigns a 90-day deadline to narrow, important current-state
+anchors; it leaves other pages at `stale_after: null`.
 
 For every finding, show the page, the evidence or metadata that caused the
 finding, and a suggested human action. Do not resolve an inference, conflict,
@@ -42,6 +54,10 @@ The script checks:
 - duplicate IDs when present and duplicate titles as warnings;
 - invalid or expired `stale_after` dates; and
 - unverified observations or inference pages.
+
+The linter does not decide whether a claim is true, important, or in need of
+confirmation. It should not warn merely because a normal page has
+`verified: null` or `stale_after: null`.
 
 The script is intentionally dependency-free and does not replace semantic
 review. It reports errors and warnings, returns a non-zero status for errors,

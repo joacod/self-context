@@ -30,8 +30,9 @@ so the user can distinguish evidence from advice.
 When drafting a resume bullet, profile, bio, interview answer, or networking
 message:
 
-1. Retrieve the relevant verified and source-supported evidence through
-   SelfContext.
+1. Retrieve the relevant verified, source-supported, or explicitly labeled
+   unconfirmed user-stated evidence through SelfContext. Do not treat review or
+   stale context as settled current evidence.
 2. Preserve the meaning and scope of the underlying experience.
 3. Improve clarity, emphasis, ordering, and audience fit.
 4. Mark missing metrics, dates, outcomes, or ownership details as placeholders

@@ -32,6 +32,14 @@
     "should_trigger": true
   },
   {
+    "query": "Ingest this source but only ask me about claims that could materially affect future answers. Leave routine claims unconfirmed and tell me which current-state items need attention.",
+    "should_trigger": true
+  },
+  {
+    "query": "My current-role page may be stale. Check its freshness before using it in an answer and ask me one bounded question if it matters.",
+    "should_trigger": true
+  },
+  {
     "query": "Write a generic resume summary for a fictional software engineer named John Doe. Do not use any personal files.",
     "should_trigger": false
   },

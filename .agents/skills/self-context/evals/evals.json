@@ -56,6 +56,105 @@
         "Durable pages are checked for required frontmatter including description and tags.",
         "Root control and index pages remain valid without frontmatter."
       ]
+    },
+    {
+      "id": 6,
+      "prompt": "Ingest a fictional source containing many historical career details for Alex Rivera and one statement that Alex currently works at Northstar Labs. Preserve the source and keep the ingest smooth: do not ask me to confirm routine historical claims, but surface only the high-impact current-state item for confirmation and apply the narrow freshness policy if appropriate.",
+      "expected_output": "The skill preserves and normalizes the source, leaves routine claims unconfirmed without prompting for each one, marks the current-state concept for bounded review, and uses the 90-day freshness rule only for that narrow current anchor.",
+      "files": [],
+      "expectations": [
+        "Routine source-derived claims remain active with verified: null and do not create serial prompts.",
+        "The high-impact current-state concept is distinguishable as status: review until explicitly resolved.",
+        "The ingest produces at most one batched confirmation follow-up.",
+        "A 90-day stale_after deadline is assigned only when the current-state criteria are met."
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "In the synthetic vault, explicitly confirm only the current-role page for Alex Rivera. Mark that page verified today, keep its source links, resolve its review status, and leave an unrelated skills page with verified: null unchanged.",
+      "expected_output": "The skill applies confirmation only to the named coherent page, records the current verification date, preserves provenance, and does not verify unrelated pages by implication.",
+      "files": [],
+      "expectations": [
+        "Explicit confirmation changes only the named page or claim scope.",
+        "The confirmed page receives a verification date and can leave status: review when no issue remains.",
+        "Unrelated pages remain unverified."
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "A synthetic current-role page has stale_after: 2026-01-01. I am asking what the vault says about Alex Rivera's current role. Do not silently treat the expired page as current; explain the freshness issue and ask one bounded confirmation question.",
+      "expected_output": "The skill identifies the page as stale for a current-sensitive query, labels or limits its use, and asks whether it is still current instead of silently relying on it.",
+      "files": [],
+      "expectations": [
+        "Expired current-state context is surfaced before being used as current evidence.",
+        "The response remains useful as historical evidence where appropriate.",
+        "The skill asks a bounded freshness question and does not modify metadata without confirmation."
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Review a synthetic vault with many ordinary historical pages and stable skills pages that all have verified: null and stale_after: null. Do not turn every null into a warning or ask me to confirm every page; show only important unresolved or current-sensitive items.",
+      "expected_output": "The review distinguishes ordinary unconfirmed context from actionable review items and does not create prompt fatigue from nullable metadata.",
+      "files": [],
+      "expectations": [
+        "verified: null alone is not reported as an error or automatic review item.",
+        "stale_after: null alone is not treated as stale.",
+        "Only important, ambiguous, contradictory, inferred, or explicitly requested items are surfaced."
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Re-ingest an unchanged synthetic source after the current-role page was explicitly verified and given a 90-day freshness deadline. Preserve the existing verification, freshness, status, assertion kind, provenance, and review state.",
+      "expected_output": "The skill is idempotent for unchanged evidence and preserves all existing lifecycle decisions.",
+      "files": [],
+      "expectations": [
+        "Unchanged re-ingestion preserves verified and stale_after values.",
+        "Unchanged re-ingestion preserves status, assertion kind, provenance, and pending review state.",
+        "The skill does not silently renew freshness merely because a page was read or re-ingested."
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Re-ingest a synthetic source that adds a material current-role claim to a page that was previously verified. Do not silently extend the old page-level verification; split the scope or request a new confirmation decision.",
+      "expected_output": "The skill protects the scope of prior confirmation when material new claims appear.",
+      "files": [],
+      "expectations": [
+        "Material new claims trigger a narrower scope, split, or new confirmation decision.",
+        "The old verification date is not silently applied to the new claim."
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "Ingest a fictional source record containing an important current-state claim, but do not ask SelfContext to verify it and do not designate the source as authoritative. Preserve provenance and leave the claim unverified.",
+      "expected_output": "The skill preserves the source and can surface the important claim for review, but does not set verified merely because the source was supplied.",
+      "files": [],
+      "expectations": [
+        "Supplying a source alone never sets verified.",
+        "The important claim can remain status: review with verified: null until an explicit confirmation action.",
+        "The source link is preserved."
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "A synthetic page with status: review is not stale, but it is decisive to the answer about Alex Rivera's current role. Give the supported conditional answer and ask one bounded confirmation question rather than treating the page as settled fact.",
+      "expected_output": "The skill uses the review page as provisional evidence, exposes the uncertainty, and asks a bounded confirmation question.",
+      "files": [],
+      "expectations": [
+        "A non-stale review page is still treated as provisional.",
+        "The answer distinguishes supported evidence from unresolved confirmation.",
+        "The skill does not silently promote the page to current fact."
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "A synthetic review observation contains an agent inference that Alex Rivera tends to prefer a particular work arrangement. Alex explicitly confirms that this is a factual preference. Promote only the confirmed scope to user_stated_fact, resolve its review status, and do not treat an unconfirmed inference as evidence.",
+      "expected_output": "The skill promotes an explicitly confirmed factual inference to user-stated context and keeps any unconfirmed remainder reviewable.",
+      "files": [],
+      "expectations": [
+        "An explicitly confirmed inference changes to the appropriate user-stated assertion kind.",
+        "The confirmed scope can leave status: review when no unresolved issue remains.",
+        "Unconfirmed inference remains reviewable and is not used as settled evidence."
+      ]
     }
   ]
 }

@@ -101,6 +101,15 @@ generation, verification, sources, assertion kind, and freshness. Values may be
 empty or null where the category allows it, but the metadata shape stays
 consistent so generic tools can validate and navigate the vault.
 
+Verification and attention are separate lifecycle dimensions. `verified: null`
+means that no explicit confirmation event has been recorded; it does not mean
+the claim is false or automatically requires a prompt. Selected high-impact,
+ambiguous, contradictory, or inferred pages use `status: review` until the
+user resolves them. `stale_after` is a nullable review deadline, not a claim of
+currentness. Ingest may assign a narrow 90-day deadline, calculated from the
+ingest date, to important explicit current-state user-stated or source-derived
+facts, while most pages remain without an automated deadline.
+
 At minimum, the lifecycle distinguishes:
 
 - **User-stated facts:** directly stated or confirmed by the user.
@@ -120,8 +129,8 @@ Career is the only v0.1 vertical. It may include roles, history, projects, skill
 
 The SelfContext skill recognizes natural-language intent and applies a lifecycle rather than a command vocabulary:
 
-1. **Ingest** or update information, preserve useful provenance, avoid duplicate concepts, connect meaningful links, update navigation, and log the operation.
-2. **Query** through orientation, indexes, targeted file search, metadata, and link traversal. A trivial retrieval returns an answer without creating a page; a substantial reusable synthesis may be stored under derived material.
+1. **Ingest** or update information, preserve useful provenance, avoid duplicate concepts, connect meaningful links, update navigation, and log the operation. Triage only high-impact or unresolved items for a bounded, batched confirmation follow-up.
+2. **Query** through orientation, indexes, targeted file search, metadata, and link traversal. A trivial retrieval returns an answer without creating a page; a substantial reusable synthesis may be stored under derived material. Review status and freshness before using context as current.
 3. **Review** unresolved inferences, stale context, contradictions, ambiguous claims, missing provenance, and important changes needing attention.
 4. **Lint** structural and epistemic integrity, including frontmatter, links, indexes, duplicates, metadata consistency, freshness, and schema drift.
 5. **Advise** through an Advisor Pack that retrieves evidence from the core skill and applies a domain-specific reasoning framework.
@@ -140,4 +149,4 @@ SelfContext v0.1 requires no cloud service, server, database, vector database, e
 
 These exclusions keep the durable asset portable, local, inspectable, and replaceable. Future disposable search indexes or user-controlled synchronization can be considered only without changing the vault's canonical role.
 
-See the [architectural decisions](decisions/) for the reasoning behind these boundaries, including the [user-mode and project-maintenance separation](decisions/0007-user-mode-project-maintenance.md).
+See the [architectural decisions](decisions/) for the reasoning behind these boundaries, including the [user-mode and project-maintenance separation](decisions/0007-user-mode-project-maintenance.md) and the [selective confirmation and freshness policy](decisions/0008-selective-confirmation-and-freshness.md).

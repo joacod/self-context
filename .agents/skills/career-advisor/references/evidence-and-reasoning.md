@@ -46,6 +46,17 @@ Use this default inclusion policy for current career reasoning:
 If a current page is past `stale_after`, either exclude it from a current
 conclusion or label its historical use and explain the freshness concern.
 
+An active user-stated or source-derived page with `verified: null` can still be
+useful primary evidence when its provenance and freshness are appropriate. The
+response should identify it as unconfirmed rather than silently upgrading it to
+explicitly verified. A page with `status: review` is provisional and should
+usually produce a bounded confirmation question when it materially affects the
+answer.
+
+When a dynamic page has `stale_after: null`, treat its freshness as unknown if
+currentness is decisive. Do not turn a missing deadline into either a stale
+warning for every query or an assumption that the page is current.
+
 Use language that exposes epistemic status:
 
 - **Supported:** "The vault records..." or "The supplied source states..."
