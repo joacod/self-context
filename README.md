@@ -32,6 +32,27 @@ based on my context, how should I position myself for [a role]?
 The skills infer whether the request is for ingest, query, review, lint, or
 career evidence and reasoning. No custom CLI or slash command is required.
 
+## How It Is Organized
+
+Think of SelfContext as a shared foundation with domain-specific verticals and
+replaceable Advisor Packs.
+
+- **SelfContext core:** owns the portable vault format, ingestion, retrieval,
+  review, linting, provenance, lifecycle, and backup rules.
+- **Career vertical:** stores career-specific evidence such as roles, projects,
+  skills, achievements, goals, and professional examples.
+- **Writing vertical:** stores evidence-backed patterns in how you communicate,
+  develop ideas, explain concepts, consider readers, revise drafts, and adapt
+  across writing modes. It distinguishes authentic writing from generated text.
+- **Advisor Packs:** provide domain reasoning over retrieved context. Career and
+  Writing Advisors can help with career decisions or writing work, but they do
+  not own a second memory system or silently turn generated output into facts.
+
+The same vault can contain shared `core/` context, vertical areas such as
+`career/` and `writing/`, retained `sources/`, unresolved `review/` items, and
+clearly labeled `derived/` analyses. Vertical context stays in its owning area;
+an Advisor can combine relevant areas without duplicating them.
+
 ## Your Vault
 
 The private `vault/` directory is the source of truth and is ignored by Git.
