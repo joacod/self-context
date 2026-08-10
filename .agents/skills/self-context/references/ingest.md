@@ -47,16 +47,19 @@ Create or update the smallest coherent set of pages:
 - Put context that can materially inform more than one domain in `core/`, such
   as explicit cross-domain goals, preferences, communication or decision
   patterns, and recurring constraints.
-- Put career-specific concepts in `career/`.
+- Put domain-specific concepts in the owning vertical area, such as
+  `career/` for career evidence.
 - Put retained source or recollection material in `sources/`.
 - Put unresolved interpretations in `review/observations/` with
   `assertion_kind: agent_inference`, `status: review`, and `verified: null`.
 
 Route by scope, not by importance. A major career achievement still belongs in
-`career/`; do not copy it into `core/` merely to make core look complete. For
-every meaningful ingest, explicitly check whether the supplied material adds or
-changes cross-domain context. Update an existing core concept when it does, and
-leave `core/` unchanged when it does not.
+`career/`; do not copy it into `core/` merely to make core look complete. Apply
+the same rule to every current or future vertical: keep domain facts in their
+owning area and use the area's documented procedure when one exists. For every
+meaningful ingest, explicitly check whether the supplied material adds or changes
+cross-domain context. Update an existing core concept when it does, and leave
+`core/` unchanged when it does not.
 
 Use frontmatter from [the schema](vault-schema.md). Preserve the appropriate
 assertion kind and link every important normalized claim to its source record or
@@ -140,9 +143,9 @@ into confirmation. If the user defers an item, keep it reviewable but do not
 interrupt unrelated future answers unless the item is decisive to the question
 or the user requests review.
 
-Confirmation is page-scoped for v0.1. If a page contains unrelated claims and the
-user confirms only some of them, split the concept or leave the page unverified;
-do not mark the whole page verified by implication.
+Confirmation is page-scoped. If a page contains unrelated claims and the user
+confirms only some of them, split the concept or leave the page unverified; do
+not mark the whole page verified by implication.
 
 ## 3b. Assign Freshness Conservatively
 
@@ -160,9 +163,9 @@ Mention an automatically assigned deadline in the ingest summary so the user can
 change or remove it. Respect an explicit date or review horizon from the user.
 A user choice about a review horizon belongs in the same batched follow-up as
 confirmation; do not open a separate freshness interview.
-Do not automatically assign 180-day or 360-day deadlines in v0.1, and do not
-assign deadlines to historical pages, ordinary source captures, stable skills,
-or general preferences merely because they exist.
+Do not automatically assign longer deadlines, and do not assign deadlines to
+historical pages, ordinary source captures, stable skills, or general
+preferences merely because they exist.
 
 If the situation is ambiguous, ask one bounded freshness question or leave the
 field null. Calculate an automatic deadline from the current ingest date, not a

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deterministic structural lint for a SelfContext v0.1 vault."""
+"""Deterministic structural lint for a SelfContext vault."""
 
 from __future__ import annotations
 
@@ -363,7 +363,7 @@ def lint_vault(root: Path, today: date.date) -> Tuple[List[str], List[str]]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Lint a SelfContext v0.1 vault")
+    parser = argparse.ArgumentParser(description="Lint a SelfContext vault")
     parser.add_argument("vault", nargs="?", default="vault", help="Path to the vault (default: ./vault)")
     parser.add_argument("--today", help="ISO date used for stale_after checks (default: today)")
     args = parser.parse_args()

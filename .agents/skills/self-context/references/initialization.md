@@ -30,7 +30,7 @@ initialized schema. Preserve its knowledge and orient before changing it.
   missing control files or indexes that can be added without overwriting data.
 - If `SCHEMA.md` is absent, treat the vault as unversioned. Read its visible
   indexes, recent log if present, and relevant pages. Do not reorganize or
-  rename the existing taxonomy merely to match the v0.1 layout. Add a concise
+  rename the existing taxonomy merely to match the default layout. Add a concise
   schema note only when it accurately describes the observed structure.
 - If a schema declares a future or unknown major version, remain read-only,
   explain the compatibility issue, and ask before modifying content.
@@ -38,12 +38,12 @@ initialized schema. Preserve its knowledge and orient before changing it.
   checking that no conflicting file or convention exists. Create a pre-write
   backup first, then preserve all existing pages and links.
 
-An older v0.1 vault may not have a `writing/` directory or `writing/index.md`.
-For a read-only Writing query, treat the missing area as empty and do not create
+An existing vault may not have a `writing/` directory or `writing/index.md`. For
+a read-only Writing query, treat the missing area as empty and do not create
 files. For a Writing mutation, orient from the existing schema, index, and log,
 create the pre-write backup, then add only `writing/` and `writing/index.md` and
-add the Writing link to the root index. Do not rewrite `SCHEMA.md`, migrate
-other pages, or reorganize an existing taxonomy merely to add the vertical.
+add the Writing link to the root index. Do not rewrite `SCHEMA.md`, migrate other
+pages, or reorganize an existing taxonomy merely to add the vertical.
 
 Existing-vault support means the user can continue immediately; it does not
 mean silently migrating or flattening their data.
@@ -77,7 +77,7 @@ records, agent observations, and derived syntheses visibly distinct.
 Top-level areas:
 
 - `core/`: cross-domain personal context.
-- `career/`: the v0.1 career vertical.
+- `career/`: career-specific evidence and concepts.
 - `writing/`: observable writing and communication context.
 - `review/`: unresolved observations and review items.
 - `sources/`: retained source or recollection material.
@@ -179,7 +179,7 @@ automatically personal fact.
 ## YYYY-MM-DD - initialize
 
 - operation: initialize
-- summary: Created the portable v0.1 vault structure.
+- summary: Created the portable vault structure.
 - changed:
   - [schema](SCHEMA.md)
   - [index](index.md)

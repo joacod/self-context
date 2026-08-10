@@ -1,45 +1,39 @@
 # SelfContext Roadmap
 
-This roadmap describes intended experiments, not promises. Each phase is completed only after its behavior is validated and the build plan is updated.
+This roadmap describes intended experiments, not promises. A change is ready
+when its behavior is validated and documented; Git records the change history.
 
-The v0.1 bootstrap is complete. The next practical experiment is to dogfood the
-skills with real career information while keeping the private vault local and
-separate from tracked project files.
+## Current Foundation
 
-## v0.1
+The current system provides:
 
-- Portable vault format.
-- First-run bootstrap.
-- Ingest.
-- Query.
-- Review.
-- Lint.
-- Career vertical.
-- Career Advisor Pack.
-- Obsidian compatibility.
-- Multi-session continuity.
-- Local pre-write ZIP backups with retention of the latest three archives.
+- a portable Markdown vault with YAML frontmatter and standard links;
+- first-run initialization and orientation of existing vaults;
+- natural-language ingest, query, review, and lint workflows;
+- shared provenance, lifecycle, freshness, and epistemic boundaries;
+- local pre-write ZIP backups with retention of the latest three archives;
+- Obsidian compatibility and multi-session continuity; and
+- separate Career and Writing verticals with replaceable Advisor Packs.
 
-## Post-bootstrap Writing Experiment
+## Current Vertical Work
 
-The Writing vertical is a first-class extension of the same portable lifecycle.
-It adds an on-demand `writing/` area, evidence-aware source comparison, a
-Writing Advisor Pack, and synthetic behavioral evaluations. It deliberately
-does not add a custom runtime, writing database, universal style taxonomy, or
-automatic profile mutation. The next useful experiment is to use it with
-different authored modes and inspect whether the profile becomes more accurate
-without merely becoming larger.
+Each vertical has its own scope and experiment surface while reusing the shared
+SelfContext lifecycle:
 
-The v0.1 implementation should remain mostly Markdown, Agent Skills, references, and only the smallest deterministic validation code that earns its place. It should not introduce a custom runtime, server, database, embeddings, MCP, background service, or telemetry.
+| Vertical | Current behavior | Next useful experiment |
+| --- | --- | --- |
+| Career | Evidence-backed roles, projects, skills, goals, and professional reasoning | Dogfood the workflows with real career information while keeping the vault local |
+| Writing | Evidence-aware source comparison, selective profile updates, and writing reasoning | Use different authored modes and check whether the profile becomes more accurate without merely becoming larger |
 
-## v0.2
+Neither vertical adds a competing memory format, custom runtime, universal
+taxonomy, or automatic promotion of generated output into facts.
 
-- Guided Discovery.
-- Context coverage and gap analysis.
-- Targeted questions.
-- Stronger stale-context review.
+## Near-Term Experiments
 
-Guided Discovery is intentionally not part of v0.1 review. Review should surface issues; it should not become a long interview system yet.
+- Guided Discovery for context coverage and gap analysis.
+- Targeted questions that remain bounded rather than becoming an open-ended
+  interview.
+- Stronger stale-context review when freshness matters to an answer.
 
 ## Later Possibilities
 
