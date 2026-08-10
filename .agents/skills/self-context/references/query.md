@@ -20,6 +20,12 @@ Never use an agent inference or derived advice as if it were independent source
 evidence. If the vault is insufficient, say so and identify the missing context
 instead of guessing.
 
+For Writing retrieval, include the relevant mode, audience, language, dates,
+authorship, and evidence state. Generated drafts and derived style analyses are
+not independent evidence of the user's communication. A Writing query may
+report that no meaningful profile update was needed; retrieval and analysis do
+not require a new durable page.
+
 ## Verification and Freshness at Query Time
 
 Treat verification and freshness as separate dimensions:

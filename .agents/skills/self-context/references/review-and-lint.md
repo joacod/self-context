@@ -21,6 +21,12 @@ Orient from the schema, root index, and recent log. Then inspect:
 - important pages without a source or user verification;
 - new changes that were not linked from affected indexes.
 
+For Writing, also inspect whether an observation is scoped to an evidenced mode
+or period, whether generated material has been kept out of primary evidence,
+whether human revision signals are supported by meaningful deltas, and whether
+beliefs or career facts have been copied into the Writing vertical. The linter
+cannot decide these semantic questions; keep them visible for human review.
+
 For a broad semantic review, sample recent meaningful ingests from `log.md` and
 check category coverage: explicit context useful across domains should not be
 stranded in a vertical, and vertical facts should not be duplicated into

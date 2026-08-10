@@ -102,6 +102,122 @@ class BackupVaultTests(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertNotIn("backups/not-a-page.md", result.stdout)
+            self.assertNotIn("writing/index.md", result.stdout)
+
+    def test_linter_checks_writing_navigation_when_writing_area_exists(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = Path(temporary) / "vault"
+            (vault / "writing").mkdir(parents=True)
+            for filename in ("SCHEMA.md", "index.md", "log.md"):
+                (vault / filename).write_text("# synthetic\n", encoding="utf-8")
+            (vault / "core").mkdir()
+            (vault / "career").mkdir()
+            (vault / "review").mkdir()
+            (vault / "sources").mkdir()
+            (vault / "derived").mkdir()
+            (vault / "writing" / "index.md").write_text(
+                "# Writing Context\n", encoding="utf-8"
+            )
+            (vault / "index.md").write_text(
+                "\n".join(
+                    (
+                        "# SelfContext Vault",
+                        "SCHEMA.md",
+                        "core/index.md",
+                        "career/index.md",
+                        "review/index.md",
+                        "sources/index.md",
+                        "derived/index.md",
+                        "log.md",
+                    )
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [sys.executable, str(LINT_SCRIPT), str(vault)],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 0)
+            self.assertIn("index.md does not mention writing/index.md", result.stdout)
+
+    def test_linter_validates_writing_artifact_roles(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = Path(temporary) / "vault"
+            sources = vault / "sources"
+            sources.mkdir(parents=True)
+            for filename in ("SCHEMA.md", "index.md", "log.md"):
+                (vault / filename).write_text("# synthetic\n", encoding="utf-8")
+            source = sources / "writing-source.md"
+            source.write_text(
+                """---
+type: source
+title: Synthetic writing source
+description: Fictional writing source.
+tags:
+  - writing
+status: active
+generated: 2026-08-10
+verified: null
+sources: []
+assertion_kind: source_record
+stale_after: null
+---
+
+# Source
+""",
+                encoding="utf-8",
+            )
+
+            invalid = subprocess.run(
+                [sys.executable, str(LINT_SCRIPT), str(vault)],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+            self.assertNotEqual(invalid.returncode, 0)
+            self.assertIn("requires writing_evidence_role", invalid.stdout)
+
+            source.write_text(
+                source.read_text(encoding="utf-8").replace(
+                    "stale_after: null\n",
+                    "stale_after: null\n"
+                    "writing_evidence_role: [primary]\n"
+                    "authorship: user\n"
+                    "ai_involvement: none\n",
+                ),
+                encoding="utf-8",
+            )
+            malformed = subprocess.run(
+                [sys.executable, str(LINT_SCRIPT), str(vault)],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+            self.assertNotEqual(malformed.returncode, 0)
+            self.assertNotIn("Traceback", malformed.stderr)
+
+            source.write_text(
+                source.read_text(encoding="utf-8").replace(
+                    "writing_evidence_role: [primary]\n",
+                    "writing_evidence_role: primary\n",
+                ),
+                encoding="utf-8",
+            )
+            valid = subprocess.run(
+                [sys.executable, str(LINT_SCRIPT), str(vault)],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+            self.assertEqual(valid.returncode, 0, valid.stdout + valid.stderr)
 
 
 if __name__ == "__main__":

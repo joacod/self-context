@@ -66,5 +66,61 @@
   {
     "query": "Draft a fictional interview story about an engineer resolving a production incident without reading my context.",
     "should_trigger": false
+  },
+  {
+    "query": "Ingest John Doe's authored essay as Writing evidence, compare its communication patterns with the existing profile, and tell me if anything meaningfully changed.",
+    "should_trigger": true
+  },
+  {
+    "query": "Add John Doe's human-edited revision of an AI draft to his Writing context without treating the generated draft as evidence.",
+    "should_trigger": true
+  },
+  {
+    "query": "Review whether John Doe's writing pattern is global or only true in technical articles, and preserve contradictory opinion-essay evidence.",
+    "should_trigger": true
+  },
+  {
+    "query": "Why did SelfContext make no meaningful Writing profile update after analyzing John Doe's new article? Explain the evidence comparison.",
+    "should_trigger": true
+  },
+  {
+    "query": "What does John Doe's Writing context say about how he explains complex ideas to readers, and which sources support it?",
+    "should_trigger": true
+  },
+  {
+    "query": "Update John Doe's Writing profile to represent how his introductions changed over time, keeping the older evidence visible.",
+    "should_trigger": true
+  },
+  {
+    "query": "Separate John Doe's explicit preference for direct language from the opinions expressed in his essays when ingesting this source.",
+    "should_trigger": true
+  },
+  {
+    "query": "Use John Doe's Writing context and his MyContext Systems career project page to help outline a technical article without duplicating either domain.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write a generic blog post about queues for a fictional audience; do not read any personal files or create a Context Vault.",
+    "should_trigger": false
+  },
+  {
+    "query": "Proofread this public article for spelling only. It is not mine and I do not want personal context used.",
+    "should_trigger": false
+  },
+  {
+    "query": "Summarize a company's public writing guidelines without relating them to my communication patterns.",
+    "should_trigger": false
+  },
+  {
+    "query": "Explain how to configure a Markdown linter for a generic documentation repository.",
+    "should_trigger": false
+  },
+  {
+    "query": "Retrieve the employer listed in my career vault; do not analyze my writing or give advice.",
+    "should_trigger": false
+  },
+  {
+    "query": "Design a generic database schema for storing authors and articles, unrelated to my Context Vault.",
+    "should_trigger": false
   }
 ]

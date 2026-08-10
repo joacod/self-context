@@ -189,6 +189,149 @@
         "The backup archive does not include the separate backups directory and retention leaves at most three managed ZIPs.",
         "The page and index are changed only after successful backup creation."
       ]
+    },
+    {
+      "id": 18,
+      "prompt": "In a synthetic empty vault, ingest John Doe's user-authored technical essay. Preserve the source with authorship, date, language, and technical mode, and analyze a concrete-example-before-abstraction pattern without making it an established global trait from one source.",
+      "expected_output": "The Writing area is initialized or created on demand, the authored source is preserved, and the inferred pattern is a scoped candidate or reviewable observation with provenance.",
+      "files": [],
+      "expectations": [
+        "The source is retained as source_record evidence with authorship metadata.",
+        "The Writing observation links to the source and remains scoped and reviewable.",
+        "A single essay does not become a permanent universal preference or verified fact."
+      ]
+    },
+    {
+      "id": 19,
+      "prompt": "A synthetic Writing profile already says John Doe uses direct technical openings, concrete examples, and explicit tradeoffs. Analyze another authored technical essay that shows the same behavior. Preserve the source but report that no meaningful profile update is required.",
+      "expected_output": "The source is preserved as useful provenance while existing Writing concepts and evidence state remain unchanged and the impact report records a successful no-op.",
+      "files": [],
+      "expectations": [
+        "The result explicitly says No meaningful update.",
+        "No redundant Writing trait or confidence churn is created.",
+        "The source/provenance decision is reported separately from profile mutation."
+      ]
+    },
+    {
+      "id": 20,
+      "prompt": "In a synthetic vault, an emerging observation says John Doe often introduces an implementation example before abstraction and has two independent technical essay sources. Ingest a third independent source with the same pattern.",
+      "expected_output": "The existing observation is reinforced through provenance and may move to an established scoped state when justified, without creating a duplicate or changing verification automatically.",
+      "files": [],
+      "expectations": [
+        "The existing observation is updated rather than duplicated.",
+        "Independent evidence can strengthen the qualitative evidence state.",
+        "verified and stale_after are not changed merely because another source was ingested."
+      ]
+    },
+    {
+      "id": 21,
+      "prompt": "Re-ingest the same synthetic essay and an unchanged copy of its existing source record into John Doe's Writing profile. Keep page status, assertion kind, verification, dates, links, and profile size stable.",
+      "expected_output": "Unchanged evidence is idempotent and equivalent observations are ignored rather than stored as multiple traits.",
+      "files": [],
+      "expectations": [
+        "Equivalent observations do not create duplicate pages.",
+        "Existing lifecycle metadata and provenance are preserved.",
+        "Ingestion volume does not require profile growth."
+      ]
+    },
+    {
+      "id": 22,
+      "prompt": "A synthetic global observation says John Doe rarely uses rhetorical questions. New dated evidence shows rhetorical questions are common in opinion essays but absent from technical explanations.",
+      "expected_output": "The profile is refined by mode instead of one observation overwriting the other.",
+      "files": [],
+      "expectations": [
+        "Technical and opinion behavior can coexist as contextual Writing evidence.",
+        "The original technical evidence is preserved.",
+        "The result does not assert a single universal voice from conflicting modes."
+      ]
+    },
+    {
+      "id": 23,
+      "prompt": "A synthetic Writing observation says John Doe prefers short conclusions, but a dated personal essay contains a long reflective ending. Preserve both sources and investigate whether this is a mode, exception, weak prior inference, or contradiction requiring review.",
+      "expected_output": "The conflicting evidence is preserved and surfaced for review rather than silently replacing the existing observation.",
+      "files": [],
+      "expectations": [
+        "Both source records remain linked and explainable.",
+        "A contradiction or contextual refinement is represented explicitly.",
+        "The newer essay does not automatically invalidate the prior pattern."
+      ]
+    },
+    {
+      "id": 24,
+      "prompt": "Synthetic dated sources show that John Doe used long explanatory introductions from 2020 to 2022 and began entering the main argument quickly from 2025 onward. Represent this as writing evolution while preserving the historical period.",
+      "expected_output": "The Writing profile preserves both periods and links the newer state as evolution or supersession without averaging them into one trait.",
+      "files": [],
+      "expectations": [
+        "First and last observed dates and supporting sources are retained.",
+        "The historical pattern remains available as historical evidence.",
+        "Newer evidence is not treated as automatically better or universally applicable."
+      ]
+    },
+    {
+      "id": 25,
+      "prompt": "A synthetic vault contains an AI-generated draft in derived/ and one genuine John Doe article. Analyze both for a Writing profile, but do not treat the generated draft as primary evidence or let it reinforce an authentic voice pattern.",
+      "expected_output": "The generated artifact remains visibly derived while only the genuine authored source can support a primary Writing observation.",
+      "files": [],
+      "expectations": [
+        "Generated text is not used as independent evidence.",
+        "The authored article retains its provenance and authorship role.",
+        "No AI feedback loop promotes generated language into durable voice context."
+      ]
+    },
+    {
+      "id": 26,
+      "prompt": "Compare a synthetic AI draft with John Doe's meaningful revision: he deletes generic intensifiers, shortens an abstract sentence, adds a concrete example, and reorders the conclusion. Record these as candidate revision signals without immediately creating a permanent global preference.",
+      "expected_output": "The original draft remains generated, the human delta is preserved as revision evidence, and the signal remains candidate until repeated or explicitly adopted.",
+      "files": [],
+      "expectations": [
+        "Meaningful lexical, structural, and example changes are identified.",
+        "The AI draft is not relabeled as human evidence.",
+        "One revision does not create an unjustified established anti-pattern or preference."
+      ]
+    },
+    {
+      "id": 27,
+      "prompt": "John Doe explicitly states: For public technical essays, I prefer problem-first openings. Store that scoped preference, keep an unrelated opinion about AI in its owning context, and do not generalize the preference to private messages.",
+      "expected_output": "The explicit preference is stronger than weak inference, remains scoped, and is not mixed with a substantive belief or copied across modes.",
+      "files": [],
+      "expectations": [
+        "The preference is distinguished as user-stated context.",
+        "The public technical scope is preserved and private-message behavior is not invented.",
+        "The opinion is not stored as a Writing pattern merely because it appeared in writing."
+      ]
+    },
+    {
+      "id": 28,
+      "prompt": "In a synthetic vault, use John Doe's Writing context with his MyContext Systems career project page to outline a technical article. Retrieve the career evidence for subject matter and the Writing pages for communication fit, without copying either domain into the other.",
+      "expected_output": "The operation demonstrates cross-vertical retrieval with clear ownership and no duplicated career facts or Writing traits.",
+      "files": [],
+      "expectations": [
+        "Career evidence remains owned by career pages.",
+        "Writing context remains owned by writing pages.",
+        "The resulting outline or synthesis is labeled derived and does not mutate either profile automatically."
+      ]
+    },
+    {
+      "id": 29,
+      "prompt": "Analyze a synthetic authored message by John Doe that matches every already-established message-mode pattern. Keep the source record and operation provenance, but leave the Writing profile, core, career, and derived areas unchanged.",
+      "expected_output": "The operation preserves evidence while making no unnecessary durable changes in any domain.",
+      "files": [],
+      "expectations": [
+        "No meaningful update is reported as a successful result.",
+        "No Writing observation is duplicated or added for an incidental example.",
+        "Core, career, and derived ownership boundaries remain unchanged."
+      ]
+    },
+    {
+      "id": 30,
+      "prompt": "A synthetic copied v0.1 vault has SCHEMA.md, index.md, log.md, core, career, review, sources, and derived, but no writing directory. First answer a read-only question about the user's Writing context without creating files. Then, only when explicitly asked to ingest an authored essay, create writing/index.md and its root link after the pre-write backup without rewriting the old schema or reorganizing existing pages.",
+      "expected_output": "The missing Writing area is treated as empty for read-only work and is added minimally only for an authorized mutation under the existing backup and compatibility lifecycle.",
+      "files": [],
+      "expectations": [
+        "Read-only Writing retrieval does not create an index, profile, or backup.",
+        "A requested Writing mutation creates only the missing Writing navigation after backup.",
+        "Existing v0.1 schema, pages, links, and taxonomy are preserved without migration."
+      ]
     }
   ]
 }

@@ -150,6 +150,25 @@ Completion results:
 - Known limitations remain: trigger invocation was not measured, evaluation runs were qualitative rather than a formal benchmark, and Guided Discovery is not implemented.
 - Next experiment: dogfood with real career information while preserving the private-vault boundary and the user's provider/privacy responsibility.
 
+### Post-bootstrap Extension - Writing Vertical
+
+**Status:** Implemented as a focused operational extension after the v0.1
+bootstrap. This is not a new bootstrap phase and does not change the portable
+schema version.
+
+The Writing extension uses the shared SelfContext lifecycle to preserve authored
+source evidence, compare local Writing observations with existing context, and
+make selective updates. It supports a successful no-meaningful-update result,
+qualitative evidence states, modes, temporal evolution, contradictions,
+human-revision signals, generated-artifact boundaries, and a replaceable Writing
+Advisor Pack. Writing-specific context remains separate from beliefs, career
+facts, and other vertical ownership.
+
+Validation for this extension is recorded in the final change review. Synthetic
+evals cover first evidence, conservative promotion, no-op and redundancy
+handling, mode refinement, contradictions, evolution, AI-assisted revisions,
+cross-vertical boundaries, provenance, and advisor persistence.
+
 ## Key Decisions
 
 - [Markdown and standard links are canonical](decisions/0001-markdown-canonical.md).
@@ -159,6 +178,7 @@ Completion results:
 - [v0.1 deliberately rejects infrastructure](decisions/0005-no-v01-infrastructure.md).
 - [Core context stays extensible while career is the first vertical](decisions/0006-core-and-career-vertical.md).
 - [Pre-write vault backups remain local and bounded](decisions/0009-pre-write-vault-backups.md).
+- [Writing is an evidence-backed, selectively updated vertical](decisions/0010-writing-vertical.md).
 
 ## Phase Handoff Rules
 

@@ -44,8 +44,23 @@ ALLOWED_ASSERTIONS = {
     "source_record",
     "mixed",
 }
+WRITING_EVIDENCE_ROLES = {
+    "primary",
+    "human_edited_ai_assisted",
+    "generated_derived",
+    "unknown",
+}
+WRITING_AUTHORSHIP = {"user", "shared", "agent", "unknown"}
+WRITING_AI_INVOLVEMENT = {"none", "assisted", "generated", "unknown"}
+WRITING_ROLE_COMBINATIONS = {
+    ("primary", "user", "none"),
+    ("human_edited_ai_assisted", "shared", "assisted"),
+    ("generated_derived", "agent", "generated"),
+    ("unknown", "unknown", "unknown"),
+}
 LINK_PATTERN = re.compile(r"(?<!!)\[[^\]]*\]\(([^)]+)\)")
 SCHEMA_VERSION_PATTERN = re.compile(r"^\s*schema_version:\s*([0-9]+)\.([0-9]+)\s*$", re.MULTILINE)
+OPTIONAL_ROOT_INDEX_LINKS = ("writing/index.md",)
 
 
 def parse_scalar(value: str) -> Any:
@@ -239,6 +254,36 @@ def lint_vault(root: Path, today: date.date) -> Tuple[List[str], List[str]]:
         if not isinstance(assertion, str) or assertion not in ALLOWED_ASSERTIONS:
             errors.append(f"{relative}: invalid assertion_kind: {assertion!r}")
 
+        tags = as_list(fields.get("tags"))
+        if page_type in {"source", "synthesis"} and "writing" in tags:
+            role_fields = (
+                fields.get("writing_evidence_role"),
+                fields.get("authorship"),
+                fields.get("ai_involvement"),
+            )
+            if any(not isinstance(value, str) or is_empty(value) for value in role_fields):
+                errors.append(
+                    f"{relative}: writing source/artifact requires writing_evidence_role, "
+                    "authorship, and ai_involvement"
+                )
+            elif role_fields not in WRITING_ROLE_COMBINATIONS:
+                errors.append(
+                    f"{relative}: invalid Writing artifact role combination: "
+                    f"{role_fields!r}"
+                )
+            elif role_fields[0] not in WRITING_EVIDENCE_ROLES:
+                errors.append(
+                    f"{relative}: invalid writing_evidence_role: {role_fields[0]!r}"
+                )
+            elif role_fields[1] not in WRITING_AUTHORSHIP:
+                errors.append(
+                    f"{relative}: invalid authorship: {role_fields[1]!r}"
+                )
+            elif role_fields[2] not in WRITING_AI_INVOLVEMENT:
+                errors.append(
+                    f"{relative}: invalid ai_involvement: {role_fields[2]!r}"
+                )
+
         title = fields.get("title")
         if isinstance(title, str) and title.strip():
             title_key = " ".join(title.lower().split())
@@ -309,6 +354,9 @@ def lint_vault(root: Path, today: date.date) -> Tuple[List[str], List[str]]:
         index_text = root_index.read_text(encoding="utf-8")
         for expected in ("SCHEMA.md", "core/index.md", "career/index.md", "review/index.md", "sources/index.md", "derived/index.md", "log.md"):
             if expected not in index_text:
+                warnings.append(f"index.md does not mention {expected}")
+        for expected in OPTIONAL_ROOT_INDEX_LINKS:
+            if (root / expected).parent.is_dir() and expected not in index_text:
                 warnings.append(f"index.md does not mention {expected}")
 
     return errors, warnings

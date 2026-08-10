@@ -12,7 +12,7 @@ existing harness + selected model
   |
   +--> SelfContext skill
   |
-  +--> Advisor Packs, such as Career Advisor
+   +--> Advisor Packs, such as Career Advisor and Writing Advisor
   |
   v
 Context Vault: Markdown + YAML frontmatter + standard Markdown links
@@ -96,6 +96,7 @@ vault/
 |-- log.md          # recent operations and continuity notes
 |-- core/           # cross-domain personal context
 |-- career/         # the v0.1 vertical
+|-- writing/        # observable communication and writing context
 |-- sources/        # retained source or recollection material where useful
 `-- derived/        # reusable query/advice synthesis, visibly derived
 ```
@@ -138,15 +139,60 @@ Inferences belong in a reviewable observation area until confirmed or rejected. 
 
 ## Core and Vertical Context
 
-Core context contains information that may matter across domains, such as goals, values, communication patterns, decision patterns, preferences, and recurring constraints. Vertical context contains domain-specific concepts.
+Core context contains information that may matter across domains, such as goals,
+values, communication patterns, decision patterns, preferences, and recurring
+constraints. Vertical context contains domain-specific concepts. Career and
+Writing are current verticals; additional verticals should consume the same
+shared lifecycle rather than create competing formats.
 
-Career is the only v0.1 vertical. It may include roles, history, projects, skills, achievements, leadership examples, mentoring, public work, and professional goals. The architecture exposes a place for verticals without hardcoding the entire system around career or prematurely designing hypothetical domains.
+Career may include roles, history, projects, skills, achievements, leadership
+examples, mentoring, public work, and professional goals. Writing owns
+observable communication behavior, reasoning-through-writing, reader-awareness,
+editorial preferences, anti-patterns, and evidenced modes. It does not own
+beliefs, opinions, career facts, technical knowledge, or generated drafts as
+authentic evidence. Retained Writing source and generated-artifact pages carry
+explicit authorship, AI-involvement, and evidence-role metadata so their role is
+inspectable without a separate schema.
+
+The architecture exposes a place for verticals without hardcoding the entire
+system around one domain. Writing ingestion analyzes a source locally before
+comparing it with durable context. The comparison can reinforce an existing
+observation, add a scoped candidate, refine a mode or period, preserve a
+contradiction, represent evolution, or make no meaningful update. The last
+outcome is successful and prevents redundant context growth. Qualitative
+evidence states such as candidate, emerging, established, and explicit
+preference remain readable observation content rather than a new confidence
+database.
+
+### Writing Lifecycle Example
+
+Using fictional data, the lifecycle looks like this:
+
+```text
+Nia Vale supplies a user-authored technical article
+  -> SelfContext retains a source_record with authorship, date, and mode
+  -> local analysis finds concrete examples before abstraction
+  -> comparison finds the pattern already established for technical articles
+  -> source provenance is preserved; profile updates: 0
+  -> result: No meaningful update
+  -> Nia later supplies a rough idea and a target reader
+  -> Writing Advisor retrieves relevant Writing and project context, then helps
+     develop the argument before drafting
+  -> Nia edits an AI-assisted draft by removing generic phrasing and adding an
+     example
+  -> the generated draft remains derived; the human delta is candidate revision
+     evidence for a future selective refinement
+```
+
+The same pipeline can produce a scoped new observation, a mode refinement, a
+reviewable contradiction, or a dated evolution. It never treats analysis or
+generated prose as an automatic instruction to mutate the profile.
 
 ## Core Operations
 
 The SelfContext skill recognizes natural-language intent and applies a lifecycle rather than a command vocabulary:
 
-1. **Ingest** or update information, preserve useful provenance, avoid duplicate concepts, connect meaningful links, update navigation, and log the operation. Triage only high-impact or unresolved items for a bounded, batched confirmation follow-up.
+1. **Ingest** or update information, preserve useful provenance, avoid duplicate concepts, connect meaningful links, update navigation, and log the operation. Triage only high-impact or unresolved items for a bounded, batched confirmation follow-up. Authored Writing sources use a local-analysis and impact-comparison step before durable profile updates.
 2. **Query** through orientation, indexes, targeted file search, metadata, and link traversal. A trivial retrieval returns an answer without creating a page; a substantial reusable synthesis may be stored under derived material. Review status and freshness before using context as current.
 3. **Review** unresolved inferences, stale context, contradictions, ambiguous claims, missing provenance, and important changes needing attention.
 4. **Lint** structural and epistemic integrity, including frontmatter, links, indexes, duplicates, metadata consistency, freshness, and schema drift.
@@ -166,4 +212,4 @@ SelfContext v0.1 requires no cloud service, server, database, vector database, e
 
 These exclusions keep the durable asset portable, local, inspectable, and replaceable. Future disposable search indexes or user-controlled off-device copies can be considered only without changing the vault's canonical role.
 
-See the [architectural decisions](decisions/) for the reasoning behind these boundaries, including the [user-mode and project-maintenance separation](decisions/0007-user-mode-project-maintenance.md), the [selective confirmation and freshness policy](decisions/0008-selective-confirmation-and-freshness.md), and the [pre-write backup policy](decisions/0009-pre-write-vault-backups.md).
+See the [architectural decisions](decisions/) for the reasoning behind these boundaries, including the [user-mode and project-maintenance separation](decisions/0007-user-mode-project-maintenance.md), the [selective confirmation and freshness policy](decisions/0008-selective-confirmation-and-freshness.md), the [pre-write backup policy](decisions/0009-pre-write-vault-backups.md), and the [Writing vertical decision](decisions/0010-writing-vertical.md).

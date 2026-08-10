@@ -18,6 +18,8 @@ vault/
 |   `-- index.md
 |-- career/
 |   `-- index.md
+|-- writing/
+|   `-- index.md
 |-- review/
 |   |-- index.md
 |   `-- observations/
@@ -33,13 +35,18 @@ outside the portable Markdown taxonomy and separate from the vault.
 
 Create additional subdirectories only when useful. Common career groupings are
 `roles/`, `history/`, `projects/`, `skills/`, `stories/`, `goals/`, and
-`public-work/`; do not create all of them just to fill an empty tree.
+`public-work/`. Writing may use scoped observations or revision records when a
+real collection justifies them, but it does not require a fixed taxonomy. Do
+not create all possible directories just to fill an empty tree.
 
 - `SCHEMA.md` explains this organization, metadata, and lifecycle rules.
 - The root `index.md` is the main navigation page.
 - `log.md` records meaningful operations and recent continuity notes.
 - `core/` holds cross-domain personal context.
 - `career/` holds the v0.1 career vertical.
+- `writing/` holds observable communication, reasoning-through-writing,
+  reader-awareness, editorial preferences, anti-patterns, and evidenced writing
+  modes. It does not hold beliefs or generated drafts as authentic evidence.
 - `review/observations/` holds unresolved agent observations and review items,
   not silently accepted facts.
 - `sources/` holds retained source or recollection material when preserving it
@@ -99,6 +106,16 @@ The fields have these meanings:
   claim is current or invalid.
 - `id`: an optional stable identifier. If present, it must be unique within the
   vault.
+
+Writing source and generated-artifact pages tagged `writing` must use the
+portable fields `writing_evidence_role`, `authorship`, and `ai_involvement`.
+SelfContext validates these fields for `type: source` and `type: synthesis`.
+Allowed combinations are `primary/user/none`,
+`human_edited_ai_assisted/shared/assisted`, `generated_derived/agent/generated`,
+and `unknown/unknown/unknown`. These fields make authorship and
+generated-artifact boundaries inspectable without adding a second Writing
+schema. Writing observations must not use a generated artifact as independent
+evidence.
 
 Not every field is meaningful in the same way for every page. Keep the fields
 present on durable pages so linting and generic agents can reason consistently;
@@ -175,9 +192,9 @@ navigation: keep the affected index pages current.
 
 ## Indexes and Log
 
-The root index should link to `SCHEMA.md`, the core, career, review, sources,
-derived, and `log.md`. Category indexes should link to their current pages and
-briefly explain the category. Do not list pages that do not exist.
+The root index should link to `SCHEMA.md`, the core, career, writing, review,
+sources, derived, and `log.md`. Category indexes should link to their current
+pages and briefly explain the category. Do not list pages that do not exist.
 
 Log meaningful operations in `log.md` using a date heading and explicit
 operation, summary, changed files, sources, and follow-up items. A trivial

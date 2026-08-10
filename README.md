@@ -57,10 +57,12 @@ remains ordinary Markdown.
 
 ## Current Scope
 
-The v0.1 implementation supports a portable core, a career context vertical,
-natural-language ingest/query/review/lint workflows, a Career Advisor Pack,
-Obsidian compatibility, and multi-session continuity through the vault. It does
-not require cloud services, telemetry, automatic sync, a database, or a custom
+The implementation supports a portable core, Career and Writing context
+verticals, natural-language ingest/query/review/lint workflows, Career and
+Writing Advisor Packs, Obsidian compatibility, and multi-session continuity
+through the vault. Writing context is evidence-backed and selectively updated:
+analyzed source material may produce no profile change. The project does not
+require cloud services, telemetry, automatic sync, a database, or a custom
 runtime.
 
 ## Further Reading

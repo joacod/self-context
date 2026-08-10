@@ -1,0 +1,82 @@
+[
+  {
+    "query": "Help John Doe develop this rough idea before writing the article, using his Writing context to find the tension and missing reasoning.",
+    "should_trigger": true
+  },
+  {
+    "query": "Brainstorm several angles for John Doe's technical essay and consider which one would be useful to his intended reader.",
+    "should_trigger": true
+  },
+  {
+    "query": "Draft this explanation for John Doe in a way that fits his documented communication patterns without copying old sentences.",
+    "should_trigger": true
+  },
+  {
+    "query": "Edit John Doe's article lightly. Preserve the fragments and unusual rhythm that are intentional, and only fix changes that materially help.",
+    "should_trigger": true
+  },
+  {
+    "query": "Read John Doe's draft as a skeptical reader and tell me where context, reasoning, or examples are missing.",
+    "should_trigger": true
+  },
+  {
+    "query": "Compare John Doe's edits to the AI draft and identify revision patterns without training his profile on the generated prose.",
+    "should_trigger": true
+  },
+  {
+    "query": "Use John Doe's MyContext Systems career evidence and Writing context to draft a professional bio without inventing achievements.",
+    "should_trigger": true
+  },
+  {
+    "query": "Does John Doe's new essay teach SelfContext anything about how he writes, or is it a no meaningful update?",
+    "should_trigger": true
+  },
+  {
+    "query": "Help represent how John Doe's writing changed from older essays to recent ones without averaging the periods together.",
+    "should_trigger": true
+  },
+  {
+    "query": "Separate John Doe's writing preferences from the opinions expressed in this article and explain the evidence for each.",
+    "should_trigger": true
+  },
+  {
+    "query": "Fix the failing parser in this Python module and add a regression test.",
+    "should_trigger": false
+  },
+  {
+    "query": "Retrieve the employer listed in my career vault; I only need the fact, not writing help.",
+    "should_trigger": false
+  },
+  {
+    "query": "Compare Staff Engineer and Engineering Manager in general terms without using my context.",
+    "should_trigger": false
+  },
+  {
+    "query": "Summarize this public article's main points without critiquing its reader experience or relating it to my writing.",
+    "should_trigger": false
+  },
+  {
+    "query": "Create a database schema for storing generic authors, articles, and publication dates.",
+    "should_trigger": false
+  },
+  {
+    "query": "Configure Git to ignore a local directory named writing.",
+    "should_trigger": false
+  },
+  {
+    "query": "Review this generic JSON file for syntax errors only.",
+    "should_trigger": false
+  },
+  {
+    "query": "Give me generic advice about changing careers and do not inspect personal files.",
+    "should_trigger": false
+  },
+  {
+    "query": "Tell me which company is listed on this public job description.",
+    "should_trigger": false
+  },
+  {
+    "query": "Explain how a Markdown parser handles fenced code blocks in general.",
+    "should_trigger": false
+  }
+]
