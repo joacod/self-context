@@ -7,8 +7,6 @@ read, edited, copied, and used across AI models and harnesses.
 SelfContext is not a hosted app or a separate AI runtime. An existing AI
 harness uses the project-local skills to work with the private Context Vault.
 
-> **Status:** Local-first and portable.
-
 ## Quick Start
 
 Clone the repository and open it from the repository root in an AI harness that
