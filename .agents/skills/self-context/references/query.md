@@ -65,6 +65,11 @@ being likely to be reused, difficult to reconstruct, or important for later
 review. It must not modify `core/` or `career/` facts merely because the
 synthesis recommends something.
 
+The number of queries is not the persistence threshold. Several simple lookups
+may leave `derived/` unchanged, while one substantial reusable analysis may
+justify a page. Do not create a synthesis only to make the folder appear
+current.
+
 ## Derived Page Shape
 
 When persistence is justified, use a stable descriptive filename and frontmatter
@@ -97,4 +102,6 @@ as a newly confirmed goal.
 
 Log a substantial query or a meaningful evidence retrieval, but not every
 trivial lookup. Report whether a derived page was created, which evidence was
-used, and what remains unknown or needs user confirmation.
+used, and what remains unknown or needs user confirmation. If no page was
+created, briefly state that the answer did not meet the reusable-synthesis
+threshold.

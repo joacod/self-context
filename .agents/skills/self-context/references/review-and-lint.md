@@ -17,6 +17,14 @@ Orient from the schema, root index, and recent log. Then inspect:
 - important pages without a source or user verification;
 - new changes that were not linked from affected indexes.
 
+For a broad semantic review, sample recent meaningful ingests from `log.md` and
+check category coverage: explicit context useful across domains should not be
+stranded in a vertical, and vertical facts should not be duplicated into
+`core/` merely because they are important. Check that reusable analyses are in
+`derived/` and remain visibly derived. Do not copy conclusions from a derived
+page into factual context without underlying evidence and the appropriate
+assertion kind.
+
 Treat `verified: null` as an ordinary unconfirmed state, not as a finding by
 itself. Surface it when the claim is important, current-sensitive, ambiguous,
 contradictory, explicitly requested for review, or otherwise likely to affect a

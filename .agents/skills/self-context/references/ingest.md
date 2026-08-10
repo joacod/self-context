@@ -39,11 +39,19 @@ sentence about an existing one.
 
 Create or update the smallest coherent set of pages:
 
-- Put broadly reusable context in `core/`.
+- Put context that can materially inform more than one domain in `core/`, such
+  as explicit cross-domain goals, preferences, communication or decision
+  patterns, and recurring constraints.
 - Put career-specific concepts in `career/`.
 - Put retained source or recollection material in `sources/`.
 - Put unresolved interpretations in `review/observations/` with
   `assertion_kind: agent_inference`, `status: review`, and `verified: null`.
+
+Route by scope, not by importance. A major career achievement still belongs in
+`career/`; do not copy it into `core/` merely to make core look complete. For
+every meaningful ingest, explicitly check whether the supplied material adds or
+changes cross-domain context. Update an existing core concept when it does, and
+leave `core/` unchanged when it does not.
 
 Use frontmatter from [the schema](vault-schema.md). Preserve the appropriate
 assertion kind and link every important normalized claim to its source record or
@@ -54,6 +62,11 @@ choosing silently.
 Do not infer a user's values, personality, motivation, or goal from a single
 example. Evidence-oriented recurring patterns can be observations, not facts,
 until the user confirms them.
+
+A derived synthesis may help locate a possible cross-domain pattern, but it is
+not evidence that can promote itself into `core/`. Trace the pattern back to
+user statements or source records and preserve the appropriate assertion kind;
+keep an unresolved interpretation under review.
 
 ## 3a. Triage Attention Without Blocking Ingest
 
@@ -138,6 +151,11 @@ Tell the user what was created or updated, what evidence was retained, what
 remains uncertain, and whether confirmation is needed. A correction should
 preserve useful history and provenance; do not silently erase a conflicting
 source.
+
+Also state whether `core/` and `derived/` changed or were intentionally left
+unchanged. For `core/`, give the domain-scope reason. For `derived/`, explain
+that ingest does not require a synthesis unless the operation produced a
+substantial reusable analysis worth maintaining.
 
 ## Corrections and Confirmation
 

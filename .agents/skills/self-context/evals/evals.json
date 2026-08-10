@@ -59,7 +59,7 @@
     },
     {
       "id": 6,
-      "prompt": "Ingest a fictional source containing many historical career details for Alex Rivera and one statement that Alex currently works at Northstar Labs. Preserve the source and keep the ingest smooth: do not ask me to confirm routine historical claims, but surface only the high-impact current-state item for confirmation and apply the narrow freshness policy if appropriate.",
+      "prompt": "Ingest a fictional source containing many historical career details for John Doe and one statement that John currently works at MyContext Systems. Preserve the source and keep the ingest smooth: do not ask me to confirm routine historical claims, but surface only the high-impact current-state item for confirmation and apply the narrow freshness policy if appropriate.",
       "expected_output": "The skill preserves and normalizes the source, leaves routine claims unconfirmed without prompting for each one, marks the current-state concept for bounded review, and uses the 90-day freshness rule only for that narrow current anchor.",
       "files": [],
       "expectations": [
@@ -71,7 +71,7 @@
     },
     {
       "id": 7,
-      "prompt": "In the synthetic vault, explicitly confirm only the current-role page for Alex Rivera. Mark that page verified today, keep its source links, resolve its review status, and leave an unrelated skills page with verified: null unchanged.",
+      "prompt": "In the synthetic vault, explicitly confirm only the current-role page for John Doe. Mark that page verified today, keep its source links, resolve its review status, and leave an unrelated skills page with verified: null unchanged.",
       "expected_output": "The skill applies confirmation only to the named coherent page, records the current verification date, preserves provenance, and does not verify unrelated pages by implication.",
       "files": [],
       "expectations": [
@@ -82,7 +82,7 @@
     },
     {
       "id": 8,
-      "prompt": "A synthetic current-role page has stale_after: 2026-01-01. I am asking what the vault says about Alex Rivera's current role. Do not silently treat the expired page as current; explain the freshness issue and ask one bounded confirmation question.",
+      "prompt": "A synthetic current-role page has stale_after: 2026-01-01. I am asking what the vault says about John Doe's current role. Do not silently treat the expired page as current; explain the freshness issue and ask one bounded confirmation question.",
       "expected_output": "The skill identifies the page as stale for a current-sensitive query, labels or limits its use, and asks whether it is still current instead of silently relying on it.",
       "files": [],
       "expectations": [
@@ -136,7 +136,7 @@
     },
     {
       "id": 13,
-      "prompt": "A synthetic page with status: review is not stale, but it is decisive to the answer about Alex Rivera's current role. Give the supported conditional answer and ask one bounded confirmation question rather than treating the page as settled fact.",
+      "prompt": "A synthetic page with status: review is not stale, but it is decisive to the answer about John Doe's current role. Give the supported conditional answer and ask one bounded confirmation question rather than treating the page as settled fact.",
       "expected_output": "The skill uses the review page as provisional evidence, exposes the uncertainty, and asks a bounded confirmation question.",
       "files": [],
       "expectations": [
@@ -147,13 +147,35 @@
     },
     {
       "id": 14,
-      "prompt": "A synthetic review observation contains an agent inference that Alex Rivera tends to prefer a particular work arrangement. Alex explicitly confirms that this is a factual preference. Promote only the confirmed scope to user_stated_fact, resolve its review status, and do not treat an unconfirmed inference as evidence.",
+      "prompt": "A synthetic review observation contains an agent inference that John Doe tends to prefer a particular work arrangement. John explicitly confirms that this is a factual preference. Promote only the confirmed scope to user_stated_fact, resolve its review status, and do not treat an unconfirmed inference as evidence.",
       "expected_output": "The skill promotes an explicitly confirmed factual inference to user-stated context and keeps any unconfirmed remainder reviewable.",
       "files": [],
       "expectations": [
         "An explicitly confirmed inference changes to the appropriate user-stated assertion kind.",
         "The confirmed scope can leave status: review when no unresolved issue remains.",
         "Unconfirmed inference remains reviewable and is not used as settled evidence."
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "Ingest a fictional career update for John Doe at MyContext Systems. It includes a project delivery result and John's explicit statement that written decision records are preferred for important choices in both work and personal projects. Route each claim to the right area without duplicating the career achievement into core, and tell me if core or derived stayed unchanged.",
+      "expected_output": "The skill stores the project result as career context, stores or updates the explicit cross-domain decision preference in core, preserves their assertion kinds and provenance, and reports the core and derived persistence decisions.",
+      "files": [],
+      "expectations": [
+        "The career-specific result remains in career and is not copied into core because of importance.",
+        "The explicit preference that applies across domains is stored or updated in core.",
+        "The ingest report states whether core and derived changed or were intentionally unchanged and why."
+      ]
+    },
+    {
+      "id": 16,
+      "prompt": "I asked three simple questions from a synthetic vault and derived is still empty. Explain whether that is expected. Then perform one substantial comparison across several linked project records that I explicitly want to reuse later.",
+      "expected_output": "The skill explains that query count does not determine persistence, leaves trivial answers ephemeral, and stores the requested reusable comparison as a linked derived synthesis if the evidence supports it.",
+      "files": [],
+      "expectations": [
+        "Several trivial queries do not create derived pages merely to populate the folder.",
+        "The substantial reusable comparison can create a synthesis with derived_synthesis metadata and evidence links.",
+        "The response reports the derived persistence decision and remaining uncertainty."
       ]
     }
   ]
