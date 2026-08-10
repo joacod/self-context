@@ -20,35 +20,38 @@ class BackupVaultTests(unittest.TestCase):
             check=False,
         )
 
-    def test_backup_captures_state_and_excludes_backup_directory(self) -> None:
+    def test_backup_captures_state_in_project_root_and_excludes_legacy_state(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
-            vault = Path(temporary) / "vault"
+            project_root = Path(temporary)
+            vault = project_root / "vault"
             (vault / "career").mkdir(parents=True)
             (vault / "career" / "profile.md").write_text(
                 "before the operation\n", encoding="utf-8"
             )
             (vault / "backups").mkdir()
-            unrelated_file = vault / "backups" / "notes.txt"
-            unrelated_file.write_text("leave this alone\n", encoding="utf-8")
+            legacy_file = vault / "backups" / "notes.txt"
+            legacy_file.write_text("leave this alone\n", encoding="utf-8")
 
             result = self.run_backup(vault)
 
             self.assertEqual(result.returncode, 0, result.stderr)
-            backups = sorted((vault / "backups").glob("vault-*.zip"))
+            backups = sorted((project_root / "backups").glob("vault-*.zip"))
             self.assertEqual(len(backups), 1)
             with zipfile.ZipFile(backups[0]) as archive:
                 self.assertEqual(
                     archive.read("career/profile.md"), b"before the operation\n"
                 )
                 self.assertNotIn("backups/notes.txt", archive.namelist())
-            self.assertTrue(unrelated_file.is_file())
+            self.assertTrue(legacy_file.is_file())
+            self.assertFalse((vault / "backups" / backups[0].name).exists())
 
     def test_retention_keeps_only_the_newest_three_managed_backups(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
-            vault = Path(temporary) / "vault"
+            project_root = Path(temporary)
+            vault = project_root / "vault"
             vault.mkdir()
             (vault / "SCHEMA.md").write_text("synthetic vault\n", encoding="utf-8")
-            backup_dir = vault / "backups"
+            backup_dir = project_root / "backups"
             backup_dir.mkdir()
             for timestamp in (
                 "20000101T000000Z",
@@ -78,14 +81,15 @@ class BackupVaultTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("vault does not exist", result.stderr)
 
-    def test_linter_ignores_markdown_inside_backup_directory(self) -> None:
+    def test_linter_does_not_scan_project_root_backup_directory(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
-            vault = Path(temporary) / "vault"
+            project_root = Path(temporary)
+            vault = project_root / "vault"
             vault.mkdir()
             for filename in ("SCHEMA.md", "index.md", "log.md"):
                 (vault / filename).write_text("# synthetic\n", encoding="utf-8")
-            (vault / "backups").mkdir()
-            (vault / "backups" / "not-a-page.md").write_text(
+            (project_root / "backups").mkdir()
+            (project_root / "backups" / "not-a-page.md").write_text(
                 "not durable context\n", encoding="utf-8"
             )
 

@@ -12,7 +12,7 @@ The project is intentionally implemented one phase at a time. After each phase, 
 - **Repository state:** Tracked foundation documentation, the canonical SelfContext skill, and the Career Advisor Pack are present alongside the original `LICENSE` and funding configuration.
 - **Private vault state:** No `vault/` directory is present. This is expected; the repository must not depend on an ignored empty directory.
 - **Next experiment:** Dogfood SelfContext with real career information, only after explicit user direction. This is not another bootstrap phase.
-- **Operational maintenance:** Local pre-write vault backups are implemented outside the bootstrap phases after explicit user direction; they retain the latest three timestamped ZIPs under `vault/backups/`.
+- **Operational maintenance:** Local pre-write vault backups are implemented outside the bootstrap phases after explicit user direction; they retain the latest three timestamped ZIPs under the root `backups/` directory beside `vault/`.
 
 ## Non-Negotiable Constraints
 
@@ -146,7 +146,7 @@ Completion results:
 - Plain Markdown inspection found standard relative links only; no Obsidian wikilinks were used. The structure is suitable to open as an Obsidian vault without depending on Obsidian.
 - The synthetic workspace was deleted after inspection. No real `vault/` directory was created, accessed, or tracked.
 - README, architecture, roadmap, and build-plan documentation now reflect the implemented v0.1 behavior.
-- A later project-maintenance update added dependency-free pre-write ZIP backups under the ignored vault, with a three-archive retention rule and explicit exclusion from canonical discovery and linting.
+- A later project-maintenance update added dependency-free pre-write ZIP backups under a separate ignored root directory, with a three-archive retention rule and explicit exclusion from canonical discovery and linting.
 - Known limitations remain: trigger invocation was not measured, evaluation runs were qualitative rather than a formal benchmark, and Guided Discovery is not implemented.
 - Next experiment: dogfood with real career information while preserving the private-vault boundary and the user's provider/privacy responsibility.
 

@@ -62,7 +62,8 @@ The script checks:
 - malformed or broken local Markdown links;
 - source references that do not resolve;
 - path-aware exemptions for root controls and index pages;
-- explicit exclusion of `.obsidian/` viewer state and `backups/` archives;
+- explicit exclusion of `.obsidian/` viewer state; project-root `backups/`
+  archives are outside the vault path and are not scanned;
 - duplicate IDs when present and duplicate titles as warnings;
 - invalid or expired `stale_after` dates; and
 - unverified observations or inference pages.

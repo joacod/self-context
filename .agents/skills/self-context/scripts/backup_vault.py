@@ -71,6 +71,7 @@ def _archive_entries(vault: Path) -> List[Tuple[Path, str]]:
     entries: List[Tuple[Path, str]] = []
     for path in vault.rglob("*"):
         relative = path.relative_to(vault)
+        # Keep stale operational backup state out of new portable snapshots.
         if relative.parts and relative.parts[0] == BACKUP_DIR_NAME:
             continue
         if path.is_dir():
@@ -94,7 +95,9 @@ def create_backup(
     if not vault.is_dir():
         raise BackupError(f"vault path is not a directory: {vault}")
 
-    backup_dir = vault / BACKUP_DIR_NAME
+    # The vault is expected at <repository-root>/vault, so keep operational
+    # backups beside it rather than making them part of the portable vault.
+    backup_dir = vault.parent / BACKUP_DIR_NAME
     if backup_dir.is_symlink():
         raise BackupError(f"backup directory is a symlink: {backup_dir}")
     try:

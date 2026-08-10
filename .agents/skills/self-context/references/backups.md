@@ -17,11 +17,12 @@ python3 .agents/skills/self-context/scripts/backup_vault.py vault
 
 The helper:
 
-- creates `vault/backups/` on the first backup;
-- writes `vault/backups/vault-YYYYMMDDTHHMMSSZ.zip` using a UTC timestamp;
-- archives the vault state that exists before the operation, excluding the
-  `backups/` directory so archives cannot contain themselves or grow
-  recursively;
+- creates the project-root `backups/` directory beside `vault/` on the first
+  backup;
+- writes `backups/vault-YYYYMMDDTHHMMSSZ.zip` using a UTC timestamp;
+- archives the vault state that exists before the operation. The backup
+  directory is outside the vault, so archives cannot contain themselves or
+  grow recursively;
 - keeps only the three newest managed backup ZIPs; and
 - deletes older managed backups only after the new archive has been created.
 
@@ -35,7 +36,7 @@ need a backup. If the vault does not exist, there is no prior state to archive:
 initialize the empty vault first, then create a backup before continuing the
 requested mutation.
 
-`backups/` is private operational state, not canonical context. Do not index,
-search, lint, link to, or include its contents as evidence. The ZIPs remain
-under the Git-ignored `vault/` boundary and are available for a separate
-user-controlled copy process.
+The project-root `backups/` directory is private operational state, not
+canonical context. Do not index, search, lint, link to, or include its contents
+as evidence. The ZIPs are Git-ignored separately from the vault and are
+available for a separate user-controlled copy process.

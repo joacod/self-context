@@ -41,8 +41,9 @@ skill will orient itself from the vault's own files.
 
 The vault remains portable: its canonical content is Markdown, YAML frontmatter,
 and standard Markdown links. Before a vault-changing operation, SelfContext
-creates a local ZIP backup in `vault/backups/` and retains the three newest
-backups.
+creates a local ZIP backup in the project-root `backups/` directory beside
+`vault/` and retains the three newest backups. The backup directory is separate
+from the portable vault and is ignored by Git.
 
 Never force-add anything from `vault/`. Git-ignoring the directory helps prevent
 accidental commits, but it does not prevent a model or provider from seeing

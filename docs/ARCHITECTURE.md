@@ -58,6 +58,8 @@ self-context/
 |   |-- docs/
 |   |-- AGENTS.md
 |   `-- README.md
+|-- private operational state
+|   `-- backups/
 `-- private untracked data
     `-- vault/
 ```
@@ -68,16 +70,16 @@ Git ignore is a commit-safety boundary, not a promise that a provider cannot see
 
 Any operation that will mutate an existing vault creates one timestamped ZIP
 before its first write. The dependency-free helper stores the archive under
-`vault/backups/`, excludes that directory from the archive to avoid recursive
-growth, and retains only the three newest managed ZIPs. A failed backup blocks
-the planned mutation. Read-only retrieval and validation do not create a
-backup unless they also persist a log entry or other change.
+the project-root `backups/` directory beside `vault/`, outside the portable
+vault. It retains only the three newest managed ZIPs, and a failed backup blocks
+the planned mutation. Read-only retrieval and validation do not create a backup
+unless they also persist a log entry or other change.
 
-`backups/` is private operational state rather than canonical context. It is
-ignored during orientation, indexing, search, linting, and evidence retrieval.
-The local files can be copied by a separate user-controlled process without
-introducing a SelfContext sync service or changing the portable Markdown
-contract.
+The root `backups/` directory is private operational state rather than
+canonical context and is ignored by Git. Because it is outside `vault/`, the
+vault can be copied independently without backup archives. The local files can
+be copied by a separate user-controlled process without introducing a
+SelfContext sync service or changing the portable Markdown contract.
 
 The repository must not depend on an ignored empty directory being present after clone. The SelfContext skill owns first-run initialization and must also accept an existing vault copied into `vault/`.
 

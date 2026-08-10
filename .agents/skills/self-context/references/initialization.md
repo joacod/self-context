@@ -48,10 +48,6 @@ directory during initialization. If it already exists, preserve it as viewer
 configuration, but ignore it during vault orientation, indexing, ingest, review,
 and linting. It is not a source, concept, or other canonical vault page.
 
-The optional `backups/` directory is created by the pre-write backup helper,
-not during initialization. It contains ZIP archives only and is not canonical
-vault content.
-
 ## Initialization Templates
 
 Use these as content shapes, replacing `YYYY-MM-DD` with the current date. The
@@ -78,8 +74,6 @@ Top-level areas:
 - `review/`: unresolved observations and review items.
 - `sources/`: retained source or recollection material.
 - `derived/`: reusable query or advice syntheses.
-- `backups/`: optional private pre-write ZIP archives; operational state, not
-  canonical context.
 
 Durable pages use YAML frontmatter described in this file's operational
 documentation. The common fields are:

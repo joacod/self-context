@@ -27,10 +27,9 @@ vault/
     `-- index.md
 ```
 
-The optional `backups/` directory is operational state created by the
-pre-write backup helper. It contains timestamped ZIP archives, is excluded
-from canonical context and linting, and is not part of the portable Markdown
-taxonomy.
+The pre-write backup helper stores timestamped ZIP archives in the project-root
+`backups/` directory beside `vault/`. That directory is operational state,
+outside the portable Markdown taxonomy and separate from the vault.
 
 Create additional subdirectories only when useful. Common career groupings are
 `roles/`, `history/`, `projects/`, `skills/`, `stories/`, `goals/`, and
@@ -50,8 +49,7 @@ Create additional subdirectories only when useful. Common career groupings are
 
 Obsidian may create a `.obsidian/` directory when a person opens the vault. It
 is optional viewer state, not canonical context. Do not create it during
-initialization, index it, lint it, or treat its files as durable pages. Apply
-the same exclusion to `backups/` and its ZIP archives.
+initialization, index it, lint it, or treat its files as durable pages.
 
 The root `SCHEMA.md` and `log.md`, plus root and category index pages, do not
 need frontmatter. Durable concept, observation, source, and derived pages do.

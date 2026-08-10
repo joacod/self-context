@@ -52,9 +52,9 @@ skill, the current harness, the model, Obsidian, or a search tool disappears.
 - Treat `.obsidian/` and other viewer metadata as noncanonical vault state.
   Ignore it during discovery, indexing, review, and linting; preserve it unless
   the user explicitly asks to manage viewer configuration.
-- Treat `backups/` and its ZIP archives as private operational state, not
-  context. Never index, search, lint, link to, or use backup contents as
-  evidence.
+- Treat the project-root `backups/` directory and its ZIP archives as private
+  operational state, not context. Never index, search, lint, link to, or use
+  backup contents as evidence.
 - Before the first write of any mutation-producing operation, create a backup
   using [the backup procedure](references/backups.md). If backup creation fails,
   do not modify canonical vault content.
@@ -130,8 +130,8 @@ confirmation question instead of silently using it as current.
 3. If the vault exists, read `SCHEMA.md`, `index.md`, and the most recent
    entries in `log.md` before a significant operation. Then search only the
    relevant indexes, metadata, filenames, and linked pages needed for the task.
-   Do not scan `.obsidian/` or `backups/`; they are noncanonical operational
-   state, not personal context.
+   Do not scan `.obsidian/` inside the vault or the project-root `backups/`
+   directory; they are noncanonical operational state, not personal context.
 4. If the operation will mutate the vault, read [the backup procedure](references/backups.md)
    and create the pre-write backup before the first write. If it is read-only,
    do not create a backup merely because the vault was inspected.
