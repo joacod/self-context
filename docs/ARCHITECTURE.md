@@ -64,6 +64,21 @@ self-context/
 
 Git ignore is a commit-safety boundary, not a promise that a provider cannot see data supplied to it by the user. The vault should also be independently copyable without the repository.
 
+## Pre-Write Backups
+
+Any operation that will mutate an existing vault creates one timestamped ZIP
+before its first write. The dependency-free helper stores the archive under
+`vault/backups/`, excludes that directory from the archive to avoid recursive
+growth, and retains only the three newest managed ZIPs. A failed backup blocks
+the planned mutation. Read-only retrieval and validation do not create a
+backup unless they also persist a log entry or other change.
+
+`backups/` is private operational state rather than canonical context. It is
+ignored during orientation, indexing, search, linting, and evidence retrieval.
+The local files can be copied by a separate user-controlled process without
+introducing a SelfContext sync service or changing the portable Markdown
+contract.
+
 The repository must not depend on an ignored empty directory being present after clone. The SelfContext skill owns first-run initialization and must also accept an existing vault copied into `vault/`.
 
 ## Portable Vault
@@ -147,6 +162,6 @@ Queries and advice are not all permanent documents. Every meaningful operation m
 
 SelfContext v0.1 requires no cloud service, server, database, vector database, embeddings, MCP server, background service, custom chat interface, authentication system, sync service, telemetry, or analytics. The core skill includes a small dependency-free deterministic linter for structural checks; it remains subordinate to the Markdown vault and does not replace semantic review.
 
-These exclusions keep the durable asset portable, local, inspectable, and replaceable. Future disposable search indexes or user-controlled synchronization can be considered only without changing the vault's canonical role.
+These exclusions keep the durable asset portable, local, inspectable, and replaceable. Future disposable search indexes or user-controlled off-device copies can be considered only without changing the vault's canonical role.
 
-See the [architectural decisions](decisions/) for the reasoning behind these boundaries, including the [user-mode and project-maintenance separation](decisions/0007-user-mode-project-maintenance.md) and the [selective confirmation and freshness policy](decisions/0008-selective-confirmation-and-freshness.md).
+See the [architectural decisions](decisions/) for the reasoning behind these boundaries, including the [user-mode and project-maintenance separation](decisions/0007-user-mode-project-maintenance.md), the [selective confirmation and freshness policy](decisions/0008-selective-confirmation-and-freshness.md), and the [pre-write backup policy](decisions/0009-pre-write-vault-backups.md).

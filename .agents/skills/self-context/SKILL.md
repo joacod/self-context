@@ -11,7 +11,8 @@ description: >
   a Career Advisor Pack may add specialized reasoning later. It also applies
   to requests involving resume text, recollections, profiles, or other sources
   that should become durable personal context, and for initializing, copying,
-  restoring, backing up, or exporting a Context Vault. Do not use it for
+  restoring, backing up, or exporting a Context Vault. Before any vault write,
+  create the local retained backup described below. Do not use it for
   generic resume writing, generic Obsidian organization, Git ignore questions,
   or advice that does not rely on the user's Context Vault.
 compatibility: Requires local filesystem access from the repository root. Uses standard Markdown, YAML frontmatter, relative Markdown links, and optional Python 3 for deterministic linting.
@@ -51,6 +52,12 @@ skill, the current harness, the model, Obsidian, or a search tool disappears.
 - Treat `.obsidian/` and other viewer metadata as noncanonical vault state.
   Ignore it during discovery, indexing, review, and linting; preserve it unless
   the user explicitly asks to manage viewer configuration.
+- Treat `backups/` and its ZIP archives as private operational state, not
+  context. Never index, search, lint, link to, or use backup contents as
+  evidence.
+- Before the first write of any mutation-producing operation, create a backup
+  using [the backup procedure](references/backups.md). If backup creation fails,
+  do not modify canonical vault content.
 
 ## User Mode Boundary
 
@@ -123,8 +130,14 @@ confirmation question instead of silently using it as current.
 3. If the vault exists, read `SCHEMA.md`, `index.md`, and the most recent
    entries in `log.md` before a significant operation. Then search only the
    relevant indexes, metadata, filenames, and linked pages needed for the task.
-   Do not scan `.obsidian/`; it is optional viewer state, not personal context.
-4. Read the relevant reference procedure before writing or validating content:
+   Do not scan `.obsidian/` or `backups/`; they are noncanonical operational
+   state, not personal context.
+4. If the operation will mutate the vault, read [the backup procedure](references/backups.md)
+   and create the pre-write backup before the first write. If it is read-only,
+   do not create a backup merely because the vault was inspected.
+5. Read the relevant reference procedure before writing or validating content:
+   - [Vault backups](references/backups.md) for the pre-write archive and
+     retention rule.
    - [Vault schema](references/vault-schema.md) for paths, frontmatter, links,
      and assertion categories.
    - [Initialization](references/initialization.md) for a missing or incomplete
@@ -155,6 +168,9 @@ End the response with a concise account of:
 - whether the result is a fact, observation, source record, or derived
   synthesis; and
 - any confirmation needed from the user.
+
+For a mutation, also report the timestamped backup created before the write and
+which older backups were removed by the retention rule.
 
 If a request asks for advice, distinguish retrieved evidence, likely
 interpretations, unknowns, and recommendations. A recommendation must never

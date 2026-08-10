@@ -4,6 +4,10 @@ Review asks a human to resolve epistemic or lifecycle issues. Lint provides
 deterministic structural checks. They complement each other; a clean lint run
 does not prove that a claim is true.
 
+If review will resolve a page or append a review/lint operation to `log.md`,
+create the pre-write backup described in [Vault Backups](backups.md) before the
+first write. A read-only review or lint run needs no backup.
+
 ## Review
 
 Orient from the schema, root index, and recent log. Then inspect:
@@ -58,7 +62,7 @@ The script checks:
 - malformed or broken local Markdown links;
 - source references that do not resolve;
 - path-aware exemptions for root controls and index pages;
-- explicit exclusion of `.obsidian/` viewer state;
+- explicit exclusion of `.obsidian/` viewer state and `backups/` archives;
 - duplicate IDs when present and duplicate titles as warnings;
 - invalid or expired `stale_after` dates; and
 - unverified observations or inference pages.

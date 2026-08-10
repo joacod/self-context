@@ -98,6 +98,10 @@ uncertainty and freshness, and label conclusions as derived. If the result is
 advice, label recommendations as recommendations. Never phrase a recommendation
 as a newly confirmed goal.
 
+Before creating the derived page, updating its index, or appending any
+operation log for the query, create the pre-write backup described in [Vault
+Backups](backups.md).
+
 ## Log and Response
 
 Log a substantial query or a meaningful evidence retrieval, but not every

@@ -18,6 +18,7 @@ separate from tracked project files.
 - Career Advisor Pack.
 - Obsidian compatibility.
 - Multi-session continuity.
+- Local pre-write ZIP backups with retention of the latest three archives.
 
 The v0.1 implementation should remain mostly Markdown, Agent Skills, references, and only the smallest deterministic validation code that earns its place. It should not introduce a custom runtime, server, database, embeddings, MCP, background service, or telemetry.
 
@@ -36,7 +37,7 @@ Guided Discovery is intentionally not part of v0.1 review. Review should surface
 - More Advisor Packs.
 - Optional harness adapters that load the canonical project skills.
 - Optional disposable local search indexes if vault scale requires them.
-- User-controlled sync and backups.
+- User-controlled off-device backup copies and sync.
 - Selective disclosure.
 - Stronger privacy and encryption workflows.
 - Automated refresh of explicitly approved sources.

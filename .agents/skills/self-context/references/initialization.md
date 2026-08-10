@@ -13,6 +13,11 @@ When a request requires a vault and `<repository-root>/vault/` does not exist:
 4. Continue the requested operation in the same turn. Initialization is not a
    reason to make the user repeat the request.
 
+There is no prior vault state to archive before first-run initialization. After
+the empty structure exists, create a pre-write backup before continuing with
+the requested ingest or other mutation. Subsequent writes follow
+[the backup procedure](backups.md) before their first change.
+
 The private directory is intentionally not tracked. Never add a `.gitkeep` or
 other vault file to the repository merely to preserve the directory.
 
@@ -30,8 +35,8 @@ initialized schema. Preserve its knowledge and orient before changing it.
 - If a schema declares a future or unknown major version, remain read-only,
   explain the compatibility issue, and ask before modifying content.
 - If a required control file is missing, create only the missing file after
-  checking that no conflicting file or convention exists. Preserve all existing
-  pages and links.
+  checking that no conflicting file or convention exists. Create a pre-write
+  backup first, then preserve all existing pages and links.
 
 Existing-vault support means the user can continue immediately; it does not
 mean silently migrating or flattening their data.
@@ -42,6 +47,10 @@ Opening `vault/` in Obsidian may create `.obsidian/`. Do not create this
 directory during initialization. If it already exists, preserve it as viewer
 configuration, but ignore it during vault orientation, indexing, ingest, review,
 and linting. It is not a source, concept, or other canonical vault page.
+
+The optional `backups/` directory is created by the pre-write backup helper,
+not during initialization. It contains ZIP archives only and is not canonical
+vault content.
 
 ## Initialization Templates
 
@@ -69,6 +78,8 @@ Top-level areas:
 - `review/`: unresolved observations and review items.
 - `sources/`: retained source or recollection material.
 - `derived/`: reusable query or advice syntheses.
+- `backups/`: optional private pre-write ZIP archives; operational state, not
+  canonical context.
 
 Durable pages use YAML frontmatter described in this file's operational
 documentation. The common fields are:

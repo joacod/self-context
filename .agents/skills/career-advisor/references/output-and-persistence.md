@@ -73,6 +73,8 @@ The body must include the question or objective, linked evidence, uncertainty,
 and clearly labeled recommendations. A derived page is not a source for a new
 fact, current goal, or agent confidence loop.
 
-After creating a derived page, update the relevant derived index and log the
-operation through SelfContext. If persistence is not clearly valuable, keep the
-answer ephemeral.
+Before creating a derived page, updating the relevant derived index, or logging
+the persisted advice, create the pre-write backup through SelfContext's [Vault
+Backups](../../self-context/references/backups.md) procedure. Then update the
+index and log the operation. If persistence is not clearly valuable, keep the
+answer ephemeral and do not create a backup solely for the read-only advice.

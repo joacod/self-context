@@ -13,6 +13,7 @@ from urllib.parse import unquote
 
 
 REQUIRED_ROOT_FILES = ("SCHEMA.md", "index.md", "log.md")
+NON_CANONICAL_DIRECTORIES = {".obsidian", "backups"}
 REQUIRED_FIELDS = (
     "type",
     "title",
@@ -134,8 +135,10 @@ def relative_label(path: Path, root: Path) -> str:
     return str(path.relative_to(root))
 
 
-def is_under_obsidian(path: Path, root: Path) -> bool:
-    return ".obsidian" in path.relative_to(root).parts
+def is_under_noncanonical_directory(path: Path, root: Path) -> bool:
+    return bool(
+        NON_CANONICAL_DIRECTORIES.intersection(path.relative_to(root).parts)
+    )
 
 
 def is_non_durable_page(path: Path, root: Path) -> bool:
@@ -184,7 +187,9 @@ def lint_vault(root: Path, today: date.date) -> Tuple[List[str], List[str]]:
             )
 
     markdown_files = sorted(
-        path for path in root.rglob("*.md") if not is_under_obsidian(path, root)
+        path
+        for path in root.rglob("*.md")
+        if not is_under_noncanonical_directory(path, root)
     )
     titles: Dict[str, Path] = {}
     ids: Dict[str, Path] = {}

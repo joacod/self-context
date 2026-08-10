@@ -177,6 +177,18 @@
         "The substantial reusable comparison can create a synthesis with derived_synthesis metadata and evidence links.",
         "The response reports the derived persistence decision and remaining uncertainty."
       ]
+    },
+    {
+      "id": 17,
+      "prompt": "In a synthetic existing Context Vault, update one page and its index. Before writing anything, create a timestamped ZIP under vault/backups, do not include the backups folder inside the ZIP, and keep no more than the latest three managed backups.",
+      "expected_output": "The skill creates a pre-write backup before the synthetic mutation, blocks the write if backup creation fails, excludes operational backups from canonical context, and enforces three-backup retention.",
+      "files": [],
+      "expectations": [
+        "A mutation of an existing vault is preceded by the backup helper.",
+        "The created archive has a UTC timestamped filename under vault/backups.",
+        "The backup archive excludes vault/backups and retention leaves at most three managed ZIPs.",
+        "The page and index are changed only after successful backup creation."
+      ]
     }
   ]
 }

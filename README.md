@@ -13,6 +13,7 @@ SelfContext is a **local Context Vault** made from:
 - Markdown files with YAML frontmatter.
 - Standard Markdown links rather than Obsidian-specific wikilinks.
 - Human-readable indexes, provenance, lifecycle metadata, and operation logs.
+- Local pre-write ZIP backups with three-backup retention.
 - Agent Skills that teach an existing harness how to work with the vault.
 - Advisor Packs that specialize reasoning over the shared context.
 
@@ -46,6 +47,10 @@ No slash command or custom CLI is required. The skills infer the intended operat
 The private `vault/` directory is intentionally not committed and may not exist after a fresh clone. On the first operation that needs a vault, the SelfContext skill will initialize it automatically. The initialized vault will describe its own organization and schema, including files equivalent to `SCHEMA.md`, `index.md`, and `log.md`.
 
 If a Context Vault already exists, copy it into `self-context/vault/`. The skill should recognize and orient against an existing vault without requiring the user to reconstruct its internal taxonomy.
+
+Before a mutation, the skill creates a timestamped ZIP in
+`vault/backups/`. The three newest managed backups are retained; the backup
+directory is operational state and is not treated as context.
 
 Never force-add files from `vault/`.
 
@@ -83,6 +88,8 @@ The first version focuses on a portable core and one vertical:
 - A career context vertical.
 - A Career Advisor Pack implemented as an Agent Skill.
 - Multi-session continuity through the vault rather than chat history.
+- A pre-write backup before every mutation, retaining the latest three local
+  ZIPs.
 - Obsidian compatibility without an Obsidian dependency.
 
 Guided Discovery, additional verticals, additional Advisor Packs, sync, encryption workflows, and optional disposable search indexes remain future possibilities. See the [roadmap](docs/ROADMAP.md).
@@ -97,6 +104,7 @@ self-context/
 |-- README.md
 |-- .gitignore
 `-- vault/                    # Private, local, ignored data; may not exist after clone
+    `-- backups/              # Optional pre-write ZIPs; noncanonical vault state
 ```
 
 The tracked operational project and private vault share a working directory but have strictly separated concerns. Read [the architecture](docs/ARCHITECTURE.md) before changing that boundary.

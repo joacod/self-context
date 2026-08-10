@@ -3,6 +3,11 @@
 Use this procedure when the user supplies new information, a source document,
 a recollection, or a correction to existing context.
 
+After orientation and once the operation is known to require a write, create
+the pre-write backup described in [Vault Backups](backups.md) before changing a
+page, index, source record, review item, or log. Do not continue with the write
+if backup creation fails.
+
 ## 1. Understand the Input
 
 Identify what the user actually stated, what a supplied source says, and what
