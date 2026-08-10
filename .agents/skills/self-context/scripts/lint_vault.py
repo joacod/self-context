@@ -269,7 +269,11 @@ def lint_vault(root: Path, today: date.date) -> Tuple[List[str], List[str]]:
             elif stale_date < today:
                 warnings.append(f"{relative}: stale_after has passed ({stale_after})")
 
-        if assertion == "agent_inference" or page_type == "observation":
+        # Archived and superseded review records are historical resolutions.
+        if (
+            (assertion == "agent_inference" or page_type == "observation")
+            and status not in {"archived", "superseded"}
+        ):
             if is_empty(fields.get("verified")):
                 warnings.append(f"{relative}: observation or inference is unverified")
             if status != "review":
