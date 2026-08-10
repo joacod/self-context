@@ -43,9 +43,14 @@ The lifecycle is deliberately conservative. An agent may notice a recurring patt
 
 ## Long-Term Direction
 
-Career is the first vertical because it provides a concrete, evidence-rich use case. The core should remain useful across domains without prematurely defining schemas for health, finance, relationships, or other hypothetical verticals. Later verticals and Advisor Packs should consume the same portable context rather than create competing memory systems.
+Career was the first vertical because it provided a concrete, evidence-rich use
+case. Writing is now a separate vertical for evidence-backed communication and
+writing context. The core should remain useful across domains without defining
+domain schemas itself. Future verticals and Advisor Packs should consume the same
+portable context rather than create competing memory systems.
 
-Guided Discovery may eventually identify important gaps and ask targeted questions. It is a roadmap item, not part of the v0.1 foundation.
+Guided Discovery may eventually identify important gaps and ask targeted
+questions. It is a future workflow, not part of the current foundation.
 
 ## Success Test
 

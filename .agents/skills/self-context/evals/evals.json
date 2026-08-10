@@ -324,13 +324,13 @@
     },
     {
       "id": 30,
-      "prompt": "A synthetic copied v0.1 vault has SCHEMA.md, index.md, log.md, core, career, review, sources, and derived, but no writing directory. First answer a read-only question about the user's Writing context without creating files. Then, only when explicitly asked to ingest an authored essay, create writing/index.md and its root link after the pre-write backup without rewriting the old schema or reorganizing existing pages.",
+      "prompt": "A synthetic copied vault follows the shared structure with SCHEMA.md, index.md, log.md, core, career, review, sources, and derived, but no writing directory. First answer a read-only question about the user's Writing context without creating files. Then, only when explicitly asked to ingest an authored essay, create writing/index.md and its root link after the pre-write backup without rewriting the existing schema or reorganizing existing pages.",
       "expected_output": "The missing Writing area is treated as empty for read-only work and is added minimally only for an authorized mutation under the existing backup and compatibility lifecycle.",
       "files": [],
       "expectations": [
         "Read-only Writing retrieval does not create an index, profile, or backup.",
         "A requested Writing mutation creates only the missing Writing navigation after backup.",
-        "Existing v0.1 schema, pages, links, and taxonomy are preserved without migration."
+        "The existing schema, pages, links, and taxonomy are preserved without migration."
       ]
     }
   ]

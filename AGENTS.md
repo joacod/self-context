@@ -5,10 +5,20 @@ This repository exists to build, maintain, and use SelfContext: a portable perso
 ## Skill Routing
 
 - For any request that reads, creates, updates, ingests, queries, reviews, or validates vault content, load and follow the project-local SelfContext skill first.
-- For career advice or career-related output based on personal context, use SelfContext for evidence retrieval and the Career Advisor Pack for reasoning.
-- For personalized writing, communication, drafting, editing, reader analysis,
-  or Writing-profile work, use SelfContext for evidence retrieval and the
-  Writing Advisor Pack for generic writing reasoning.
+- For domain-specific advice based on personal context, use SelfContext for
+  evidence retrieval first, then use the Advisor Pack for the owning vertical
+  when one exists. Keep each pack within its documented scope.
+
+Current vertical routing:
+
+| Vertical | Owns | Advisor Pack |
+| --- | --- | --- |
+| Career | Career evidence and concepts | Career Advisor |
+| Writing | Evidence-backed communication and writing context | Writing Advisor |
+
+- A future vertical must define its scope and storage area before its procedure
+  or Advisor Pack is added. Do not make a vertical's rules part of the core
+  schema, and do not assume every vertical needs an Advisor Pack.
 - For creating or materially modifying a project skill, use the installed `skill-creator` workflow and place the canonical result under `.agents/skills/`.
 
 Do not invent a competing vault schema or lifecycle ad hoc. Follow the SelfContext skill and the vault's `SCHEMA.md` once they exist. Prefer natural-language interaction; commands are optional conveniences, never the canonical interface.
@@ -40,4 +50,7 @@ operational reproduction must use fictional data.
 - Keep ordinary Markdown, YAML frontmatter, and standard Markdown links as the portable contract.
 - Operate from the repository root and preserve the tracked operational/private-data separation.
 
-Consult [the build plan](docs/BUILD_PLAN.md) before starting or extending a bootstrap phase. Do not begin a later phase without explicit user direction.
+Consult [the build record](docs/BUILD_PLAN.md) only when historical bootstrap
+context is relevant. Current operational changes require an explicit
+project-maintenance request and are tracked through Git; do not treat the
+historical phases as a current release or versioning process.

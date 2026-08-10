@@ -8,7 +8,7 @@ description: >
   goals, preferences, constraints, experiences, or evidence, including when
   they do not say "SelfContext" or "vault." Use it for evidence retrieval that
   supports career questions, resumes, profiles, or professional positioning;
-  a Career or Writing Advisor Pack may add specialized reasoning later. It also
+  a domain-specific Advisor Pack may add specialized reasoning later. It also
   applies to requests involving resume text, recollections, profiles, authored writing,
   or other sources that should become durable personal context, and for
   initializing, copying, restoring, backing up, or exporting a Context Vault.
@@ -87,14 +87,26 @@ Infer the operation from natural language:
 - **Review:** surface stale, unresolved, contradictory, ambiguous, or
   insufficiently sourced context for human attention.
 - **Lint:** validate deterministic structural and metadata integrity.
-- **Evidence retrieval:** gather grounded context for a career or other
-  domain-specific request. Do not turn the retrieval into unsupported advice.
+- **Evidence retrieval:** gather grounded context for a domain-specific request.
+  Do not turn the retrieval into unsupported advice.
 
-Career and Writing are verticals, but neither is the core schema. Keep
-cross-domain context under `core/`, career-specific context under `career/`, and
-observable writing and communication context under `writing/`. A Writing
-Advisor may add generic writing reasoning after this skill retrieves personal
-evidence.
+## Context Layers
+
+SelfContext owns the shared vault contract and lifecycle. Vertical context is
+domain-specific and remains in its owning area. Advisor Packs provide optional
+reasoning for a vertical after this skill retrieves the relevant evidence.
+
+| Area | Scope | Current reasoning owner |
+| --- | --- | --- |
+| `core/` | Cross-domain goals, values, preferences, communication and decision patterns, and recurring constraints | SelfContext |
+| `career/` | Career-specific evidence and concepts | Career Advisor |
+| `writing/` | Observable communication and writing context | Writing Advisor |
+
+More verticals may be added without changing the core schema. Identify a
+vertical by its documented scope before writing, keep its pages in a separate
+area, and do not copy its facts into `core/` or another vertical. A vertical may
+have a dedicated procedure or Advisor Pack, but neither is required merely
+because the area exists.
 
 For an authored writing source, Writing profile query, or revision analysis, read
 [the Writing vertical procedure](references/writing.md) in addition to the
@@ -157,7 +169,8 @@ confirmation question instead of silently using it as current.
    - [Query](references/query.md) for targeted retrieval and persistence of
      substantial syntheses.
    - [Writing vertical](references/writing.md) for authorship, observations,
-     modes, revisions, selective profile impact, and generated artifacts.
+     modes, revisions, selective profile impact, and generated artifacts; use the
+     owning vertical's documented procedure for any other domain-specific rules.
    - [Review and lint](references/review-and-lint.md) for human review and the
      deterministic validator.
 

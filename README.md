@@ -7,9 +7,6 @@ read, edited, copied, and used across AI models and harnesses.
 SelfContext is not a hosted app or a separate AI runtime. An existing AI
 harness uses the project-local skills to work with the private Context Vault.
 
-> **Status:** v0.1 bootstrap complete. The project is experimental and
-> local-first.
-
 ## Quick Start
 
 Clone the repository and open it from the repository root in an AI harness that
@@ -34,24 +31,32 @@ career evidence and reasoning. No custom CLI or slash command is required.
 
 ## How It Is Organized
 
-Think of SelfContext as a shared foundation with domain-specific verticals and
-replaceable Advisor Packs.
+SelfContext has a shared foundation, domain-specific verticals, and optional
+Advisor Packs. Each layer has a separate owner:
 
-- **SelfContext core:** owns the portable vault format, ingestion, retrieval,
-  review, linting, provenance, lifecycle, and backup rules.
-- **Career vertical:** stores career-specific evidence such as roles, projects,
-  skills, achievements, goals, and professional examples.
-- **Writing vertical:** stores evidence-backed patterns in how you communicate,
-  develop ideas, explain concepts, consider readers, revise drafts, and adapt
-  across writing modes. It distinguishes authentic writing from generated text.
-- **Advisor Packs:** provide domain reasoning over retrieved context. Career and
-  Writing Advisors can help with career decisions or writing work, but they do
-  not own a second memory system or silently turn generated output into facts.
+| Layer | Owns | Does not own |
+| --- | --- | --- |
+| SelfContext core | Vault format, lifecycle, provenance, retrieval, review, linting, and backups | Domain-specific reasoning or a second memory store |
+| Vertical | Evidence and concepts for one domain in its own vault area | Shared schema rules or facts owned by another vertical |
+| Advisor Pack | Reasoning and output for a vertical, using retrieved evidence | Vault storage, provenance, or automatic fact creation |
 
-The same vault can contain shared `core/` context, vertical areas such as
-`career/` and `writing/`, retained `sources/`, unresolved `review/` items, and
-clearly labeled `derived/` analyses. Vertical context stays in its owning area;
-an Advisor can combine relevant areas without duplicating them.
+### Current Verticals
+
+The current verticals are deliberately separate. Their scopes and Advisor Packs
+are documented independently so another vertical can be added without mixing its
+rules into the core:
+
+| Vertical | Vault area | Owns | Advisor Pack |
+| --- | --- | --- | --- |
+| Career | `career/` | Roles, projects, skills, achievements, goals, and professional examples | Career Advisor |
+| Writing | `writing/` | Evidence-backed communication patterns, reasoning-through-writing, readers, revision, and writing modes | Writing Advisor |
+
+The same vault can contain shared `core/` context, the vertical areas above,
+retained `sources/`, unresolved `review/` items, and clearly labeled `derived/`
+analyses. Vertical context stays in its owning area; an Advisor Pack may combine
+relevant areas without duplicating them. A future vertical should define its
+scope, own a separate area and index, and be added to the vertical catalog before
+its procedures or Advisor Pack are used.
 
 ## Your Vault
 
@@ -78,13 +83,18 @@ remains ordinary Markdown.
 
 ## Current Scope
 
-The implementation supports a portable core, Career and Writing context
-verticals, natural-language ingest/query/review/lint workflows, Career and
-Writing Advisor Packs, Obsidian compatibility, and multi-session continuity
-through the vault. Writing context is evidence-backed and selectively updated:
-analyzed source material may produce no profile change. The project does not
-require cloud services, telemetry, automatic sync, a database, or a custom
-runtime.
+The implementation supports:
+
+- the portable SelfContext core and shared vault lifecycle;
+- the Career and Writing verticals described above;
+- natural-language ingest, query, review, and lint workflows;
+- replaceable Career and Writing Advisor Packs;
+- Obsidian compatibility and multi-session continuity through the vault; and
+- evidence-backed, selectively updated Writing context, where analysis may
+  produce no profile change.
+
+The project does not require cloud services, telemetry, automatic sync, a
+database, or a custom runtime.
 
 ## Further Reading
 
@@ -93,4 +103,5 @@ runtime.
 - [Vision](docs/VISION.md): the product thesis and design commitments.
 - [Architecture](docs/ARCHITECTURE.md): boundaries and lifecycle details.
 - [Roadmap](docs/ROADMAP.md): current scope and future experiments.
-- [Build plan](docs/BUILD_PLAN.md): bootstrap phases and validation history.
+- [Build record](docs/BUILD_PLAN.md): historical bootstrap phases and validation
+  history.

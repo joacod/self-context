@@ -1,4 +1,4 @@
-# SelfContext Vault Schema v0.1
+# SelfContext Vault Schema
 
 The vault is intentionally plain. This schema gives agents enough structure to
 orient, preserve provenance, validate integrity, and leave a generic model with
@@ -7,7 +7,8 @@ conformance.
 
 ## Top-Level Layout
 
-An initialized v0.1 vault contains:
+An initialized vault contains shared control files and the vertical areas
+currently enabled:
 
 ```text
 vault/
@@ -39,11 +40,16 @@ Create additional subdirectories only when useful. Common career groupings are
 real collection justifies them, but it does not require a fixed taxonomy. Do
 not create all possible directories just to fill an empty tree.
 
+Add a top-level vertical area only when a domain has durable context to own. Give
+it a stable lowercase directory and an `index.md`, document its scope, and use
+the shared metadata and lifecycle. A vertical-specific procedure or Advisor Pack
+is optional; neither may introduce a competing schema or memory store.
+
 - `SCHEMA.md` explains this organization, metadata, and lifecycle rules.
 - The root `index.md` is the main navigation page.
 - `log.md` records meaningful operations and recent continuity notes.
 - `core/` holds cross-domain personal context.
-- `career/` holds the v0.1 career vertical.
+- `career/` holds career-specific evidence and concepts.
 - `writing/` holds observable communication, reasoning-through-writing,
   reader-awareness, editorial preferences, anti-patterns, and evidenced writing
   modes. It does not hold beliefs or generated drafts as authentic evidence.
@@ -133,9 +139,9 @@ contradictions, inferences, or claims the user explicitly asks to verify. Do
 not change every page with `verified: null` to `status: review`; ordinary
 unconfirmed source-derived and user-stated pages may remain active.
 
-Verification is page-scoped in v0.1. A verification date covers the coherent
-claims represented by that page. Split mixed concepts when a user confirms only
-part of their content. Re-ingesting unchanged evidence must preserve existing
+Verification is page-scoped. A verification date covers the coherent claims
+represented by that page. Split mixed concepts when a user confirms only part of
+their content. Re-ingesting unchanged evidence must preserve existing
 verification, freshness, status, assertion kind, provenance links, and linked
 review rationale; material new claims require a narrower page or a new
 confirmation decision.
@@ -192,9 +198,10 @@ navigation: keep the affected index pages current.
 
 ## Indexes and Log
 
-The root index should link to `SCHEMA.md`, the core, career, writing, review,
-sources, derived, and `log.md`. Category indexes should link to their current
-pages and briefly explain the category. Do not list pages that do not exist.
+The root index should link to `SCHEMA.md`, the current vertical areas, core,
+review, sources, derived, and `log.md`. Category indexes should link to their
+current pages and briefly explain the category. Do not list pages that do not
+exist.
 
 Log meaningful operations in `log.md` using a date heading and explicit
 operation, summary, changed files, sources, and follow-up items. A trivial

@@ -26,9 +26,9 @@ For a request that depends on the user's own communication or writing:
 
 1. Use the project-local `self-context` skill first.
 2. Read the vault's `SCHEMA.md`, `index.md`, recent `log.md`, and the relevant
-   `writing/index.md` and linked pages when they exist. If an older v0.1 vault
-   has no Writing area, treat it as empty for read-only work; SelfContext creates
-   the index only for a requested Writing mutation after the pre-write backup.
+   `writing/index.md` and linked pages when they exist. If a vault has no Writing
+   area, treat it as empty for read-only work; SelfContext creates the index only
+   for a requested Writing mutation after the pre-write backup.
 3. Retrieve only the Writing evidence and other vertical context relevant to the
    current objective. Do not scan or copy the whole vault by default.
 4. Read [the evidence and reasoning guide](references/evidence-and-reasoning.md)

@@ -12,7 +12,7 @@ existing harness + selected model
   |
   +--> SelfContext skill
   |
-   +--> Advisor Packs, such as Career Advisor and Writing Advisor
+   +--> optional Advisor Pack for a specific vertical
   |
   v
 Context Vault: Markdown + YAML frontmatter + standard Markdown links
@@ -85,9 +85,9 @@ The repository must not depend on an ignored empty directory being present after
 
 ## Portable Vault
 
-The v0.1 taxonomy and schema are defined by the Phase 2 SelfContext skill in
-`.agents/skills/self-context/references/vault-schema.md`. At minimum, an
-initialized vault will contain self-description equivalent to:
+The portable taxonomy and schema are defined by the SelfContext skill in
+`.agents/skills/self-context/references/vault-schema.md`. An initialized vault
+will contain self-description equivalent to:
 
 ```text
 vault/
@@ -95,15 +95,15 @@ vault/
 |-- index.md        # navigation and concept entry points
 |-- log.md          # recent operations and continuity notes
 |-- core/           # cross-domain personal context
-|-- career/         # the v0.1 vertical
+|-- career/         # career context
 |-- writing/        # observable communication and writing context
 |-- sources/        # retained source or recollection material where useful
 `-- derived/        # reusable query/advice synthesis, visibly derived
 ```
 
-The v0.1 skill may create additional domain subdirectories on demand, but it
-keeps the vault understandable as ordinary files. Any generated index or cache
-must be disposable and must not become canonical.
+The SelfContext skill may create additional domain subdirectories on demand, but
+it keeps the vault understandable as ordinary files. Any generated index or
+cache must be disposable and must not become canonical.
 
 Canonical content uses Markdown, YAML frontmatter, and standard relative Markdown links. Obsidian may display and edit the same files, but Obsidian syntax is not required.
 
@@ -137,22 +137,32 @@ At minimum, the lifecycle distinguishes:
 
 Inferences belong in a reviewable observation area until confirmed or rejected. Derived advice must never silently change a user's goals or other factual context.
 
-## Core and Vertical Context
+## Core, Verticals, and Advisor Packs
 
 Core context contains information that may matter across domains, such as goals,
 values, communication patterns, decision patterns, preferences, and recurring
-constraints. Vertical context contains domain-specific concepts. Career and
-Writing are current verticals; additional verticals should consume the same
-shared lifecycle rather than create competing formats.
+constraints. A vertical contains domain-specific concepts in its own top-level
+vault area. An Advisor Pack reasons over retrieved context for a vertical; it
+does not own storage, provenance, or a second memory system.
 
-Career may include roles, history, projects, skills, achievements, leadership
-examples, mentoring, public work, and professional goals. Writing owns
-observable communication behavior, reasoning-through-writing, reader-awareness,
-editorial preferences, anti-patterns, and evidenced modes. It does not own
-beliefs, opinions, career facts, technical knowledge, or generated drafts as
-authentic evidence. Retained Writing source and generated-artifact pages carry
-explicit authorship, AI-involvement, and evidence-role metadata so their role is
-inspectable without a separate schema.
+### Current Vertical Catalog
+
+The current verticals have separate scopes and ownership:
+
+| Vertical | Vault area | Scope | Advisor Pack |
+| --- | --- | --- | --- |
+| Career | `career/` | Roles, history, projects, skills, achievements, leadership examples, mentoring, public work, and professional goals | Career Advisor |
+| Writing | `writing/` | Observable communication behavior, reasoning-through-writing, reader awareness, editorial preferences, anti-patterns, and evidenced modes | Writing Advisor |
+
+Writing does not own beliefs, opinions, career facts, technical knowledge, or
+generated drafts as authentic evidence. Retained Writing source and
+generated-artifact pages carry explicit authorship, AI-involvement, and
+evidence-role metadata so their role is inspectable without a separate schema.
+
+Additional verticals should consume the same shared lifecycle rather than create
+competing formats. To add one, define its scope, give it a separate area and
+index, document it in the current vertical catalog and README, and add a
+vertical procedure or Advisor Pack only when domain-specific rules justify it.
 
 The architecture exposes a place for verticals without hardcoding the entire
 system around one domain. Writing ingestion analyzes a source locally before
@@ -208,7 +218,11 @@ Queries and advice are not all permanent documents. Every meaningful operation m
 
 ## Privacy and Rejected Infrastructure
 
-SelfContext v0.1 requires no cloud service, server, database, vector database, embeddings, MCP server, background service, custom chat interface, authentication system, sync service, telemetry, or analytics. The core skill includes a small dependency-free deterministic linter for structural checks; it remains subordinate to the Markdown vault and does not replace semantic review.
+SelfContext requires no cloud service, server, database, vector database,
+embeddings, MCP server, background service, custom chat interface,
+authentication system, sync service, telemetry, or analytics. The core skill
+includes a small dependency-free deterministic linter for structural checks; it
+remains subordinate to the Markdown vault and does not replace semantic review.
 
 These exclusions keep the durable asset portable, local, inspectable, and replaceable. Future disposable search indexes or user-controlled off-device copies can be considered only without changing the vault's canonical role.
 
