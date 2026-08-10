@@ -6,14 +6,18 @@ This repository exists to build, maintain, and use SelfContext: a portable perso
 
 - For any request that reads, creates, updates, ingests, queries, reviews, or validates vault content, load and follow the project-local SelfContext skill first.
 - For career advice or career-related output based on personal context, use SelfContext for evidence retrieval and the Career Advisor Pack for reasoning.
+- For personalized writing, communication, drafting, editing, reader analysis,
+  or Writing-profile work, use SelfContext for evidence retrieval and the
+  Writing Advisor Pack for generic writing reasoning.
 - For creating or materially modifying a project skill, use the installed `skill-creator` workflow and place the canonical result under `.agents/skills/`.
 
 Do not invent a competing vault schema or lifecycle ad hoc. Follow the SelfContext skill and the vault's `SCHEMA.md` once they exist. Prefer natural-language interaction; commands are optional conveniences, never the canonical interface.
 
 ## Operating Modes
 
-Normal vault use is **user mode**. Ingest, query, review, lint, and career
-advice operate on the private vault and the user's response only. They must not
+Normal vault use is **user mode**. Ingest, query, review, lint, career advice,
+and personalized writing advice operate on the private vault and the user's
+response only. They must not
 modify skills, schemas, architecture, documentation, evals, scripts,
 `.gitignore`, or repository structure as a side effect. Do not create a
 learning log, improvement log, or automatic operations backlog.

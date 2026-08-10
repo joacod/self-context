@@ -73,7 +73,43 @@ not evidence that can promote itself into `core/`. Trace the pattern back to
 user statements or source records and preserve the appropriate assertion kind;
 keep an unresolved interpretation under review.
 
-## 3a. Triage Attention Without Blocking Ingest
+## 3a. Writing-specific comparison
+
+When the supplied material is authored writing, a revision, or an AI-assisted
+draft, apply [the Writing vertical procedure](writing.md) before changing the
+vault. Identify authorship, AI involvement, language, date, likely mode, and
+reader context. Extract local observations first, then compare each candidate
+with existing Writing context.
+
+Classify the impact explicitly:
+
+- **No meaningful update:** preserve a useful source record, but leave durable
+  Writing concepts unchanged when the source is consistent with what is already
+  known.
+- **Reinforcement:** link an independent source to the existing observation and
+  update its evidence history without creating a duplicate, auto-verifying, or
+  churning an already established evidence state.
+- **Genuine new insight:** add one scoped, reviewable observation only when the
+  pattern is materially new and strong enough to retain.
+- **Context refinement:** narrow or split a pattern by mode, audience, language,
+  or time instead of overwriting a global statement.
+- **Contradiction:** preserve both evidence sets and create or retain a review
+  item until mode, exception, weak evidence, or evolution explains the conflict.
+- **Evolution:** preserve historical evidence and represent a dated change or
+  supersession; newer evidence is not automatically better.
+
+For AI-assisted writing, analyze meaningful human edits as separate revision
+evidence. A generated draft, summary, rewrite, critique, or untouched model
+output cannot independently establish a Writing pattern. One edit is a
+candidate signal, not a permanent preference.
+
+Include a compact Writing impact report after the operation. It should state
+existing patterns reinforced, new meaningful patterns, context refinements,
+contradictions, potential profile updates, redundant observations ignored, and
+whether the result was a profile refinement or "No meaningful update." The
+second result is successful and is not a reason to manufacture a trait.
+
+## 3b. Triage Attention Without Blocking Ingest
 
 After normalizing the supplied material, decide whether a small number of items
 deserve immediate human attention. Keep ordinary ingestion smooth; do not ask a

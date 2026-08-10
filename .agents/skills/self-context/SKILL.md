@@ -8,12 +8,13 @@ description: >
   goals, preferences, constraints, experiences, or evidence, including when
   they do not say "SelfContext" or "vault." Use it for evidence retrieval that
   supports career questions, resumes, profiles, or professional positioning;
-  a Career Advisor Pack may add specialized reasoning later. It also applies
-  to requests involving resume text, recollections, profiles, or other sources
-  that should become durable personal context, and for initializing, copying,
-  restoring, backing up, or exporting a Context Vault. Before any vault write,
-  create the local retained backup described below. Do not use it for
-  generic resume writing, generic Obsidian organization, Git ignore questions,
+  a Career or Writing Advisor Pack may add specialized reasoning later. It also
+  applies to requests involving resume text, recollections, profiles, authored writing,
+  or other sources that should become durable personal context, and for
+  initializing, copying, restoring, backing up, or exporting a Context Vault.
+  Before any vault write, create the local retained backup described below. Do
+  not use it for generic resume writing, generic Obsidian organization, Git
+  ignore questions,
   or advice that does not rely on the user's Context Vault.
 compatibility: Requires local filesystem access from the repository root. Uses standard Markdown, YAML frontmatter, relative Markdown links, and optional Python 3 for deterministic linting.
 ---
@@ -89,8 +90,17 @@ Infer the operation from natural language:
 - **Evidence retrieval:** gather grounded context for a career or other
   domain-specific request. Do not turn the retrieval into unsupported advice.
 
-Career is the first vertical, but it is not the core schema. Keep cross-domain
-context under `core/` and career-specific context under `career/`.
+Career and Writing are verticals, but neither is the core schema. Keep
+cross-domain context under `core/`, career-specific context under `career/`, and
+observable writing and communication context under `writing/`. A Writing
+Advisor may add generic writing reasoning after this skill retrieves personal
+evidence.
+
+For an authored writing source, Writing profile query, or revision analysis, read
+[the Writing vertical procedure](references/writing.md) in addition to the
+general ingest, query, or review procedure. Writing analysis must compare local
+observations with existing context before changing durable pages; a successful
+operation may preserve the source and make no profile change.
 
 ## Attention and Confirmation
 
@@ -146,6 +156,8 @@ confirmation question instead of silently using it as current.
      linking, and logging.
    - [Query](references/query.md) for targeted retrieval and persistence of
      substantial syntheses.
+   - [Writing vertical](references/writing.md) for authorship, observations,
+     modes, revisions, selective profile impact, and generated artifacts.
    - [Review and lint](references/review-and-lint.md) for human review and the
      deterministic validator.
 

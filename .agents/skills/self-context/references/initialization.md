@@ -38,6 +38,13 @@ initialized schema. Preserve its knowledge and orient before changing it.
   checking that no conflicting file or convention exists. Create a pre-write
   backup first, then preserve all existing pages and links.
 
+An older v0.1 vault may not have a `writing/` directory or `writing/index.md`.
+For a read-only Writing query, treat the missing area as empty and do not create
+files. For a Writing mutation, orient from the existing schema, index, and log,
+create the pre-write backup, then add only `writing/` and `writing/index.md` and
+add the Writing link to the root index. Do not rewrite `SCHEMA.md`, migrate
+other pages, or reorganize an existing taxonomy merely to add the vertical.
+
 Existing-vault support means the user can continue immediately; it does not
 mean silently migrating or flattening their data.
 
@@ -71,6 +78,7 @@ Top-level areas:
 
 - `core/`: cross-domain personal context.
 - `career/`: the v0.1 career vertical.
+- `writing/`: observable writing and communication context.
 - `review/`: unresolved observations and review items.
 - `sources/`: retained source or recollection material.
 - `derived/`: reusable query or advice syntheses.
@@ -87,6 +95,11 @@ documentation. The common fields are:
 - `assertion_kind`: `user_stated_fact`, `source_derived_fact`,
   `agent_inference`, `derived_synthesis`, `source_record`, or `mixed`.
 - `stale_after`: an ISO date when freshness review is due, or `null`.
+
+Writing-tagged source and synthesis pages also require
+`writing_evidence_role`, `authorship`, and `ai_involvement`. Use one of these
+combinations: `primary/user/none`, `human_edited_ai_assisted/shared/assisted`,
+`generated_derived/agent/generated`, or `unknown/unknown/unknown`.
 
 Agent inferences normally remain `status: review` with `verified: null` until
 the user confirms or rejects them. Derived syntheses remain derived and never
@@ -106,6 +119,7 @@ changes and [the recent log](log.md) for continuity.
 
 - [Core context](core/index.md)
 - [Career context](career/index.md)
+- [Writing context](writing/index.md)
 - [Review queue](review/index.md)
 - [Sources](sources/index.md)
 - [Derived material](derived/index.md)
@@ -127,6 +141,14 @@ patterns, decision patterns, and recurring constraints.
 
 Career-specific roles, history, projects, skills, stories, evidence, and
 professional goals.
+```
+
+```markdown
+# Writing Context
+
+Evidence-backed communication, reasoning-through-writing, reader awareness,
+editorial preferences, anti-patterns, and useful context-specific writing modes.
+Generated drafts and generic writing advice are not authentic Writing evidence.
 ```
 
 ```markdown
@@ -163,6 +185,7 @@ automatically personal fact.
   - [index](index.md)
   - [core index](core/index.md)
   - [career index](career/index.md)
+  - [writing index](writing/index.md)
   - [review index](review/index.md)
   - [sources index](sources/index.md)
   - [derived index](derived/index.md)

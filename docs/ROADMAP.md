@@ -20,6 +20,16 @@ separate from tracked project files.
 - Multi-session continuity.
 - Local pre-write ZIP backups with retention of the latest three archives.
 
+## Post-bootstrap Writing Experiment
+
+The Writing vertical is a first-class extension of the same portable lifecycle.
+It adds an on-demand `writing/` area, evidence-aware source comparison, a
+Writing Advisor Pack, and synthetic behavioral evaluations. It deliberately
+does not add a custom runtime, writing database, universal style taxonomy, or
+automatic profile mutation. The next useful experiment is to use it with
+different authored modes and inspect whether the profile becomes more accurate
+without merely becoming larger.
+
 The v0.1 implementation should remain mostly Markdown, Agent Skills, references, and only the smallest deterministic validation code that earns its place. It should not introduce a custom runtime, server, database, embeddings, MCP, background service, or telemetry.
 
 ## v0.2

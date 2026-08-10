@@ -82,6 +82,12 @@ alone is not permission to fabricate context.
 - Do not psychoanalyze, diagnose, or construct an objective personality
   profile. Describe evidence-oriented patterns with appropriate uncertainty.
 
+When a professional artifact also needs communication fit, retrieve relevant
+Writing context through SelfContext as a scoped style and audience input. Do
+not treat a Writing observation as career evidence, duplicate it into
+`career/`, or let a generated draft become evidence about the user's career or
+voice.
+
 ## Reasoning Workflow
 
 1. Restate the user's career objective and any constraints in neutral terms.
