@@ -45,8 +45,20 @@ source or normalized career page to make it match a polished artifact.
 ## Derived Advice Pages
 
 Do not create a page for a one-off recommendation or ordinary draft. A reusable
-analysis may be stored only when it is substantial, expensive to reconstruct,
-or likely to guide future work.
+analysis may be stored when it is substantial, expensive to reconstruct, likely
+to guide future work, or when the user explicitly asks to retain a smaller piece
+of guidance for a similar future question. Treat that request as a continuity
+signal, not as evidence that the recommendation is true.
+
+Before persisting career advice:
+
+- check existing career and derived pages for a matching analysis or duplicate;
+- compare the recommendation with current goals, role positioning, and relevant
+  core constraints;
+- keep career facts in `career/`, cross-domain facts in `core/`, and the advice
+  itself in `derived/`; and
+- preserve factual conflicts or missing evidence, while expressing a competing
+  recommendation conditionally instead of silently changing a goal.
 
 Create it under a suitable `vault/derived/` subdirectory, such as
 `derived/advice/`, using the SelfContext schema:

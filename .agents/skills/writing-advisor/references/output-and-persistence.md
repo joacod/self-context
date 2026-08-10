@@ -78,8 +78,10 @@ Ordinary responses remain ephemeral:
   preserve it;
 - a meaningful human revision may be analyzed as future evidence through the
   SelfContext Writing workflow; and
-- a substantial reusable analysis may be stored under `vault/derived/` as a
-  linked `derived_synthesis` page.
+- a substantial reusable analysis, or a smaller piece of guidance explicitly
+  requested for future reuse, may be stored under `vault/derived/` as a linked
+  `derived_synthesis` page; it remains advice and does not become Writing
+  evidence or update the Writing profile automatically.
 
 Before any vault mutation, SelfContext creates the local pre-write backup. A
 derived page is not a source for a new Writing observation and cannot silently

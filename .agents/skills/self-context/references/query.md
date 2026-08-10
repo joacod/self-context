@@ -66,10 +66,56 @@ Use the smallest durable result that serves the request:
   `derived/`, with `type: synthesis`, `assertion_kind: derived_synthesis`, and
   links to the evidence it combines.
 
+### Continuity signals
+
+Persistence is based on durable value, not only on importance or length. Treat
+one or more of these as a reason to evaluate a small derived page:
+
+- the user explicitly asks to remember, retain, save, or reuse the result;
+- the user says the result would help with a similar future question;
+- the answer captures a non-obvious decision, recommendation, or tradeoff that
+  will be expensive to reconstruct;
+- the answer combines several existing pages into a reusable synthesis; or
+- the query exposes a meaningful review item, unresolved conflict, or missing
+  evidence that should remain visible.
+
+An explicit retention request is a continuity signal, not permission to promote
+an interpretation into a fact. A positive reaction without a future-use signal
+does not require persistence.
+
+### Pre-write checks
+
+Before creating or updating a derived page, perform a lightweight semantic
+check:
+
+1. **Classify the result.** Separate retrieved facts, source material,
+   observations, recommendations, and unknowns. Persist advice as
+   `derived_synthesis`; route newly supplied factual context through ingest
+   instead of hiding it in advice.
+2. **Check for an existing home.** Search the relevant indexes and linked pages
+   for an existing concept or synthesis. Update the smallest matching page
+   rather than creating a duplicate.
+3. **Check ownership.** Keep domain facts and goals in their owning vertical,
+   cross-domain facts in `core/`, and reusable conclusions in `derived/`. A
+   synthesis may link several areas without copying their facts into another
+   owner.
+4. **Check conflicts.** Compare the conclusion with active goals, facts,
+   review items, and relevant derived pages. Preserve factual contradictions and
+   surface them as uncertainty or review. A recommendation can remain
+   conditional when it explores an option that differs from a current goal; do
+   not rewrite the goal merely because the advice is useful.
+5. **Check freshness.** If current metrics, role state, goals, or other dynamic
+   context materially affects reuse, record a review horizon or explain the
+   freshness limitation. Do not silently rely on stale decisive evidence.
+
+If the result has no stable reuse value, no explicit future-use signal, and no
+meaningful review value, keep it ephemeral. Do not create a page merely because
+several queries were asked or because the answer sounds helpful.
+
 Do not save every answer. A derived page should earn its maintenance cost by
-being likely to be reused, difficult to reconstruct, or important for later
-review. It must not modify `core/` or `career/` facts merely because the
-synthesis recommends something.
+being likely to be reused, difficult to reconstruct, explicitly requested for
+future continuity, or important for later review. It must not modify `core/` or
+vertical facts merely because the synthesis recommends something.
 
 The number of queries is not the persistence threshold. Several simple lookups
 may leave `derived/` unchanged, while one substantial reusable analysis may

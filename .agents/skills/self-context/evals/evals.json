@@ -332,6 +332,29 @@
         "A requested Writing mutation creates only the missing Writing navigation after backup.",
         "The existing schema, pages, links, and taxonomy are preserved without migration."
       ]
+    },
+    {
+      "id": 31,
+      "prompt": "In a synthetic existing Context Vault, answer a multi-page question about a user's public professional positioning. The answer is not high stakes, but it contains a reusable recommendation for a similar future question. I explicitly ask you to retain that guidance. The current career goal favors direct employment, while the recommendation considers consulting only as a conditional option. Check existing pages before writing, store the smallest linked derived synthesis if justified, keep the recommendation visibly derived, and do not update the career goal or core preferences.",
+      "expected_output": "The skill treats explicit future reuse as a persistence signal, checks existing context, creates or updates a small derived advice synthesis when appropriate, preserves ownership and uncertainty, and does not turn the recommendation into a changed goal or fact.",
+      "files": [],
+      "expectations": [
+        "An explicit future-use request is recognized as a persistence signal without making ordinary helpful answers permanent.",
+        "The smallest non-duplicate derived synthesis is created or an existing matching synthesis is updated.",
+        "The synthesis links supporting evidence and records relevant uncertainty or freshness limits.",
+        "The career goal and core preferences remain unchanged because the result is advice, not new personal context."
+      ]
+    },
+    {
+      "id": 32,
+      "prompt": "In a synthetic vault, a query answer repeats an existing Writing observation and is useful for the current conversation, but neither the user nor the task suggests future reuse. Do not create a new derived page or duplicate the observation. Explain why the result remains ephemeral and keep the existing Writing, career, core, and derived context unchanged.",
+      "expected_output": "The skill distinguishes immediate usefulness from durable continuity, reports a successful no-op, and avoids unnecessary persistence or cross-vertical changes.",
+      "files": [],
+      "expectations": [
+        "No derived page is created for a useful but one-off repeated answer.",
+        "The existing observation and lifecycle metadata remain unchanged.",
+        "The response explains that no future-use or review signal justified persistence."
+      ]
     }
   ]
 }

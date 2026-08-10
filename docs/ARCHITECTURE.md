@@ -203,7 +203,7 @@ generated prose as an automatic instruction to mutate the profile.
 The SelfContext skill recognizes natural-language intent and applies a lifecycle rather than a command vocabulary:
 
 1. **Ingest** or update information, preserve useful provenance, avoid duplicate concepts, connect meaningful links, update navigation, and log the operation. Triage only high-impact or unresolved items for a bounded, batched confirmation follow-up. Authored Writing sources use a local-analysis and impact-comparison step before durable profile updates.
-2. **Query** through orientation, indexes, targeted file search, metadata, and link traversal. A trivial retrieval returns an answer without creating a page; a substantial reusable synthesis may be stored under derived material. Review status and freshness before using context as current.
+2. **Query** through orientation, indexes, targeted file search, metadata, and link traversal. A trivial retrieval returns an answer without creating a page; a substantial reusable synthesis or explicitly retained future-use guidance may be stored under derived material after a duplicate, ownership, contradiction, and freshness check. Review status and freshness before using context as current.
 3. **Review** unresolved inferences, stale context, contradictions, ambiguous claims, missing provenance, and important changes needing attention.
 4. **Lint** structural and epistemic integrity, including frontmatter, links, indexes, duplicates, metadata consistency, freshness, and schema drift.
 5. **Advise** through an Advisor Pack that retrieves evidence from the core skill and applies a domain-specific reasoning framework.
@@ -212,9 +212,9 @@ Before a significant operation on an existing vault, the skill orients from `SCH
 
 ## Provenance and Persistence
 
-Important ingested information should retain enough source or raw material to explain where it came from. A substantial recollection may be preserved separately from normalized concepts; small conversational facts need not acquire unnecessary ceremony.
+Important ingested information should retain enough source or raw material to explain where it came from. A substantial recollection may be preserved separately from normalized concepts; small conversational facts need not acquire unnecessary ceremony. Query persistence is driven by expected continuity, not by query count: an explicit request to retain a useful future-facing recommendation can justify a small derived synthesis, but cannot promote advice into a fact or goal.
 
-Queries and advice are not all permanent documents. Every meaningful operation may be recorded in the log, but only a substantial reusable synthesis or advice result should become derived material. Derived pages must link to their evidence and remain visibly derived.
+Queries and advice are not all permanent documents. Every meaningful operation may be recorded in the log, but only a substantial reusable synthesis or a smaller explicitly retained result should become derived material. Before writing, the operation checks for an existing home, domain ownership, contradictions, and freshness. Derived pages must link to their evidence and remain visibly derived.
 
 ## Privacy and Rejected Infrastructure
 
@@ -226,4 +226,4 @@ remains subordinate to the Markdown vault and does not replace semantic review.
 
 These exclusions keep the durable asset portable, local, inspectable, and replaceable. Future disposable search indexes or user-controlled off-device copies can be considered only without changing the vault's canonical role.
 
-See the [architectural decisions](decisions/) for the reasoning behind these boundaries, including the [user-mode and project-maintenance separation](decisions/0007-user-mode-project-maintenance.md), the [selective confirmation and freshness policy](decisions/0008-selective-confirmation-and-freshness.md), the [pre-write backup policy](decisions/0009-pre-write-vault-backups.md), and the [Writing vertical decision](decisions/0010-writing-vertical.md).
+See the [architectural decisions](decisions/) for the reasoning behind these boundaries, including the [user-mode and project-maintenance separation](decisions/0007-user-mode-project-maintenance.md), the [selective confirmation and freshness policy](decisions/0008-selective-confirmation-and-freshness.md), the [pre-write backup policy](decisions/0009-pre-write-vault-backups.md), the [Writing vertical decision](decisions/0010-writing-vertical.md), and the [query persistence triage decision](decisions/0011-query-persistence-triage.md).

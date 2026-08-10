@@ -56,6 +56,18 @@
         "The rationale connects each example to the interview objective.",
         "Missing metrics or details are presented as questions or gaps."
       ]
+    },
+    {
+      "id": 6,
+      "prompt": "After giving me a personalized career recommendation from a synthetic vault, I say that the guidance may be useful for a similar question later and explicitly ask you to retain it. Check the existing goals and derived pages first. Store a small linked derived synthesis if justified, but do not change my goal, turn the recommendation into a fact, or duplicate an existing analysis.",
+      "expected_output": "The advisor treats explicit future reuse as a continuity signal, persists only the smallest justified derived advice, checks for conflicts and duplicates, and leaves goals and facts unchanged.",
+      "files": [],
+      "expectations": [
+        "The explicit retention request is distinguished from factual confirmation.",
+        "The persisted advice is marked derived and linked to the evidence it uses.",
+        "Existing goals and facts remain unchanged, with competing recommendations expressed conditionally.",
+        "The response reports the persistence decision and any uncertainty or freshness limitation."
+      ]
     }
   ]
 }

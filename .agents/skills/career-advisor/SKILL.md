@@ -136,7 +136,8 @@ vault does not contain enough evidence to answer confidently.
 ## Persistence Boundary
 
 Do not create or update factual career pages merely because advice was given.
-Simple advice remains in the response. A substantial, reusable analysis may be
-stored as derived material under `vault/derived/` only when it earns the
-maintenance cost. Follow SelfContext's schema, link to the evidence, mark it
-as `derived_synthesis`, and never let it update a goal or fact automatically.
+Simple advice remains in the response. A substantial, reusable analysis, or a
+smaller recommendation explicitly requested for future reuse, may be stored as
+derived material under `vault/derived/` only when it earns the maintenance
+cost. Follow SelfContext's schema, link to the evidence, mark it as
+`derived_synthesis`, and never let it update a goal or fact automatically.

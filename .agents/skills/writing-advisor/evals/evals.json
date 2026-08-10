@@ -110,6 +110,18 @@
         "Only meaningful high-value changes are suggested.",
         "No profile or derived-page mutation is implied by the edit."
       ]
+    },
+    {
+      "id": 11,
+      "prompt": "After a synthetic reader analysis, I say that the audience recommendation may help with similar future writing questions and explicitly ask you to retain it. Persist only the smallest linked derived synthesis if justified. Keep the recommendation visibly derived, do not treat generated analysis as Writing evidence, and do not update the Writing profile or any career goal.",
+      "expected_output": "The advisor recognizes explicit future reuse as a persistence signal while preserving the Writing evidence boundary and leaving the Writing profile and other facts unchanged.",
+      "files": [],
+      "expectations": [
+        "The retained recommendation is marked derived and linked to its supporting context.",
+        "Generated analysis is not promoted to Writing evidence.",
+        "The Writing profile and unrelated career or core context remain unchanged.",
+        "The response reports the persistence decision and relevant uncertainty."
+      ]
     }
   ]
 }

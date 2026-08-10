@@ -46,8 +46,13 @@ skill, the current harness, the model, Obsidian, or a search tool disappears.
   canonical format.
 - Do not invent facts, fill gaps with plausible claims, or promote an inference
   to a user fact without confirmation.
-- Do not create a permanent page for a trivial retrieval. Store substantial,
-  reusable syntheses only when they are worth maintaining.
+- Do not create a permanent page for a trivial retrieval or one-off answer by
+  default. Store a substantial reusable synthesis, or a smaller future-use
+  synthesis explicitly requested by the user, only when it passes the query
+  persistence check.
+- Before persisting query-derived material, check for duplicates, ownership,
+  contradictions, and freshness. Keep recommendations visibly derived and do
+  not update facts or goals automatically.
 - Never put personal vault content in tracked project files, and never force-add
   anything from `vault/`.
 - Treat `.obsidian/` and other viewer metadata as noncanonical vault state.
@@ -166,8 +171,8 @@ confirmation question instead of silently using it as current.
      vault and schema-version handling.
    - [Ingest](references/ingest.md) for normalization, updates, provenance,
      linking, and logging.
-   - [Query](references/query.md) for targeted retrieval and persistence of
-     substantial syntheses.
+   - [Query](references/query.md) for targeted retrieval and the persistence
+     decision for reusable or explicitly retained syntheses.
    - [Writing vertical](references/writing.md) for authorship, observations,
      modes, revisions, selective profile impact, and generated artifacts; use the
      owning vertical's documented procedure for any other domain-specific rules.

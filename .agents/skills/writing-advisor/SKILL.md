@@ -145,9 +145,10 @@ between evidence, inference, recommendation, and generated text.
 
 Ordinary brainstorming, drafting, editing, and reader analysis remain ephemeral.
 Do not create or update Writing profile pages just because advice was given. A
-substantial reusable analysis may be stored under `vault/derived/` only through
-SelfContext's backup, metadata, link, and log procedures, and it remains
-`derived_synthesis` rather than evidence.
+substantial reusable analysis, or a smaller recommendation explicitly requested
+for future reuse, may be stored under `vault/derived/` only through SelfContext's
+backup, metadata, link, and log procedures. It remains `derived_synthesis`
+rather than evidence and does not update the Writing profile automatically.
 
 Human-authored source material or a requested revision analysis may be retained
 as source evidence through SelfContext. A no-op analysis is a valid success: it
