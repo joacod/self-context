@@ -154,5 +154,53 @@
   {
     "query": "Design a generic database schema for storing authors and articles, unrelated to my Context Vault.",
     "should_trigger": false
+  },
+  {
+    "query": "Who is Alice in my context, how do I know her, and what did we last discuss?",
+    "should_trigger": true
+  },
+  {
+    "query": "Did I promise Martín I would send the repository, or was it just a vague plan?",
+    "should_trigger": true
+  },
+  {
+    "query": "Give me useful context before I meet Sarah tomorrow, but do not make a dossier about her.",
+    "should_trigger": true
+  },
+  {
+    "query": "Record this meaningful interaction and preserve the reported statement without saving the whole chat.",
+    "should_trigger": true
+  },
+  {
+    "query": "What kinds of games do I consistently enjoy, and which reactions support that pattern?",
+    "should_trigger": true
+  },
+  {
+    "query": "Would I probably like this film given my actual media history and its heavy combat?",
+    "should_trigger": true
+  },
+  {
+    "query": "I loved this exception even though I usually dislike musicals. Keep that nuance in my taste context.",
+    "should_trigger": true
+  },
+  {
+    "query": "Has my taste changed over time, or is this just a different medium? Use dated evidence.",
+    "should_trigger": true
+  },
+  {
+    "query": "Build a CRM from every person in my inbox and rank them by relationship strength.",
+    "should_trigger": false
+  },
+  {
+    "query": "Track every Spotify play and make a complete Letterboxd-style media database.",
+    "should_trigger": false
+  },
+  {
+    "query": "Infer my colleague's diagnosis and political beliefs from their messages.",
+    "should_trigger": false
+  },
+  {
+    "query": "Summarize a movie's plot and cast for my film club without using my context.",
+    "should_trigger": false
   }
 ]

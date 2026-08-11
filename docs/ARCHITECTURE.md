@@ -98,6 +98,8 @@ vault/
 |-- career/         # career context
 |-- learning/       # knowledge states and learning evidence
 |-- writing/        # observable communication and writing context
+|-- relationships/  # intentional relationship context and shared history
+|-- media/          # reactions to works and evidence-backed taste context
 |-- sources/        # retained source or recollection material where useful
 `-- derived/        # reusable query/advice synthesis, visibly derived
 ```
@@ -155,6 +157,8 @@ The current verticals have separate scopes and ownership:
 | Career | `career/` | Roles, history, projects, skills, achievements, leadership examples, mentoring, public work, and professional goals | Career Advisor |
 | Learning | `learning/` | Topics and concepts, qualitative knowledge states, meaningful gaps, misconceptions, corrections, mental models, prerequisites, and progression evidence | Learning Advisor |
 | Writing | `writing/` | Observable communication behavior, reasoning-through-writing, reader awareness, editorial preferences, anti-patterns, and evidenced modes | Writing Advisor |
+| Relationships | `relationships/` | The user's relationship with people: shared history, meaningful interactions, commitments, open loops, and dated evolution | Relationships Advisor |
+| Media / Taste | `media/` | Reactions to experienced works, explainable taste patterns, exceptions, and dated taste evolution | Media Advisor |
 
 Learning does not own generic notes, bookmarks, course records, or source
 summaries. It records what the person understands and how that state changes;
@@ -167,6 +171,21 @@ Writing does not own beliefs, opinions, career facts, technical knowledge, or
 generated drafts as authentic evidence. Retained Writing source and
 generated-artifact pages carry explicit authorship, AI-involvement, and
 evidence-role metadata so their role is inspectable without a separate schema.
+
+Relationships centers the user's relationship with another person rather than
+facts about that person. It keeps sparse pages for shared history, meaningful
+interactions, commitments, open loops, and dated evolution. Reported statements,
+source-derived facts, user observations, and agent inferences remain distinct;
+sensitive third-party characteristics and unsupported motives or personality
+judgments are not inferred. Career, Writing, Learning, and Media pages remain
+the owners of their distinct claims and are linked rather than copied.
+
+Media / Taste centers the user's reaction to individual cultural works rather
+than a complete consumption history or external catalog. Work pages are sparse,
+and patterns must explain their supporting reactions, scope, exceptions, and
+dates. Consumption is not preference, generated reviews are not evidence, and
+recommendations remain derived. Neither vertical adds a competing schema,
+confidence database, runtime, or cross-domain dependency.
 
 Additional verticals should consume the same shared lifecycle rather than create
 competing formats. To add one, define its scope, give it a separate area and
@@ -207,11 +226,16 @@ The same pipeline can produce a scoped new observation, a mode refinement, a
 reviewable contradiction, or a dated evolution. It never treats analysis or
 generated prose as an automatic instruction to mutate the profile.
 
+Relationships and Media / Taste use the same comparison principle: preserve
+high-signal evidence, update an existing home when the identity matches, retain
+contradictions and exceptions, and accept “No meaningful update” when a source
+adds no durable personal context.
+
 ## Core Operations
 
 The SelfContext skill recognizes natural-language intent and applies a lifecycle rather than a command vocabulary:
 
-1. **Ingest** or update information, preserve useful provenance, avoid duplicate concepts, connect meaningful links, update navigation, and log the operation. Triage only high-impact or unresolved items for a bounded, batched confirmation follow-up. Authored Writing sources use a local-analysis and impact-comparison step before durable profile updates; Learning evidence uses a local comparison to separate exposure, understanding, demonstration, gaps, and corrections.
+1. **Ingest** or update information, preserve useful provenance, avoid duplicate concepts, connect meaningful links, update navigation, and log the operation. Triage only high-impact or unresolved items for a bounded, batched confirmation follow-up. Authored Writing sources use a local-analysis and impact-comparison step before durable profile updates; Learning evidence uses a local comparison to separate exposure, understanding, demonstration, gaps, and corrections; Relationships separates shared context from third-party profiling; and Media / Taste separates consumption from reaction and pattern evidence.
 2. **Query** through orientation, indexes, targeted file search, metadata, and link traversal. A trivial retrieval returns an answer without creating a page; a substantial reusable synthesis or explicitly retained future-use guidance may be stored under derived material after a duplicate, ownership, contradiction, and freshness check. Review status and freshness before using context as current.
 3. **Review** unresolved inferences, stale context, contradictions, ambiguous claims, missing provenance, and important changes needing attention.
 4. **Lint** structural and epistemic integrity, including frontmatter, links, indexes, duplicates, metadata consistency, freshness, and schema drift.
@@ -235,4 +259,4 @@ remains subordinate to the Markdown vault and does not replace semantic review.
 
 These exclusions keep the durable asset portable, local, inspectable, and replaceable. Future disposable search indexes or user-controlled off-device copies can be considered only without changing the vault's canonical role.
 
-See the [architectural decisions](decisions/) for the reasoning behind these boundaries, including the [user-mode and project-maintenance separation](decisions/0007-user-mode-project-maintenance.md), the [selective confirmation and freshness policy](decisions/0008-selective-confirmation-and-freshness.md), the [pre-write backup policy](decisions/0009-pre-write-vault-backups.md), the [Writing vertical decision](decisions/0010-writing-vertical.md), the [query persistence triage decision](decisions/0011-query-persistence-triage.md), and the [Learning vertical decision](decisions/0012-learning-vertical.md).
+See the [architectural decisions](decisions/) for the reasoning behind these boundaries, including the [user-mode and project-maintenance separation](decisions/0007-user-mode-project-maintenance.md), the [selective confirmation and freshness policy](decisions/0008-selective-confirmation-and-freshness.md), the [pre-write backup policy](decisions/0009-pre-write-vault-backups.md), the [Writing vertical decision](decisions/0010-writing-vertical.md), the [query persistence triage decision](decisions/0011-query-persistence-triage.md), the [Learning vertical decision](decisions/0012-learning-vertical.md), the [Relationships vertical decision](decisions/0013-relationships-vertical.md), and the [Media / Taste vertical decision](decisions/0014-media-taste-vertical.md).

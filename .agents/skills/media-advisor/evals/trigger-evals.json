@@ -1,0 +1,22 @@
+[
+  {"query": "What kinds of films do I consistently enjoy, and which works support that?", "should_trigger": true},
+  {"query": "Why did I probably like Disco Elysium? Use my actual reactions, not a generic review.", "should_trigger": true},
+  {"query": "Would I likely enjoy this movie given my history with atmospheric science fiction?", "should_trigger": true},
+  {"query": "I usually dislike musicals, but I loved one. Keep that exception in my taste context.", "should_trigger": true},
+  {"query": "Has my taste in games changed over time? Use dated reactions.", "should_trigger": true},
+  {"query": "Do I have evidence that I like unreliable narrators, or did I just finish one book?", "should_trigger": true},
+  {"query": "Record my reaction to this album, but don't save every song I hear.", "should_trigger": true},
+  {"query": "Find preferences that appear across books, films, and games without making a genre database.", "should_trigger": true},
+  {"query": "Recommend something outside my normal taste but still explainable from my history.", "should_trigger": true},
+  {"query": "Review my Media / Taste context for weak patterns, exceptions, and generated reactions.", "should_trigger": true},
+  {"query": "Build me a complete IMDb-style database of every movie I have watched.", "should_trigger": false},
+  {"query": "Summarize this film's plot without using my personal context.", "should_trigger": false},
+  {"query": "Track every Spotify play and generate a daily listening dashboard.", "should_trigger": false},
+  {"query": "Infer my political beliefs from the music I listen to.", "should_trigger": false},
+  {"query": "Write a generic review of Dune for a film club.", "should_trigger": false},
+  {"query": "What did I learn from this documentary? Use Learning context, not taste.", "should_trigger": false},
+  {"query": "Remember that Alice and I watched a movie together and discussed it.", "should_trigger": false},
+  {"query": "Create a watchlist of every recommended TV show.", "should_trigger": false},
+  {"query": "What is the ISBN of this book?", "should_trigger": false},
+  {"query": "Suggest five random movies for a fictional character with no personal context.", "should_trigger": false}
+]

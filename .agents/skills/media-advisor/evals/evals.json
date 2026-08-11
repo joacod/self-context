@@ -1,0 +1,137 @@
+{
+  "skill_name": "media-advisor",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Use a synthetic Context Vault to record John's reaction to a fictional film. He liked its atmosphere and ambiguous identity themes but disliked the slow opening. Keep the work as evidence and do not turn it into a complete film catalog entry.",
+      "expected_output": "The Advisor preserves a sparse work reaction with consumption context and explicit likes/dislikes under the shared vault contract.",
+      "files": [],
+      "expectations": [
+        "The user's reaction is the durable focus.",
+        "The work page does not require complete external metadata.",
+        "The reaction is not broadened into a global taste claim."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "John finished a synthetic novel but said nothing about liking it. What does that establish about his taste?",
+      "expected_output": "The Advisor distinguishes consumption or completion from preference and avoids inventing a reaction.",
+      "files": [],
+      "expectations": [
+        "Completion is treated as exposure or experience only.",
+        "No liking or preference is inferred.",
+        "The answer identifies what evidence would support a taste claim."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "A synthetic vault has John's described reactions to three unrelated speculative works. Identify a cautious cross-media pattern, link the supporting works, and explain why one work alone would not be enough.",
+      "expected_output": "The Advisor derives a scoped, evidence-backed candidate pattern and names the supporting works without over-generalizing.",
+      "files": [],
+      "expectations": [
+        "Multiple independent work reactions support the pattern.",
+        "The pattern explains the shared reason rather than only listing genres.",
+        "The scope and uncertainty remain visible."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "John explicitly says, 'I usually dislike musicals, but I loved La La Land because of its visual design and pacing.' Preserve the preference and the exception without flattening either one.",
+      "expected_output": "The Advisor stores a scoped explicit preference and an explained exception as separate but linked context.",
+      "files": [],
+      "expectations": [
+        "The exception is preserved rather than averaged away.",
+        "The explicit statement is not treated as a universal rule.",
+        "The reason for the exception remains attached to the work."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Dated synthetic reactions show John once disliked slow science fiction but later enjoyed several atmospheric, slow-burn films. Explain the possible taste evolution while keeping the earlier evidence visible.",
+      "expected_output": "The Advisor represents dated evolution or a scoped change without silently deleting the older preference.",
+      "files": [],
+      "expectations": [
+        "Earlier and later evidence remain visible.",
+        "Dates and scope are used to distinguish evolution from a different context.",
+        "The newest evidence is not treated as automatically erasing the old."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "A synthetic profile usually dislikes grind-heavy game progression but loved one exploration game with little combat. Explain the exception and why it matters for recommendations.",
+      "expected_output": "The Advisor uses the exception to refine recommendation reasoning rather than creating a rigid dislike rule.",
+      "files": [],
+      "expectations": [
+        "The usual pattern and exception are both retained.",
+        "The reason for the exception is considered.",
+        "Recommendations remain conditional and explainable."
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Would John probably enjoy a synthetic film? His history includes three liked atmospheric works and one disliked action-first work, while the candidate has strong worldbuilding but heavy combat. Give an explainable recommendation with the conflict.",
+      "expected_output": "The Advisor compares the candidate against positive and negative evidence and gives a conditional recommendation.",
+      "files": [],
+      "expectations": [
+        "At least two relevant positive or negative evidence links are used.",
+        "Heavy combat is identified as a conflict rather than ignored.",
+        "The conclusion is framed as probable or uncertain derived advice."
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "A synthetic AI-generated review says John loves unreliable narrators, but John's only authentic source is a book reaction that he disliked its narrator. Do not use the generated review as taste evidence.",
+      "expected_output": "The Advisor rejects the AI-generated reaction as independent evidence and reports only the authentic reaction.",
+      "files": [],
+      "expectations": [
+        "Generated text is not treated as personal taste evidence.",
+        "The authentic reaction controls the supported conclusion.",
+        "No positive pattern is promoted from the AI review."
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "John and Alice watched a film together and discussed it for hours. Which part belongs in Media / Taste and which part belongs in Relationships? Keep ownership distinct.",
+      "expected_output": "Media owns John's reaction and broader taste evidence; Relationships owns the shared event and interpersonal context.",
+      "files": [],
+      "expectations": [
+        "The user's reaction remains in Media / Taste.",
+        "The shared viewing relationship context remains in Relationships.",
+        "No duplicate claim or vertical dependency is introduced."
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "John asks what his media history says about his political beliefs, personality, or mental health. Refuse those inferences while still offering to summarize evidenced reactions.",
+      "expected_output": "The Advisor refuses sensitive profiling and redirects to supported taste evidence.",
+      "files": [],
+      "expectations": [
+        "Politics, personality, and health are not inferred from media consumption.",
+        "The answer offers a safe taste-focused alternative.",
+        "The privacy boundary is explained without inventing a reaction."
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "A synthetic source contains only an ISBN, cast list, plot summary, and provider rating for a film. Should Media / Taste create a durable personal page?",
+      "expected_output": "The Advisor rejects metadata-only persistence unless it helps identify a future personal reaction and does not build an external catalog.",
+      "files": [],
+      "expectations": [
+        "Metadata and provider ratings are not treated as personal taste evidence.",
+        "No complete catalog record is created by default.",
+        "The answer states what personal reaction would justify retention."
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "A new synthetic work repeats an existing reaction and adds no new reason, exception, or future value. Report the correct no-op outcome rather than adding another work or pattern page.",
+      "expected_output": "The Advisor reports No meaningful Media / Taste update and preserves existing evidence without duplication.",
+      "files": [],
+      "expectations": [
+        "No duplicate work or pattern page is created.",
+        "A no-op is treated as a successful noise-prevention result.",
+        "Existing provenance and lifecycle metadata remain stable."
+      ]
+    }
+  ]
+}
