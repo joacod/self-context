@@ -53,6 +53,21 @@ and log, create the pre-write backup, then add only `learning/` and
 `SCHEMA.md`, migrate other pages, or reorganize an existing taxonomy merely to
 add the vertical.
 
+An existing vault may not have a `relationships/` directory or
+`relationships/index.md`. For a read-only Relationships query, treat the
+missing area as empty and do not create files. For a Relationships mutation,
+orient from the existing schema, index, and log, create the pre-write backup,
+then add only `relationships/` and `relationships/index.md` and add the
+Relationships link to the root index. Do not rewrite `SCHEMA.md`, migrate other
+pages, or create a contact database merely to add the vertical.
+
+An existing vault may not have a `media/` directory or `media/index.md`. For a
+read-only Media / Taste query, treat the missing area as empty and do not create
+files. For a Media / Taste mutation, orient from the existing schema, index,
+and log, create the pre-write backup, then add only `media/` and `media/index.md`
+and add the Media / Taste link to the root index. Do not rewrite `SCHEMA.md`,
+migrate other pages, or create a media catalog merely to add the vertical.
+
 Existing-vault support means the user can continue immediately; it does not
 mean silently migrating or flattening their data.
 
@@ -88,6 +103,9 @@ Top-level areas:
 - `career/`: career-specific evidence and concepts.
 - `learning/`: personal knowledge states, gaps, corrections, and progression evidence.
 - `writing/`: observable writing and communication context.
+- `relationships/`: intentional relationship context, shared history,
+  commitments, and open loops.
+- `media/`: reactions to experienced cultural works and evidence-backed taste.
 - `review/`: unresolved observations and review items.
 - `sources/`: retained source or recollection material.
 - `derived/`: reusable query or advice syntheses.
@@ -130,6 +148,8 @@ changes and [the recent log](log.md) for continuity.
 - [Career context](career/index.md)
 - [Learning context](learning/index.md)
 - [Writing context](writing/index.md)
+- [Relationships context](relationships/index.md)
+- [Media / Taste context](media/index.md)
 - [Review queue](review/index.md)
 - [Sources](sources/index.md)
 - [Derived material](derived/index.md)
@@ -170,6 +190,21 @@ Generated drafts and generic writing advice are not authentic Writing evidence.
 ```
 
 ```markdown
+# Relationships Context
+
+Intentional context about the user's relationships: shared history, meaningful
+interactions, commitments, open loops, and dated evolution. This is not a
+contact database or a profile of everything known about another person.
+```
+
+```markdown
+# Media / Taste Context
+
+Reactions to cultural works and the evidence behind taste patterns, exceptions,
+and evolution. This is not a complete media catalog or consumption tracker.
+```
+
+```markdown
 # Review Queue
 
 Unresolved observations, stale claims, contradictions, ambiguous assertions,
@@ -205,6 +240,8 @@ automatically personal fact.
   - [career index](career/index.md)
   - [learning index](learning/index.md)
   - [writing index](writing/index.md)
+  - [relationships index](relationships/index.md)
+  - [media index](media/index.md)
   - [review index](review/index.md)
   - [sources index](sources/index.md)
   - [derived index](derived/index.md)

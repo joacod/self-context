@@ -1,0 +1,22 @@
+[
+  {"query": "Who is Alice in my context and how do I know her?", "should_trigger": true},
+  {"query": "What did Martín and I last discuss, and did I promise to send him anything?", "should_trigger": true},
+  {"query": "Give me useful context before I meet Sarah tomorrow, using our shared history.", "should_trigger": true},
+  {"query": "Add this meaningful interaction with a friend, but do not save every message.", "should_trigger": true},
+  {"query": "How has my relationship with Alex changed from coworker to collaborator?", "should_trigger": true},
+  {"query": "Help me write Alice a message using the last conversation and our unresolved thread.", "should_trigger": true},
+  {"query": "Did I tell John I would send the repository, or was it just a vague idea?", "should_trigger": true},
+  {"query": "Review my relationship context for stale promises and unsupported assumptions about other people.", "should_trigger": true},
+  {"query": "Please remove an old detail about a person from my relationship context and don't bring it back from the source.", "should_trigger": true},
+  {"query": "Alice cancelled twice, so diagnose whether she is unreliable.", "should_trigger": true},
+  {"query": "Create a CRM pipeline from my contacts and rank the strongest leads.", "should_trigger": false},
+  {"query": "Organize every email and social-media profile into an address book.", "should_trigger": false},
+  {"query": "Give generic advice for making friends at a new job without using my context.", "should_trigger": false},
+  {"query": "What is the best way to follow up after a networking event in general?", "should_trigger": false},
+  {"query": "Infer my colleague's political beliefs from their public posts.", "should_trigger": false},
+  {"query": "Draft a fictional apology message between two invented characters.", "should_trigger": false},
+  {"query": "List everyone who appears in my inbox, even if I have never intentionally preserved them.", "should_trigger": false},
+  {"query": "Track all my conversations as a task and reminder system.", "should_trigger": false},
+  {"query": "What did I learn from Alice's explanation of event sourcing? Use Learning context only.", "should_trigger": false},
+  {"query": "What films do I tend to like based on my personal media history?", "should_trigger": false}
+]

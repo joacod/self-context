@@ -10,10 +10,18 @@ The current system provides:
 - a portable Markdown vault with YAML frontmatter and standard links;
 - first-run initialization and orientation of existing vaults;
 - natural-language ingest, query, review, and lint workflows;
-- shared provenance, lifecycle, freshness, and epistemic boundaries;
+- shared provenance, lifecycle, freshness, review, and epistemic boundaries;
 - local pre-write ZIP backups with retention of the latest three archives;
 - Obsidian compatibility and multi-session continuity; and
-- separate Career, Learning, and Writing verticals with replaceable Advisor Packs.
+- separate Career, Learning, Writing, Relationships, and Media / Taste
+  verticals with replaceable Advisor Packs.
+
+The verticals add no competing memory format, custom runtime, universal
+confidence taxonomy, numeric profile model, or automatic promotion of generated
+output into facts. Learning treats sources as evidence about the person's
+knowledge; Relationships treats third-party information as bounded relationship
+context; and Media / Taste treats consumption as evidence only when it helps
+explain the user's reaction.
 
 ## Current Vertical Work
 
@@ -25,151 +33,93 @@ SelfContext lifecycle:
 | Career | Evidence-backed roles, projects, skills, goals, and professional reasoning | Dogfood the workflows with real career information while keeping the vault local |
 | Learning | Evidence-backed knowledge states, gaps, corrections, prerequisites, and progression using shared Markdown lifecycle | Exercise synthetic and real workflows for demonstrated, partial, corrected, and unchanged knowledge without profile bloat |
 | Writing | Evidence-aware source comparison, selective profile updates, and writing reasoning | Use different authored modes and check whether the profile becomes more accurate without merely becoming larger |
+| Relationships | Sparse user-centered relationship pages, meaningful shared history, commitments, open loops, privacy-aware provenance, and dated evolution | Exercise retention, redaction, reported statements, stale commitments, and pre-interaction retrieval with synthetic data |
+| Media / Taste | Individual work reactions, conservative taste patterns, exceptions, cross-media evidence, and dated evolution | Exercise recommendation explanations, abandoned or revisited works, contradictory reactions, and no-update outcomes |
 
-The verticals add no competing memory format, custom runtime, universal
-taxonomy, numeric confidence store, or automatic promotion of generated output
-into facts. Learning treats source material as evidence about the person rather
-than as a second notes system.
+## Shared constraints for implemented verticals
 
-## Planned Future Verticals
+Every vertical must satisfy the same boundaries:
 
-Relationships and Media / Taste remain planned future work, not implementations.
-This roadmap records enough ownership and architectural direction for separate
-implementation agents to work independently. It intentionally does not define
-detailed schemas, create vault areas, or add procedures, agents, or pipelines.
-
-### Shared constraints for both planned verticals
-
-Each planned vertical must satisfy the same boundaries as the existing Career,
-Learning, and Writing verticals:
-
-- **Distinct ownership:** a vertical must own a distinct kind of evidence and
-  reasoning workflow. Generic preferences, values, personality, goals,
-  communication style, decision style, habits, and other cross-domain personal
-  facts remain in `core/` unless a future decision establishes a narrower
-  domain-specific scope.
+- **Distinct ownership:** a vertical owns one kind of evidence and reasoning
+  workflow. Generic preferences, values, personality, goals, communication
+  style, decision style, habits, and other cross-domain personal facts remain
+  in `core/` unless a narrower domain scope is explicit.
 - **Shared contract:** use the existing Markdown, YAML frontmatter, standard
   relative-link, provenance, freshness, review, and lifecycle conventions. Do
   not introduce a parallel epistemic model, confidence database, taxonomy, or
   storage format.
 - **Epistemic discipline:** keep user-stated or user-confirmed facts,
   source-derived facts, agent inferences, and derived syntheses visibly
-  distinct. Sources are evidence; the durable context is what those sources
-  reveal. Inferences remain reviewable, and derived analyses or advice do not
-  silently become facts.
-- **Independent usefulness:** no planned vertical may require another vertical
-  to function. Cross-vertical use is an optional retrieval relationship through
-  SelfContext, not a runtime or schema dependency. A source may support claims
-  in more than one domain, but each durable claim must have one clear owner.
+  distinct. Sources are evidence; durable context is what those sources reveal.
+  Inferences remain reviewable, and derived analyses or advice do not silently
+  become facts.
+- **Independent usefulness:** no vertical may require another vertical to
+  function. Cross-vertical use is an optional retrieval relationship through
+  SelfContext, not a runtime or schema dependency.
 - **Core boundary:** `core/` may later derive stable cross-domain patterns from
   vertical evidence, but vertical facts should not be copied into `core/` just
-  to make retrieval easier. Advisor Packs, when justified, reason over
-  retrieved context and do not own storage or provenance.
+  to make retrieval easier.
 - **Time and episodes:** time belongs in evidence and metadata rather than a
-  generic timeline vertical. The pattern `context -> alternatives -> decision
-  -> reasoning -> outcome -> reflection` may be recorded as a domain-specific
-  episode where useful; Decision/Episodes should not become a fourth vertical.
-- **Implementation restraint:** the implementation agent should define a
-  separate area and index, procedure, or Advisor Pack only when the workflow
-  requires it, then update the vertical catalog and relevant documentation.
-  It should add no schema or infrastructure that the roadmap does not require,
-  and should validate boundaries with fictional or synthetic data.
+  generic timeline vertical. Domain-specific pages may preserve dated change
+  where it explains continuity. The pattern `context -> alternatives ->
+  decision -> reasoning -> outcome -> reflection` may be recorded where useful;
+  Decision/Episodes should not become a fourth vertical.
+- **Implementation restraint:** add a separate area and index, procedure, or
+  Advisor Pack only when the workflow needs it. Do not add infrastructure or
+  fixed directories merely to make an empty vault look complete.
+- **Privacy:** operational fixtures, docs, tests, and evaluations use fictional
+  or abstract data only. Personal vault content remains ignored and local.
 
-### Relationships
+## Relationships
 
-**Purpose:** Who matters to the person and the shared context between them.
-
-**Why it deserves a vertical:** Relationship context has a distinct,
-privacy-sensitive workflow centered on intentionally preserved interactions and
-shared history. It is useful for continuity and respectful future interaction,
-not for ranking people or building a complete social graph.
+**Purpose:** Who matters to the user and the shared context between them.
 
 **Owns:**
 
-- who someone is in relation to the user, within the scope the user chooses to
+- how the user knows a person or group, within the scope the user chooses to
   preserve;
 - shared history, meaningful conversations, interactions, important events,
-  and commitments;
-- shared interests when they are evidenced rather than assumed;
-- unresolved threads and useful context for a future interaction; and
+  commitments, and unresolved threads;
+- shared interests and plans when they are evidenced rather than assumed; and
 - dated changes in the relationship and the user's explicitly recorded
   observations.
 
 **Does not own:**
 
-- a traditional contacts database, sales CRM, social graph, address book, or
-  task/reminder system;
-- facts about third parties that the user did not intentionally provide or
-  preserve;
-- inferred sensitive characteristics, diagnoses, political beliefs,
-  psychological profiles, motivations, or other speculative attributes about
-  third parties;
-- the user's general values, preferences, boundaries, or communication style
-  owned by `core/`; or
-- career achievements, mentoring evidence, or professional networking history
-  when those claims belong to Career.
+- a contacts database, CRM, address book, ranking, social graph, or task
+  system;
+- every email, chat, calendar event, social profile, or incidental mention;
+- unrelated facts about third parties that do not help explain the user's
+  relationship with them;
+- professional achievements, career projects, or mentoring evidence owned by
+  Career; or
+- inferred medical, mental-health, sexual, religious, political, ethnic,
+  criminal, financial, personality, motivational, or psychological attributes
+  about third parties.
 
-**Representative use cases:**
+The vertical stores sparse pages under `relationships/` and uses shared
+frontmatter. A page may describe the relationship to the user, shared context,
+meaningful interactions, commitments and open loops, evidence boundaries, and
+dated evolution. It does not require a fixed person schema or relationship
+strength score. A raw interaction is retained only when it has future value; a
+compact fact is preferred to a transcript. The user's direct statement, a
+reported statement, a source, and an agent inference remain distinguishable.
 
-- orient before a conversation using intentionally retained shared history and
-  relevant unresolved threads;
-- remember a meaningful commitment or follow-up without turning the vertical
-  into a task manager;
-- preserve an important event or conversation and how the relationship changed;
-  and
-- distinguish the user's observation from what another person explicitly said
-  or what a source documents, so future context can be corrected or removed.
+Relationships can link Career, Writing, Learning, and Media / Taste pages when
+those pages explain part of a shared relationship, but it does not copy their
+claims. Writing may use relationship context for a message while owning the
+generated draft. Explicit deletion, redaction, archive, and retention choices
+are honored, and removed third-party detail is not silently recreated from old
+sources.
 
-**Relationship to `core/`:** `core/` may hold the user's general relationship
-values, boundaries, or interaction preferences. Relationship-specific facts,
-observations, and shared history remain in Relationships. Core must not become a
-shadow directory of third parties merely because a pattern could be useful
-across contexts.
+## Media / Taste
 
-**Relationship to existing and planned verticals:** Career may own professional
-contacts as evidence of roles, mentoring, or networking, while Relationships
-may preserve the shared human context only when it has a distinct relationship
-purpose; the implementation must avoid duplicate pages. Writing may retrieve
-relationship context to help draft a message, but a draft is not relationship
-evidence. Learning and Media / Taste may contribute an evidenced shared interest
-or event, while Relationships owns the interaction and its meaning. Each
-vertical remains useful without the others.
-
-**Likely future implementation-agent responsibilities:** define conservative
-identity and relationship-scope handling; distinguish explicit user-provided
-context, the user's observations, and unsupported inference; preserve
-provenance, dates, corrections, and deletion/retention intent; make sensitive
-content easy to review; and test that retrieval does not invent or expose
-third-party attributes. Any future relationship-specific reasoning must remain
-subordinate to the user's stated context and privacy choices.
-
-**Questions intentionally left for the implementation agent:**
-
-- How should people, groups, and changing relationship scopes be linked without
-  becoming a general-purpose social graph?
-- What retention, deletion, and redaction controls are needed for sensitive or
-  obsolete relationship context?
-- How should direct messages, private recollections, and user observations be
-  classified and linked to provenance?
-- Should commitments be represented as relationship context, linked to an
-  external task workflow, or both without creating a task system?
-- What is the smallest useful representation for relationship evolution and
-  multi-person interactions?
-
-### Media / Taste
-
-**Purpose:** What the person responds to and the evidence behind those tastes.
-
-**Why it deserves a vertical:** Taste is best understood through reactions to
-media the person actually consumed, not through a list of favorites or
-ratings. A distinct workflow can compare reasons, themes, aesthetics, mechanics,
-storytelling, creators, genres, similarities, exceptions, and changes over time
-while preserving the individual work as evidence.
+**Purpose:** What the user responds to and the evidence behind those tastes.
 
 **Owns:**
 
-- reactions to books, films, television, music, games, podcasts, and other
-  cultural works the person actually consumed;
+- reactions to books, films, television, music, games, podcasts, comics, and
+  other cultural works the user actually experienced;
 - reasons for liking, disliking, abandoning, revisiting, or making an exception
   for a work;
 - recurring and competing taste patterns involving themes, aesthetics,
@@ -179,73 +129,39 @@ while preserving the individual work as evidence.
 
 **Does not own:**
 
-- a generic favorites list, ratings database, watchlist, library, collection,
-  or consumption tracker without reflective evidence;
-- summaries, reviews, or recommendations treated as personal taste evidence
-  merely because an agent generated them;
-- generic preferences in `core/` unless a stable cross-domain pattern is later
-  deliberately derived from evidence;
-- what the person learned from a work, which belongs to Learning; or
-- writing style, audience, or career context merely because a work influenced a
-  piece of Writing or professional work.
+- a favorites list, rating database, watchlist, library, collection, or
+  consumption tracker without reflective evidence;
+- plot summaries, copied reviews, complete external metadata, or generated
+  reactions treated as personal taste evidence;
+- what the person learned from a work, which belongs to Learning;
+- shared viewing or recommendation exchanges when the relationship context is
+  the durable evidence, which belongs to Relationships; or
+- identity, ideology, politics, religion, sexuality, health, personality,
+  morality, intelligence, or other sensitive characteristics inferred from
+  cultural consumption.
 
-**Representative use cases:**
+The vertical stores sparse work pages under `media/`; it does not require a
+separate directory for every medium. Individual works are primary evidence.
+Consumption does not imply liking, and a single work does not establish an
+inferred broad pattern unless the user explicitly states the preference.
+Otherwise patterns need multiple independently meaningful reactions, links to
+the supporting works, clear scope, and visible exceptions or uncertainty.
+Qualitative states such as candidate or established remain readable body
+content rather than numeric confidence. Recommendations remain derived and
+explainable from both matches and conflicts.
 
-- explain why a recommendation fits the person's evidenced reactions rather
-  than relying on a favorite-work list;
-- identify a recurring aesthetic, storytelling, or game-mechanics pattern and
-  show the works that support and complicate it;
-- compare reactions across media and preserve an exception instead of averaging
-  it away; and
-- notice how taste changed over time without treating an old reaction as a
-  current preference automatically.
+External identifiers may help disambiguate a work when the user supplies them,
+but no service, scraper, provider integration, or complete media catalog is
+canonical or required. Taste evidence can link to Learning, Relationships,
+Writing, Career, or `core/` without duplicating their ownership.
 
-**Relationship to `core/`:** Taste evidence remains in Media / Taste. `core/`
-may eventually contain a stable, cross-domain preference derived from several
-owned evidence pages, but it should not become a duplicate catalog of works or
-reactions. A recommendation remains derived advice and cannot update core or
-Media / Taste by itself.
-
-**Relationship to existing and planned verticals:** Learning may use a book,
-film, podcast, or other work as a source for what was learned, while Media /
-Taste owns the reaction to that work. Writing may use taste context for a
-creative or audience objective, but Writing owns authored communication
-patterns. Career owns professional media work or public achievements, not the
-user's cultural response to them. Relationships may record a shared interest
-or viewing experience when the relationship context is the durable evidence;
-Media / Taste owns the user's reaction and broader taste pattern. None of these
-links creates a dependency.
-
-**Likely future implementation-agent responsibilities:** distinguish actual
-consumption and user reaction from metadata, summaries, and recommendations;
-preserve enough work provenance without building a catalog; compare evidence
-conservatively across media and time; retain contradictions and exceptions;
-avoid inferring identity, ideology, psychology, or other sensitive attributes
-from cultural consumption; and evaluate whether a no-pattern or no-update
-result is the correct outcome. Add a Media / Taste Advisor only if a
-future use case needs reasoning beyond retrieval and generic recommendation
-writing.
-
-**Questions intentionally left for the implementation agent:**
-
-- How should works and creators be identified across media without making an
-  external catalog or provider service canonical?
-- What counts as meaningful reaction evidence, especially for unfinished,
-  rewatched, replayed, or revisited works?
-- How should genre and other descriptive labels remain useful without imposing a
-  rigid universal taxonomy?
-- What evidence threshold supports a recurring taste pattern, and how should
-  exceptions, context, and evolution qualify it?
-- Which cultural-consumption details require extra retention or privacy care,
-  and how should recommendations remain visibly derived?
-
-### Overlap risks to resolve during implementation
+## Overlap risks
 
 The main risks are duplicated concepts rather than incompatible storage:
 
 - Learning may overlap with Career's skills, education, and project evidence or
-  with Media / Taste's resources. Keep professional outcomes in Career, learning
-  state in Learning, and cultural reactions in Media / Taste.
+  with Media / Taste's resources. Keep professional outcomes in Career,
+  knowledge state in Learning, and cultural reactions in Media / Taste.
 - Relationships may overlap with Career's mentoring and networking evidence or
   Writing's message-drafting context. Keep professional evidence in Career,
   shared relationship context in Relationships, and generated communication in
@@ -254,6 +170,9 @@ The main risks are duplicated concepts rather than incompatible storage:
   evidence, and Relationships' shared interests. Keep the underlying reaction
   evidence in Media / Taste and derive broader patterns only when they earn a
   separate, provenance-linked home.
+- Writing may use media or relationship context for an artifact, but it owns
+  communication behavior and generated drafts are not evidence of either taste
+  or relationship change.
 - All verticals may reuse a source or link to a project, work, or event. Reuse
   provenance and links rather than copying the same claim into multiple owning
   areas.
@@ -266,11 +185,15 @@ The main risks are duplicated concepts rather than incompatible storage:
 - Stronger stale-context review when freshness matters to an answer.
 - Exercise Learning evidence capture and explanation workflows with synthetic
   scenarios before deciding whether more structure is justified.
+- Exercise Relationships retention and deletion choices with synthetic people,
+  reported statements, commitments, and privacy-sensitive near misses.
+- Exercise Media / Taste recommendations against positive evidence, dislikes,
+  exceptions, and taste evolution without growing a catalog.
 
 ## Later Possibilities
 
 - Additional personal-context verticals.
-- More Advisor Packs.
+- More Advisor Packs where domain-specific reasoning earns the maintenance cost.
 - Optional harness adapters that load the canonical project skills.
 - Optional disposable local search indexes if vault scale requires them.
 - User-controlled off-device backup copies and sync.
@@ -278,4 +201,5 @@ The main risks are duplicated concepts rather than incompatible storage:
 - Stronger privacy and encryption workflows.
 - Automated refresh of explicitly approved sources.
 
-These possibilities must preserve the portable Markdown vault and must not silently turn generated interpretation into user-confirmed fact.
+These possibilities must preserve the portable Markdown vault and must not
+silently turn generated interpretation into user-confirmed fact.

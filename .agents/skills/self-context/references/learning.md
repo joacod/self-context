@@ -31,10 +31,11 @@ Learning does not own:
 - authored communication behavior owned by `writing/`.
 
 A Career or Writing page can be evidence for a Learning claim. Link to that
-page instead of copying its record. A future Media / Taste vertical may own a
-reaction to a book or podcast; Learning owns only what the person’s reaction or
-work demonstrates about their understanding. Relationships and Media / Taste
-are not implemented by this procedure.
+page instead of copying its record. Media / Taste owns a reaction to a book,
+film, podcast, or other work; Learning owns only what the person's reaction or
+work demonstrates about their understanding. Relationships owns the shared
+relationship context around a learning interaction. Neither vertical is
+implemented by this Learning procedure.
 
 ## Storage and page choices
 

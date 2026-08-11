@@ -16,6 +16,8 @@ Current vertical routing:
 | Career | Career evidence and concepts | Career Advisor |
 | Learning | Evidence-backed knowledge states and their evolution | Learning Advisor |
 | Writing | Evidence-backed communication and writing context | Writing Advisor |
+| Relationships | Intentional relationship context, shared history, commitments, and open loops | Relationships Advisor |
+| Media / Taste | Evidence-backed reactions to cultural works and evolving taste patterns | Media Advisor |
 
 - A future vertical must define its scope and storage area before its procedure
   or Advisor Pack is added. Do not make a vertical's rules part of the core
@@ -26,9 +28,9 @@ Do not invent a competing vault schema or lifecycle ad hoc. Follow the SelfConte
 
 ## Operating Modes
 
-Normal vault use is **user mode**. Ingest, query, review, lint, career advice,
-and personalized writing advice operate on the private vault and the user's
-response only. They must not
+Normal vault use is **user mode**. Ingest, query, review, lint, career,
+learning, writing, relationships, and media/taste advice operate on the private
+vault and the user's response only. They must not
 modify skills, schemas, architecture, documentation, evals, scripts,
 `.gitignore`, or repository structure as a side effect. Do not create a
 learning log, improvement log, or automatic operations backlog.

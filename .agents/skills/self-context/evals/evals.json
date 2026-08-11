@@ -399,6 +399,72 @@
         "A requested mutation adds only the missing Learning navigation after backup.",
         "Existing schema, pages, and taxonomy are not silently migrated."
       ]
+    },
+    {
+      "id": 37,
+      "prompt": "In a synthetic existing vault without a Relationships directory, answer a read-only question about how John knows Alice without creating files. Then describe the minimal navigation SelfContext would add only after John explicitly asks to retain a meaningful interaction.",
+      "expected_output": "The skill treats missing Relationships context as empty for read-only retrieval and adds only the on-demand index after a requested mutation.",
+      "files": [],
+      "expectations": [
+        "Read-only relationship retrieval does not create files or a backup.",
+        "A requested mutation adds only relationships/index.md and its root link after backup.",
+        "The existing schema and taxonomy are not silently migrated into a CRM."
+      ]
+    },
+    {
+      "id": 38,
+      "prompt": "Ingest a synthetic recollection that Alice said she would introduce John to Alex. Preserve the reported statement, distinguish it from an agent inference about Alice, and avoid storing the whole conversation.",
+      "expected_output": "The skill stores a compact relationship commitment or source-backed fact with provenance and visible epistemic boundaries.",
+      "files": [],
+      "expectations": [
+        "Reported speech is not rewritten as independently verified third-party fact.",
+        "The durable result is compact and relationship-centered.",
+        "Unsupported motives or sensitive traits are not inferred."
+      ]
+    },
+    {
+      "id": 39,
+      "prompt": "In a synthetic existing vault, John asks for context before meeting Alice. Retrieve only shared history, the last meaningful topic, and an unresolved promise; do not expose unrelated third-party details or create a person dossier.",
+      "expected_output": "The skill produces a focused, freshness-aware interaction answer and keeps it ephemeral unless retention is requested.",
+      "files": [],
+      "expectations": [
+        "The answer is limited to relevant relationship continuity.",
+        "Stale or reviewable claims are qualified.",
+        "No unrelated third-party profile is created or exposed."
+      ]
+    },
+    {
+      "id": 40,
+      "prompt": "Ingest a synthetic film reaction: John liked atmospheric worldbuilding but disliked heavy combat. Keep the reaction as Media / Taste evidence, do not treat completion as liking, and do not create a catalog entry with copied metadata.",
+      "expected_output": "The skill stores a sparse work reaction under media with provenance and keeps external metadata secondary.",
+      "files": [],
+      "expectations": [
+        "The user's reaction is retained as the durable subject.",
+        "Consumption and preference remain distinct.",
+        "No complete media catalog or generated review is stored as evidence."
+      ]
+    },
+    {
+      "id": 41,
+      "prompt": "A synthetic vault contains reactions to three works across books and games. Identify a cautious taste pattern, link the supporting works, preserve one exception, and do not infer personality or politics.",
+      "expected_output": "The skill keeps individual work evidence primary, represents a scoped reviewable pattern, and retains exceptions and privacy boundaries.",
+      "expectations": [
+        "The pattern is explained by individual work reactions.",
+        "The exception is not averaged away.",
+        "Sensitive identity or personality claims are not inferred."
+      ],
+      "files": []
+    },
+    {
+      "id": 42,
+      "prompt": "A synthetic recommendation compares a new film with several works John liked and one work he disliked. Explain why it may fit, name the conflict, and keep the recommendation derived without updating his taste profile.",
+      "expected_output": "The skill produces an explainable conditional recommendation and leaves factual Media / Taste and core context unchanged.",
+      "files": [],
+      "expectations": [
+        "Positive and negative evidence are both considered.",
+        "The recommendation remains visibly derived and conditional.",
+        "No new preference or core fact is promoted automatically."
+      ]
     }
   ]
 }

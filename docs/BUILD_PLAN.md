@@ -9,9 +9,9 @@ The project is intentionally implemented one phase at a time. After each phase, 
 ## Current State
 
 - **Current phase:** Phase 5 - First-run dry run and v0.1 bootstrap complete; no later bootstrap phase is active.
-- **Repository state:** Tracked foundation documentation, the canonical SelfContext skill, and the Career, Learning, and Writing Advisor Packs are present alongside the original `LICENSE` and funding configuration.
+- **Repository state:** Tracked foundation documentation, the canonical SelfContext skill, and the Career, Learning, Writing, Relationships, and Media Advisor Packs are present alongside the original `LICENSE` and funding configuration.
 - **Private vault state:** Any local `vault/` directory is private and ignored. A fresh clone must not depend on an ignored empty directory; the SelfContext skill initializes it on demand.
-- **Next experiment:** Dogfood the Career, Learning, and Writing workflows with real context only after explicit user direction. This is not another bootstrap phase.
+- **Next experiment:** Dogfood the Career, Learning, Writing, Relationships, and Media / Taste workflows with real context only after explicit user direction. This is not another bootstrap phase.
 - **Operational maintenance:** Local pre-write vault backups are implemented outside the bootstrap phases after explicit user direction; they retain the latest three timestamped ZIPs under the root `backups/` directory beside `vault/`.
 
 ## Non-Negotiable Constraints
@@ -184,8 +184,38 @@ cross-vertical evidence. Sources remain provenance; the durable page describes
 the person rather than the source material.
 
 Validation for this extension is recorded in the final change review. The
-implementation must leave Relationships and Media / Taste deferred and must
-keep Career and Writing ownership intact.
+implementation kept Career and Writing ownership intact and left Relationships
+and Media / Taste as separate future boundaries at that time.
+
+### Post-bootstrap Extension - Relationships Vertical
+
+**Status:** Implemented as a focused operational extension after the Learning
+vertical. It reuses the portable schema version and does not add a contact
+database, social graph, relationship score, or custom runtime.
+
+The Relationships extension adds an on-demand `relationships/` area, shared
+lifecycle guidance, a Relationships Advisor Pack, and synthetic evaluations for
+sparse person context, meaningful interactions, commitments, reported
+statements, relationship evolution, deletion, privacy, and cross-vertical
+ownership. It keeps the subject as the user's relationship and avoids
+third-party profiling or transcript retention by default.
+
+### Post-bootstrap Extension - Media / Taste Vertical
+
+**Status:** Implemented as a focused operational extension alongside
+Relationships. It reuses the portable schema version and does not add a media
+catalog, tracker, external integration, numeric taste model, or custom runtime.
+
+The Media / Taste extension adds an on-demand `media/` area, shared lifecycle
+guidance, a Media Advisor Pack, and synthetic evaluations for individual work
+reactions, consumption versus preference, evidence-backed patterns,
+exceptions, evolution, recommendations, generated-reaction boundaries, privacy,
+and no-update outcomes. It keeps the user's reaction as the durable subject and
+leaves Learning, Relationships, Writing, Career, and `core/` ownership intact.
+
+Validation for both extensions is recorded in the final change review. The
+implementation uses fictional data only in tracked tests, evaluations, and
+documentation.
 
 ## Key Decisions
 
@@ -198,6 +228,8 @@ keep Career and Writing ownership intact.
 - [Pre-write vault backups remain local and bounded](decisions/0009-pre-write-vault-backups.md).
 - [Writing is an evidence-backed, selectively updated vertical](decisions/0010-writing-vertical.md).
 - [Learning is an evidence-backed, evolving knowledge vertical](decisions/0012-learning-vertical.md).
+- [Relationships is an evidence-backed, privacy-sensitive vertical](decisions/0013-relationships-vertical.md).
+- [Media / Taste is an evidence-backed reaction and preference vertical](decisions/0014-media-taste-vertical.md).
 
 ## Phase Handoff Rules
 

@@ -23,6 +23,10 @@ vault/
 |   `-- index.md
 |-- writing/
 |   `-- index.md
+|-- relationships/
+|   `-- index.md
+|-- media/
+|   `-- index.md
 |-- review/
 |   |-- index.md
 |   `-- observations/
@@ -41,7 +45,9 @@ Create additional subdirectories only when useful. Common career groupings are
 `public-work/`. Learning may use scoped concept groupings when a real
 collection justifies them, but it does not require a fixed taxonomy or resource
 archive. Writing may use scoped observations or revision records when a real
-collection justifies them, but it does not require a fixed taxonomy. Do not
+collection justifies them, but it does not require a fixed taxonomy.
+Relationships may use sparse person or group pages and Media / Taste may use
+work or pattern groupings only when real collections justify them. Do not
 create all possible directories just to fill an empty tree.
 
 Add a top-level vertical area only when a domain has durable context to own. Give
@@ -60,6 +66,12 @@ is optional; neither may introduce a competing schema or memory store.
 - `writing/` holds observable communication, reasoning-through-writing,
   reader-awareness, editorial preferences, anti-patterns, and evidenced writing
   modes. It does not hold beliefs or generated drafts as authentic evidence.
+- `relationships/` holds intentional context about the user's relationships,
+  including shared history, meaningful interactions, commitments, open loops,
+  and dated evolution. It is not a third-party dossier or contact database.
+- `media/` holds reactions to cultural works and evidence-backed taste patterns,
+  including exceptions and evolution. It is not a consumption tracker or media
+  catalog.
 - `review/observations/` holds unresolved agent observations and review items,
   not silently accepted facts.
 - `sources/` holds retained source or recollection material when preserving it
@@ -208,7 +220,8 @@ navigation: keep the affected index pages current.
 The root index should link to `SCHEMA.md`, the current vertical areas, core,
 review, sources, derived, and `log.md`. Category indexes should link to their
 current pages and briefly explain the category. Do not list pages that do not
-exist.
+exist. Existing copied vaults may add a missing vertical index on demand rather
+than being silently migrated.
 
 Log meaningful operations in `log.md` using a date heading and explicit
 operation, summary, changed files, sources, and follow-up items. A trivial

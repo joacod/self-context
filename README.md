@@ -27,8 +27,8 @@ based on my context, how should I position myself for [a role]?
 ```
 
 The skills infer whether the request is for ingest, query, review, lint, or
-career, learning, and writing evidence and reasoning. No custom CLI or slash
-command is required.
+career, learning, writing, relationships, and media/taste evidence and
+reasoning. No custom CLI or slash command is required.
 
 ## How It Is Organized
 
@@ -52,14 +52,18 @@ rules into the core:
 | Career | `career/` | Roles, projects, skills, achievements, goals, and professional examples | Career Advisor |
 | Learning | `learning/` | What the person understands, meaningful gaps, corrections, mental models, prerequisites, and progression evidence | Learning Advisor |
 | Writing | `writing/` | Evidence-backed communication patterns, reasoning-through-writing, readers, revision, and writing modes | Writing Advisor |
+| Relationships | `relationships/` | Intentional relationship context, shared history, meaningful interactions, commitments, open loops, and relationship evolution | Relationships Advisor |
+| Media / Taste | `media/` | Reactions to experienced cultural works, explainable taste patterns, exceptions, and taste evolution | Media Advisor |
 
 The same vault can contain shared `core/` context, the vertical areas above,
 retained `sources/`, unresolved `review/` items, and clearly labeled `derived/`
 analyses. Vertical context stays in its owning area; an Advisor Pack may combine
 relevant areas without duplicating them. Learning treats sources as evidence
-about the person’s knowledge rather than as a resource archive. A future
-vertical should define its scope, own a separate area and index, and be added to
-the vertical catalog before its procedures or Advisor Pack are used.
+about the person’s knowledge rather than as a resource archive. Relationships
+centers the user's connection with another person rather than a third-party
+profile. Media / Taste centers the user's reaction to a work rather than a
+consumption catalog. Each vertical uses the shared lifecycle and remains useful
+without the others.
 
 ## Your Vault
 
@@ -89,14 +93,18 @@ remains ordinary Markdown.
 The implementation supports:
 
 - the portable SelfContext core and shared vault lifecycle;
-- the Career, Learning, and Writing verticals described above;
+- the Career, Learning, Writing, Relationships, and Media / Taste verticals described above;
 - natural-language ingest, query, review, and lint workflows;
-- replaceable Career, Learning, and Writing Advisor Packs;
+- replaceable Career, Learning, Writing, Relationships, and Media Advisor Packs;
 - Obsidian compatibility and multi-session continuity through the vault;
 - evidence-backed Learning context that distinguishes exposure from
   understanding; and
 - evidence-backed, selectively updated Writing context, where analysis may
-  produce no profile change.
+  produce no profile change;
+- privacy-sensitive Relationships context for shared history, commitments, and
+  useful continuity; and
+- evidence-backed Media / Taste context that distinguishes consumption from
+  reaction and preserves exceptions.
 
 The project does not require cloud services, telemetry, automatic sync, a
 database, or a custom runtime.

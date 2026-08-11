@@ -33,6 +33,20 @@ understanding or demonstrated application. Use reviewable Learning observations
 as uncertainty, not settled knowledge. An explanation based on known concepts is
 still derived output and does not update the Learning profile automatically.
 
+For Relationships retrieval, read only the relevant relationship pages, shared
+history, commitments, open loops, and linked source records. Keep reported
+statements, user observations, source-derived facts, and agent inferences
+separate. Do not expose unrelated third-party information or infer sensitive
+characteristics. Context before an interaction is a focused derived answer, not
+a complete person dossier.
+
+For Media / Taste retrieval, read individual work reactions, supporting pattern
+pages, exceptions, and dated evidence. Consumption is not preference, and
+external metadata, copied reviews, and generated reactions are not personal
+evidence. Explain recommendations through matches and conflicts in the user's
+actual reactions; keep the recommendation derived and do not update taste or
+`core/` automatically.
+
 ## Verification and Freshness at Query Time
 
 Treat verification and freshness as separate dimensions:

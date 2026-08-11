@@ -105,6 +105,8 @@ reasoning for a vertical after this skill retrieves the relevant evidence.
 | `career/` | Career-specific evidence and concepts | Career Advisor |
 | `learning/` | Knowledge states, meaningful gaps, corrections, mental models, prerequisites, and progression evidence | Learning Advisor |
 | `writing/` | Observable communication and writing context | Writing Advisor |
+| `relationships/` | Intentional relationship context, shared history, commitments, and open loops | Relationships Advisor |
+| `media/` | Reactions to experienced cultural works and evidence-backed taste patterns | Media Advisor |
 
 More verticals may be added without changing the core schema. Identify a
 vertical by its documented scope before writing, keep its pages in a separate
@@ -124,6 +126,19 @@ vertical procedure](references/learning.md) in addition to the general
 procedure. Learning analysis must describe the person's knowledge and scope,
 not turn source material, casual mentions, or generated explanations into
 competence.
+
+For a relationship, person, shared-history, interaction, commitment, open-loop,
+relationship-evolution, or pre-interaction request, read [the Relationships
+procedure](references/relationships.md) in addition to the general procedure.
+Keep the subject as the user's relationship, preserve reported statements and
+sources visibly, and never infer sensitive or psychological characteristics
+about third parties.
+
+For a media, work, reaction, taste-pattern, exception, recommendation, or taste-
+evolution request, read [the Media / Taste procedure](references/media-taste.md)
+in addition to the general procedure. Treat individual user reactions as the
+primary evidence, distinguish consumption from preference, and keep patterns
+explainable, scoped, and reviewable.
 
 ## Attention and Confirmation
 
@@ -180,8 +195,11 @@ confirmation question instead of silently using it as current.
    - [Query](references/query.md) for targeted retrieval and the persistence
      decision for reusable or explicitly retained syntheses.
    - [Writing vertical](references/writing.md) for authorship, observations,
-     modes, revisions, selective profile impact, and generated artifacts; use the
-     owning vertical's documented procedure for any other domain-specific rules.
+     modes, revisions, selective profile impact, and generated artifacts.
+   - [Relationships vertical](references/relationships.md) for sparse person
+     context, shared history, commitments, privacy, and relationship evolution.
+   - [Media / Taste vertical](references/media-taste.md) for work reactions,
+     evidence-backed patterns, exceptions, and taste evolution.
    - [Review and lint](references/review-and-lint.md) for human review and the
      deterministic validator.
 

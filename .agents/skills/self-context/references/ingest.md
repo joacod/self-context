@@ -140,7 +140,66 @@ A Learning impact report should state evidence retained, concepts or gaps
 updated, contradictions or review items, cross-vertical links, and whether the
 result was a meaningful update or "No meaningful Learning update."
 
-## 3c. Triage Attention Without Blocking Ingest
+## 3c. Relationships-specific comparison
+
+When the supplied material concerns a person, group, shared history,
+interaction, commitment, open loop, or relationship change, apply [the
+Relationships procedure](relationships.md) before changing the vault. Keep the
+subject as the user's relationship and analyze the smallest useful evidence:
+
+- Distinguish the user's direct statement, a report of what another person
+  said, a retained message or recollection, an observable interaction, and an
+  agent interpretation.
+- Find the existing relationship page before creating a person record. Retain
+  only interactions with future contextual value; prefer a compact dated fact
+  or linked commitment over a transcript or contact list.
+- Distinguish actual promises from vague conversation. Record actor, action,
+  status, context, and evidence when known, without creating a task manager.
+- Preserve meaningful relationship evolution and contradictions as dated,
+  scoped context. Motives, closeness, reliability judgments, and third-party
+  characteristics remain reviewable observations rather than facts.
+- Do not infer sensitive characteristics about third parties. Honor explicit
+  delete, redact, archive, and retention requests and do not recreate removed
+  details from old sources.
+- Keep Career, Writing, Learning, Media / Taste, and `core/` claims in their
+  owning areas and link them when the relationship context needs them.
+
+A Relationships impact report should state the pages or source records changed,
+shared context or commitments retained, privacy or redaction decisions,
+reviewable items, cross-vertical links, and whether the result was meaningful or
+"No meaningful Relationships update."
+
+## 3d. Media / Taste-specific comparison
+
+When the supplied material concerns a work, consumption, reaction, taste
+pattern, exception, recommendation, or taste change, apply [the Media / Taste
+procedure](media-taste.md) before changing the vault. Analyze the user's
+experience and reaction locally before comparing it with existing work and
+pattern pages:
+
+- Separate consumption state and external metadata from the user's actual
+  reaction. Finishing or starting a work does not establish liking.
+- Update an existing work page when identity and reaction scope match. Retain
+  only intentional or future-useful reactions; do not create a catalog or
+  store every play, view, article, or song.
+- A single work supports a broad pattern only when the user explicitly states
+  that preference. Otherwise require multiple independently meaningful
+  reactions for a plausible inferred pattern, keep it scoped, and preserve
+  exceptions and contradictions.
+- Represent taste change with dated evidence rather than deleting older
+  reactions. Generated reviews, summaries, recommendations, and agent
+  reactions are derived output, not personal evidence.
+- Do not infer identity, ideology, politics, religion, sexuality, health,
+  personality, or other sensitive characteristics from cultural consumption.
+- Keep Learning, Relationships, Writing, Career, and `core/` claims in their
+  owning areas and link them rather than duplicating them.
+
+A Media / Taste impact report should state works and reactions retained,
+patterns reinforced or left unchanged, exceptions or evolution, review items,
+cross-vertical links, and whether the result was meaningful or "No meaningful
+Media / Taste update."
+
+## 3e. Triage Attention Without Blocking Ingest
 
 After normalizing the supplied material, decide whether a small number of items
 deserve immediate human attention. Keep ordinary ingestion smooth; do not ask a
@@ -175,7 +234,7 @@ Confirmation is page-scoped. If a page contains unrelated claims and the user
 confirms only some of them, split the concept or leave the page unverified; do
 not mark the whole page verified by implication.
 
-## 3d. Assign Freshness Conservatively
+## 3f. Assign Freshness Conservatively
 
 Keep `stale_after: null` unless a simple review deadline is useful. The default
 automatic deadline is 90 days, and it applies only when all of these are true:

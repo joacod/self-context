@@ -36,6 +36,20 @@ and that generated explanations remain derived. The linter cannot decide
 whether a person understands a concept; keep that judgment evidence-backed and
 reviewable.
 
+For Relationships, inspect whether each page is about the user's relationship
+rather than an unrelated third-party dossier, whether reported statements and
+sources are labeled, whether commitments are real rather than vague tasks, and
+whether behavioral observations avoid unsupported judgments or sensitive
+inferences. Check deletion, redaction, stale threads, contradictions, and links
+to Career or other owning verticals.
+
+For Media / Taste, inspect whether work pages preserve the user's actual
+reaction rather than consumption or external metadata, whether inferred
+patterns have sufficient independent evidence, and whether exceptions, dates,
+contradictions, and generated-artifact boundaries remain visible. Check that
+recommendations stay derived and that taste pages do not infer sensitive
+identity, ideology, health, or personality.
+
 For a broad semantic review, sample recent meaningful ingests from `log.md` and
 check category coverage: explicit context useful across domains should not be
 stranded in a vertical, and vertical facts should not be duplicated into
