@@ -103,6 +103,7 @@ reasoning for a vertical after this skill retrieves the relevant evidence.
 | --- | --- | --- |
 | `core/` | Cross-domain goals, values, preferences, communication and decision patterns, and recurring constraints | SelfContext |
 | `career/` | Career-specific evidence and concepts | Career Advisor |
+| `learning/` | Knowledge states, meaningful gaps, corrections, mental models, prerequisites, and progression evidence | Learning Advisor |
 | `writing/` | Observable communication and writing context | Writing Advisor |
 
 More verticals may be added without changing the core schema. Identify a
@@ -116,6 +117,13 @@ For an authored writing source, Writing profile query, or revision analysis, rea
 general ingest, query, or review procedure. Writing analysis must compare local
 observations with existing context before changing durable pages; a successful
 operation may preserve the source and make no profile change.
+
+For a Learning topic, knowledge-evidence, gap, misconception, correction,
+mental-model, prerequisite, or progression request, read [the Learning
+vertical procedure](references/learning.md) in addition to the general
+procedure. Learning analysis must describe the person's knowledge and scope,
+not turn source material, casual mentions, or generated explanations into
+competence.
 
 ## Attention and Confirmation
 

@@ -44,10 +44,11 @@ The lifecycle is deliberately conservative. An agent may notice a recurring patt
 ## Long-Term Direction
 
 Career was the first vertical because it provided a concrete, evidence-rich use
-case. Writing is now a separate vertical for evidence-backed communication and
-writing context. The core should remain useful across domains without defining
-domain schemas itself. Future verticals and Advisor Packs should consume the same
-portable context rather than create competing memory systems.
+case. Writing is a separate vertical for evidence-backed communication and
+writing context, and Learning records what the person understands and how that
+understanding evolves. The core should remain useful across domains without
+defining domain schemas itself. Future verticals and Advisor Packs should
+consume the same portable context rather than create competing memory systems.
 
 Guided Discovery may eventually identify important gaps and ask targeted
 questions. It is a future workflow, not part of the current foundation.

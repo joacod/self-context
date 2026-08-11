@@ -14,6 +14,7 @@ Current vertical routing:
 | Vertical | Owns | Advisor Pack |
 | --- | --- | --- |
 | Career | Career evidence and concepts | Career Advisor |
+| Learning | Evidence-backed knowledge states and their evolution | Learning Advisor |
 | Writing | Evidence-backed communication and writing context | Writing Advisor |
 
 - A future vertical must define its scope and storage area before its procedure

@@ -13,7 +13,7 @@ The current system provides:
 - shared provenance, lifecycle, freshness, and epistemic boundaries;
 - local pre-write ZIP backups with retention of the latest three archives;
 - Obsidian compatibility and multi-session continuity; and
-- separate Career and Writing verticals with replaceable Advisor Packs.
+- separate Career, Learning, and Writing verticals with replaceable Advisor Packs.
 
 ## Current Vertical Work
 
@@ -23,22 +23,25 @@ SelfContext lifecycle:
 | Vertical | Current behavior | Next useful experiment |
 | --- | --- | --- |
 | Career | Evidence-backed roles, projects, skills, goals, and professional reasoning | Dogfood the workflows with real career information while keeping the vault local |
+| Learning | Evidence-backed knowledge states, gaps, corrections, prerequisites, and progression using shared Markdown lifecycle | Exercise synthetic and real workflows for demonstrated, partial, corrected, and unchanged knowledge without profile bloat |
 | Writing | Evidence-aware source comparison, selective profile updates, and writing reasoning | Use different authored modes and check whether the profile becomes more accurate without merely becoming larger |
 
-Neither vertical adds a competing memory format, custom runtime, universal
-taxonomy, or automatic promotion of generated output into facts.
+The verticals add no competing memory format, custom runtime, universal
+taxonomy, numeric confidence store, or automatic promotion of generated output
+into facts. Learning treats source material as evidence about the person rather
+than as a second notes system.
 
 ## Planned Future Verticals
 
-The following verticals are planned future work, not implementations. This
-roadmap records enough ownership and architectural direction for separate
+Relationships and Media / Taste remain planned future work, not implementations.
+This roadmap records enough ownership and architectural direction for separate
 implementation agents to work independently. It intentionally does not define
 detailed schemas, create vault areas, or add procedures, agents, or pipelines.
 
-### Shared constraints for all three verticals
+### Shared constraints for both planned verticals
 
-Each planned vertical must satisfy the same boundaries as the existing Career
-and Writing verticals:
+Each planned vertical must satisfy the same boundaries as the existing Career,
+Learning, and Writing verticals:
 
 - **Distinct ownership:** a vertical must own a distinct kind of evidence and
   reasoning workflow. Generic preferences, values, personality, goals,
@@ -71,85 +74,6 @@ and Writing verticals:
   requires it, then update the vertical catalog and relevant documentation.
   It should add no schema or infrastructure that the roadmap does not require,
   and should validate boundaries with fictional or synthetic data.
-
-### Learning
-
-**Purpose:** What the person understands and how that understanding evolves.
-
-**Why it deserves a vertical:** Learning has an evidence and reasoning workflow
-that is different from keeping notes or recording a goal. It compares evidence
-across time to represent an evolving knowledge state: what is demonstrated,
-partial, uncertain, missing, corrected, or connected to prerequisites. That
-state can improve future explanations and questions without pretending to be a
-complete inventory of everything the person has read or studied.
-
-**Owns:**
-
-- topics, concepts, and mental models that are explicitly or evidentially
-  relevant to the person's understanding;
-- demonstrated or partially demonstrated knowledge, known gaps, questions,
-  misconceptions, and corrected misconceptions;
-- learning experiences, exercises, and projects when they provide evidence of
-  understanding rather than merely an activity record;
-- useful resources as provenance for what was learned and why it mattered;
-- prerequisite relationships and dated evidence of progression.
-
-**Does not own:**
-
-- a generic notes, bookmarks, reading-list, course, certificate, or
-  book-summary repository;
-- every resource the person encountered, or a claim that consuming a resource
-  proves understanding;
-- generic goals, habits, preferences, or values owned by `core/`;
-- career history, professional impact, or role evidence owned by Career;
-- authored communication patterns owned by Writing; or
-- media consumption and taste evidence owned by Media / Taste.
-
-**Representative use cases:**
-
-- identify what evidence supports explaining a concept and where the remaining
-  gaps are;
-- connect a new exercise or project to concepts it demonstrates, while
-  preserving the project's Career ownership when it is also professional work;
-- record a question, misconception, or correction without silently presenting
-  an agent's interpretation as established knowledge; and
-- compare dated evidence to show progression, changed mental models, or a
-  prerequisite that needs attention.
-
-**Relationship to `core/`:** `core/` may contain broad goals or constraints that
-shape learning, but the evolving knowledge state belongs in Learning. Core may
-later derive a cross-domain pattern from Learning evidence; Learning should not
-copy that synthesis back as a concept-level fact.
-
-**Relationship to existing and planned verticals:** Career can provide work,
-project, or public-artifact evidence from which Learning derives what was
-understood, but Career remains the owner of employment and professional
-outcomes. Writing may use Learning context to explain a subject, while Writing
-continues to own communication evidence. Media may provide a consumed resource
-or cultural work that prompted learning, but Learning owns what the person
-learned and Media / Taste owns the response to the work. No one of these
-relationships is a prerequisite for Learning.
-
-**Likely future implementation-agent responsibilities:** establish the
-vertical's evidence boundary and navigation; define how a source, exercise, or
-project can support a knowledge claim without equating exposure with mastery;
-compare new evidence with existing concepts, gaps, and contradictions; preserve
-progression and uncertainty; and create synthetic evaluations for demonstrated,
-partial, corrected, and unchanged knowledge. Add a Learning Advisor only if
-future reasoning needs cannot be expressed by the shared SelfContext workflow.
-
-**Questions intentionally left for the implementation agent:**
-
-- What is the smallest useful concept granularity, and when should related
-  concepts remain a single page?
-- What evidence is sufficient to call understanding demonstrated or partial,
-  especially when the evidence is an agent interpretation?
-- How should prerequisites and changes in a mental model be represented without
-  turning the vault into a knowledge graph or confidence database?
-- When should a resource remain only a source record, and when does what was
-  learned justify durable context?
-- How should forgetting, stale knowledge, unfinished learning, and repeated
-  evidence affect review without creating a generic timeline?
 
 ### Relationships
 
@@ -330,7 +254,7 @@ The main risks are duplicated concepts rather than incompatible storage:
   evidence, and Relationships' shared interests. Keep the underlying reaction
   evidence in Media / Taste and derive broader patterns only when they earn a
   separate, provenance-linked home.
-- All three may reuse a source or link to a project, work, or event. Reuse
+- All verticals may reuse a source or link to a project, work, or event. Reuse
   provenance and links rather than copying the same claim into multiple owning
   areas.
 
@@ -340,6 +264,8 @@ The main risks are duplicated concepts rather than incompatible storage:
 - Targeted questions that remain bounded rather than becoming an open-ended
   interview.
 - Stronger stale-context review when freshness matters to an answer.
+- Exercise Learning evidence capture and explanation workflows with synthetic
+  scenarios before deciding whether more structure is justified.
 
 ## Later Possibilities
 

@@ -306,10 +306,12 @@ user's voice.
 
 ## Cross-Vertical Retrieval
 
-Writing work may retrieve relevant core, career, project, belief, or knowledge
-context. It should link to that context rather than copy it into `writing/`.
+Writing work may retrieve relevant core, career, Learning, project, belief, or
+knowledge context. It should link to that context rather than copy it into
+`writing/`.
 
 - A career achievement remains in `career/`.
+- A Learning knowledge state, gap, or prerequisite remains in `learning/`.
 - A cross-domain preference explicitly stated by the user belongs in `core/`.
 - A substantive belief or opinion belongs in the appropriate domain.
 - A Writing page can explain how the user communicates an idea without asserting

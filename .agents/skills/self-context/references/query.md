@@ -26,6 +26,13 @@ not independent evidence of the user's communication. A Writing query may
 report that no meaningful profile update was needed; retrieval and analysis do
 not require a new durable page.
 
+For Learning retrieval, read the relevant `learning/` concepts and linked
+sources, then include the qualitative knowledge state, scope, dated evidence,
+gaps, corrections, and prerequisite relationships. Distinguish exposure from
+understanding or demonstrated application. Use reviewable Learning observations
+as uncertainty, not settled knowledge. An explanation based on known concepts is
+still derived output and does not update the Learning profile automatically.
+
 ## Verification and Freshness at Query Time
 
 Treat verification and freshness as separate dimensions:

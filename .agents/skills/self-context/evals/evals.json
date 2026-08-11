@@ -355,6 +355,50 @@
         "The existing observation and lifecycle metadata remain unchanged.",
         "The response explains that no future-use or review signal justified persistence."
       ]
+    },
+    {
+      "id": 33,
+      "prompt": "In a synthetic empty Context Vault, ingest John Doe's explicit statement that he can explain lexical closures and the exercise that supports a callback example. Create only scoped Learning context, preserve provenance, and do not create a generic notes or course page.",
+      "expected_output": "The skill creates or initializes the Learning area through the shared lifecycle, preserves evidence, and records a scoped qualitative knowledge state without inventing proficiency.",
+      "files": [],
+      "expectations": [
+        "Learning navigation is created or updated through the shared vault structure.",
+        "The exercise is retained or linked as provenance for the scoped concept.",
+        "The result does not create a generic resource archive or broad competence claim."
+      ]
+    },
+    {
+      "id": 34,
+      "prompt": "What does a synthetic Context Vault support about John Doe's distributed-systems knowledge? Separate exposure, intentional learning, demonstrated concepts, meaningful gaps, and reviewable inferences. Do not add a page for this query.",
+      "expected_output": "The skill performs targeted Learning retrieval, labels qualitative state and uncertainty, and keeps the answer ephemeral.",
+      "files": [],
+      "expectations": [
+        "The response distinguishes exposure from understanding and demonstration.",
+        "Meaningful gaps or review observations are reported as provisional.",
+        "No durable page is created for the read-only query."
+      ]
+    },
+    {
+      "id": 35,
+      "prompt": "A synthetic Learning page preserves John Doe's prior belief that X works because of Y. He now explicitly corrects it to Z. Update the coherent page scope, preserve the earlier model and evidence, and do not erase the progression history.",
+      "expected_output": "The skill applies the correction workflow, preserves provenance and history, and treats the explicit correction as scoped user context.",
+      "files": [],
+      "expectations": [
+        "The earlier misconception remains visible as historical context.",
+        "The correction is linked to evidence and uses the appropriate assertion kind.",
+        "The page-level update does not erase unrelated claims or create a second duplicate concept."
+      ]
+    },
+    {
+      "id": 36,
+      "prompt": "A synthetic existing Context Vault has no learning directory. First answer a read-only question about prior knowledge without creating files. Then, only after an explicit request to ingest evidence, add the minimal Learning index and root link after the normal pre-write backup.",
+      "expected_output": "The skill treats a missing Learning area as empty for read-only retrieval and adds it minimally only for a requested mutation.",
+      "files": [],
+      "expectations": [
+        "Read-only retrieval does not create Learning files or a backup.",
+        "A requested mutation adds only the missing Learning navigation after backup.",
+        "Existing schema, pages, and taxonomy are not silently migrated."
+      ]
     }
   ]
 }

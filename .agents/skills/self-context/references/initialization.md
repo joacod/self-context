@@ -45,6 +45,14 @@ create the pre-write backup, then add only `writing/` and `writing/index.md` and
 add the Writing link to the root index. Do not rewrite `SCHEMA.md`, migrate other
 pages, or reorganize an existing taxonomy merely to add the vertical.
 
+An existing vault may not have a `learning/` directory or `learning/index.md`.
+For a read-only Learning query, treat the missing area as empty and do not
+create files. For a Learning mutation, orient from the existing schema, index,
+and log, create the pre-write backup, then add only `learning/` and
+`learning/index.md` and add the Learning link to the root index. Do not rewrite
+`SCHEMA.md`, migrate other pages, or reorganize an existing taxonomy merely to
+add the vertical.
+
 Existing-vault support means the user can continue immediately; it does not
 mean silently migrating or flattening their data.
 
@@ -78,6 +86,7 @@ Top-level areas:
 
 - `core/`: cross-domain personal context.
 - `career/`: career-specific evidence and concepts.
+- `learning/`: personal knowledge states, gaps, corrections, and progression evidence.
 - `writing/`: observable writing and communication context.
 - `review/`: unresolved observations and review items.
 - `sources/`: retained source or recollection material.
@@ -119,6 +128,7 @@ changes and [the recent log](log.md) for continuity.
 
 - [Core context](core/index.md)
 - [Career context](career/index.md)
+- [Learning context](learning/index.md)
 - [Writing context](writing/index.md)
 - [Review queue](review/index.md)
 - [Sources](sources/index.md)
@@ -141,6 +151,14 @@ patterns, decision patterns, and recurring constraints.
 
 Career-specific roles, history, projects, skills, stories, evidence, and
 professional goals.
+```
+
+```markdown
+# Learning Context
+
+What the person understands and how that understanding evolves: knowledge
+states, meaningful gaps, corrections, mental models, prerequisites, and dated
+evidence. This is not a resource or course archive.
 ```
 
 ```markdown
@@ -185,6 +203,7 @@ automatically personal fact.
   - [index](index.md)
   - [core index](core/index.md)
   - [career index](career/index.md)
+  - [learning index](learning/index.md)
   - [writing index](writing/index.md)
   - [review index](review/index.md)
   - [sources index](sources/index.md)

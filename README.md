@@ -27,7 +27,8 @@ based on my context, how should I position myself for [a role]?
 ```
 
 The skills infer whether the request is for ingest, query, review, lint, or
-career evidence and reasoning. No custom CLI or slash command is required.
+career, learning, and writing evidence and reasoning. No custom CLI or slash
+command is required.
 
 ## How It Is Organized
 
@@ -49,14 +50,16 @@ rules into the core:
 | Vertical | Vault area | Owns | Advisor Pack |
 | --- | --- | --- | --- |
 | Career | `career/` | Roles, projects, skills, achievements, goals, and professional examples | Career Advisor |
+| Learning | `learning/` | What the person understands, meaningful gaps, corrections, mental models, prerequisites, and progression evidence | Learning Advisor |
 | Writing | `writing/` | Evidence-backed communication patterns, reasoning-through-writing, readers, revision, and writing modes | Writing Advisor |
 
 The same vault can contain shared `core/` context, the vertical areas above,
 retained `sources/`, unresolved `review/` items, and clearly labeled `derived/`
 analyses. Vertical context stays in its owning area; an Advisor Pack may combine
-relevant areas without duplicating them. A future vertical should define its
-scope, own a separate area and index, and be added to the vertical catalog before
-its procedures or Advisor Pack are used.
+relevant areas without duplicating them. Learning treats sources as evidence
+about the person’s knowledge rather than as a resource archive. A future
+vertical should define its scope, own a separate area and index, and be added to
+the vertical catalog before its procedures or Advisor Pack are used.
 
 ## Your Vault
 
@@ -86,10 +89,12 @@ remains ordinary Markdown.
 The implementation supports:
 
 - the portable SelfContext core and shared vault lifecycle;
-- the Career and Writing verticals described above;
+- the Career, Learning, and Writing verticals described above;
 - natural-language ingest, query, review, and lint workflows;
-- replaceable Career and Writing Advisor Packs;
-- Obsidian compatibility and multi-session continuity through the vault; and
+- replaceable Career, Learning, and Writing Advisor Packs;
+- Obsidian compatibility and multi-session continuity through the vault;
+- evidence-backed Learning context that distinguishes exposure from
+  understanding; and
 - evidence-backed, selectively updated Writing context, where analysis may
   produce no profile change.
 

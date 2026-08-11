@@ -112,7 +112,35 @@ contradictions, potential profile updates, redundant observations ignored, and
 whether the result was a profile refinement or "No meaningful update." The
 second result is successful and is not a reason to manufacture a trait.
 
-## 3b. Triage Attention Without Blocking Ingest
+## 3b. Learning-specific comparison
+
+When the supplied material concerns what the user understands, is learning,
+does not understand, corrected, or wants explained, apply [the Learning
+vertical procedure](learning.md) before changing the vault. Analyze the evidence
+locally first, then compare it with the relevant Learning concepts, gaps,
+corrections, and review observations.
+
+- Preserve a source, exercise, project, or explanation only when it provides
+  useful evidence about the person's knowledge; do not create a resource or
+  course archive.
+- Record the smallest scoped qualitative state in the Learning page body:
+  encountered, learning, partially understood, understood, demonstrated,
+  uncertain, or outdated. These are not numeric scores or automatic confidence.
+- Treat a user-stated understanding, uncertainty, or correction as scoped user
+  context. Treat an agent interpretation of an exercise, repeated question, or
+  misconception as reviewable until the user confirms it or the evidence is
+  otherwise explicit.
+- Keep Career projects and Writing artifacts in their owning areas and link them
+  as evidence rather than copying their facts into `learning/`.
+- Preserve prior models and dated evidence when understanding changes. A new
+  source that repeats a known state is a successful no-op, not a reason to add a
+  duplicate concept.
+
+A Learning impact report should state evidence retained, concepts or gaps
+updated, contradictions or review items, cross-vertical links, and whether the
+result was a meaningful update or "No meaningful Learning update."
+
+## 3c. Triage Attention Without Blocking Ingest
 
 After normalizing the supplied material, decide whether a small number of items
 deserve immediate human attention. Keep ordinary ingestion smooth; do not ask a
@@ -147,7 +175,7 @@ Confirmation is page-scoped. If a page contains unrelated claims and the user
 confirms only some of them, split the concept or leave the page unverified; do
 not mark the whole page verified by implication.
 
-## 3b. Assign Freshness Conservatively
+## 3d. Assign Freshness Conservatively
 
 Keep `stale_after: null` unless a simple review deadline is useful. The default
 automatic deadline is 90 days, and it applies only when all of these are true:
