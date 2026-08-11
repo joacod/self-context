@@ -27,6 +27,15 @@ whether human revision signals are supported by meaningful deltas, and whether
 beliefs or career facts have been copied into the Writing vertical. The linter
 cannot decide these semantic questions; keep them visible for human review.
 
+For Learning, inspect whether a page describes the person’s knowledge rather
+than merely a resource, whether its qualitative state is scoped and supported,
+whether exposure has been kept separate from understanding, and whether gaps,
+misconceptions, corrections, and prerequisites retain dated evidence. Check
+that Career projects and Writing artifacts are linked rather than duplicated,
+and that generated explanations remain derived. The linter cannot decide
+whether a person understands a concept; keep that judgment evidence-backed and
+reviewable.
+
 For a broad semantic review, sample recent meaningful ingests from `log.md` and
 check category coverage: explicit context useful across domains should not be
 stranded in a vertical, and vertical facts should not be duplicated into

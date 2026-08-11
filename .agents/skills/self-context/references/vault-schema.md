@@ -19,6 +19,8 @@ vault/
 |   `-- index.md
 |-- career/
 |   `-- index.md
+|-- learning/
+|   `-- index.md
 |-- writing/
 |   `-- index.md
 |-- review/
@@ -36,9 +38,11 @@ outside the portable Markdown taxonomy and separate from the vault.
 
 Create additional subdirectories only when useful. Common career groupings are
 `roles/`, `history/`, `projects/`, `skills/`, `stories/`, `goals/`, and
-`public-work/`. Writing may use scoped observations or revision records when a
-real collection justifies them, but it does not require a fixed taxonomy. Do
-not create all possible directories just to fill an empty tree.
+`public-work/`. Learning may use scoped concept groupings when a real
+collection justifies them, but it does not require a fixed taxonomy or resource
+archive. Writing may use scoped observations or revision records when a real
+collection justifies them, but it does not require a fixed taxonomy. Do not
+create all possible directories just to fill an empty tree.
 
 Add a top-level vertical area only when a domain has durable context to own. Give
 it a stable lowercase directory and an `index.md`, document its scope, and use
@@ -50,6 +54,9 @@ is optional; neither may introduce a competing schema or memory store.
 - `log.md` records meaningful operations and recent continuity notes.
 - `core/` holds cross-domain personal context.
 - `career/` holds career-specific evidence and concepts.
+- `learning/` holds the person's knowledge states, meaningful gaps,
+  misconceptions, corrections, mental models, prerequisites, and evidence of
+  progression. It does not hold a generic resource or course archive.
 - `writing/` holds observable communication, reasoning-through-writing,
   reader-awareness, editorial preferences, anti-patterns, and evidenced writing
   modes. It does not hold beliefs or generated drafts as authentic evidence.

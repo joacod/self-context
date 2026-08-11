@@ -96,6 +96,7 @@ vault/
 |-- log.md          # recent operations and continuity notes
 |-- core/           # cross-domain personal context
 |-- career/         # career context
+|-- learning/       # knowledge states and learning evidence
 |-- writing/        # observable communication and writing context
 |-- sources/        # retained source or recollection material where useful
 `-- derived/        # reusable query/advice synthesis, visibly derived
@@ -152,7 +153,15 @@ The current verticals have separate scopes and ownership:
 | Vertical | Vault area | Scope | Advisor Pack |
 | --- | --- | --- | --- |
 | Career | `career/` | Roles, history, projects, skills, achievements, leadership examples, mentoring, public work, and professional goals | Career Advisor |
+| Learning | `learning/` | Topics and concepts, qualitative knowledge states, meaningful gaps, misconceptions, corrections, mental models, prerequisites, and progression evidence | Learning Advisor |
 | Writing | `writing/` | Observable communication behavior, reasoning-through-writing, reader awareness, editorial preferences, anti-patterns, and evidenced modes | Writing Advisor |
+
+Learning does not own generic notes, bookmarks, course records, or source
+summaries. It records what the person understands and how that state changes;
+resources, projects, and authored work remain evidence owned by their source
+verticals. Knowledge state, gaps, corrections, mental models, prerequisites,
+and progression use readable Markdown sections and the shared lifecycle rather
+than numeric scores or a knowledge graph.
 
 Writing does not own beliefs, opinions, career facts, technical knowledge, or
 generated drafts as authentic evidence. Retained Writing source and
@@ -202,7 +211,7 @@ generated prose as an automatic instruction to mutate the profile.
 
 The SelfContext skill recognizes natural-language intent and applies a lifecycle rather than a command vocabulary:
 
-1. **Ingest** or update information, preserve useful provenance, avoid duplicate concepts, connect meaningful links, update navigation, and log the operation. Triage only high-impact or unresolved items for a bounded, batched confirmation follow-up. Authored Writing sources use a local-analysis and impact-comparison step before durable profile updates.
+1. **Ingest** or update information, preserve useful provenance, avoid duplicate concepts, connect meaningful links, update navigation, and log the operation. Triage only high-impact or unresolved items for a bounded, batched confirmation follow-up. Authored Writing sources use a local-analysis and impact-comparison step before durable profile updates; Learning evidence uses a local comparison to separate exposure, understanding, demonstration, gaps, and corrections.
 2. **Query** through orientation, indexes, targeted file search, metadata, and link traversal. A trivial retrieval returns an answer without creating a page; a substantial reusable synthesis or explicitly retained future-use guidance may be stored under derived material after a duplicate, ownership, contradiction, and freshness check. Review status and freshness before using context as current.
 3. **Review** unresolved inferences, stale context, contradictions, ambiguous claims, missing provenance, and important changes needing attention.
 4. **Lint** structural and epistemic integrity, including frontmatter, links, indexes, duplicates, metadata consistency, freshness, and schema drift.
@@ -226,4 +235,4 @@ remains subordinate to the Markdown vault and does not replace semantic review.
 
 These exclusions keep the durable asset portable, local, inspectable, and replaceable. Future disposable search indexes or user-controlled off-device copies can be considered only without changing the vault's canonical role.
 
-See the [architectural decisions](decisions/) for the reasoning behind these boundaries, including the [user-mode and project-maintenance separation](decisions/0007-user-mode-project-maintenance.md), the [selective confirmation and freshness policy](decisions/0008-selective-confirmation-and-freshness.md), the [pre-write backup policy](decisions/0009-pre-write-vault-backups.md), the [Writing vertical decision](decisions/0010-writing-vertical.md), and the [query persistence triage decision](decisions/0011-query-persistence-triage.md).
+See the [architectural decisions](decisions/) for the reasoning behind these boundaries, including the [user-mode and project-maintenance separation](decisions/0007-user-mode-project-maintenance.md), the [selective confirmation and freshness policy](decisions/0008-selective-confirmation-and-freshness.md), the [pre-write backup policy](decisions/0009-pre-write-vault-backups.md), the [Writing vertical decision](decisions/0010-writing-vertical.md), the [query persistence triage decision](decisions/0011-query-persistence-triage.md), and the [Learning vertical decision](decisions/0012-learning-vertical.md).

@@ -1,0 +1,137 @@
+{
+  "skill_name": "learning-advisor",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Use a synthetic Context Vault for John Doe. He says he understands lexical closures and a fictional exercise shows him explaining a callback that captures a variable. Tell me what can be stored as durable Learning context, keep the scope narrow, and do not call this general JavaScript proficiency.",
+      "expected_output": "The Advisor uses SelfContext first, distinguishes the direct statement from exercise evidence, and describes a scoped understanding or demonstrated state without inflating competence.",
+      "files": [],
+      "expectations": [
+        "The response distinguishes user-stated context from exercise evidence.",
+        "The knowledge state is scoped to lexical closures or the demonstrated task.",
+        "The response does not infer broad JavaScript proficiency."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "In a synthetic vault, a source says John Doe completed a distributed-systems course and read three articles. What does that establish about his knowledge? Do not turn the course or readings into demonstrated competence.",
+      "expected_output": "The Advisor reports exposure or source provenance and explicitly says that consumption alone does not establish understanding.",
+      "files": [],
+      "expectations": [
+        "Course completion and reading are treated as exposure or source evidence.",
+        "No proficiency or demonstrated state is invented.",
+        "The answer remains useful by identifying what evidence would support understanding."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "What am I currently trying to learn in this synthetic Context Vault? Group the result by qualitative state, mention dated evidence, and do not create a course tracker or numerical score.",
+      "expected_output": "The Advisor retrieves Learning concepts, reports active learning and other states with dates and scope, and avoids numeric scoring or resource tracking.",
+      "files": [],
+      "expectations": [
+        "The answer groups concepts by qualitative state.",
+        "Evidence dates and scope are included where available.",
+        "No numeric proficiency model or generic course inventory is introduced."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "A synthetic vault contains one explicit gap: John Doe understands React reconciliation but remains unclear about concurrent-rendering scheduling. Identify the meaningful gap and explain what is directly stated versus any recommendation.",
+      "expected_output": "The Advisor preserves the narrow gap, separates evidence from derived next steps, and does not generalize it to weakness in React.",
+      "files": [],
+      "expectations": [
+        "The gap is stated at the exact scheduling boundary.",
+        "The response distinguishes the user's statement from advice.",
+        "The answer does not claim broader inability."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "In a synthetic Learning profile, John Doe previously believed X behaves because of Y, then wrote an explanation showing the actual mechanism is Z. Explain how his understanding changed while preserving the earlier model and remaining uncertainty.",
+      "expected_output": "The Advisor describes dated misconception correction, preserves the prior model, and reports the scope of the correction.",
+      "files": [],
+      "expectations": [
+        "The earlier belief remains visible as history.",
+        "The correction is linked to its evidence and not treated as self-validating generated prose.",
+        "Remaining scope or uncertainty is identified."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Explain monads to John Doe using only concepts that the synthetic vault supports as known prerequisites. If the vault does not establish a needed prerequisite, say so and provide a short generic bridge rather than pretending he knows it.",
+      "expected_output": "The Advisor retrieves supported prerequisites, labels generic teaching, and asks for correction if an assumed foundation is uncertain.",
+      "files": [],
+      "expectations": [
+        "Known prerequisites are selected from Learning evidence rather than guessed.",
+        "Review, stale, or merely encountered pages are not silently treated as settled foundations.",
+        "The explanation is labeled derived/generic where appropriate."
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "What should I learn before trying category theory? Use a synthetic Learning profile and give only personal prerequisite suggestions justified by the evidence. Do not build a universal knowledge graph.",
+      "expected_output": "The Advisor gives a small conditional prerequisite path grounded in existing context and identifies missing evidence.",
+      "files": [],
+      "expectations": [
+        "Prerequisites are connected to the user's known context or objective.",
+        "The answer remains conditional where evidence is missing.",
+        "No universal graph or exhaustive curriculum is created."
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Dated synthetic evidence shows John Doe first encountered Kubernetes, later deployed a service with it, and still feels uncertain about production operations. Summarize the progression without treating one deployment as total mastery.",
+      "expected_output": "The Advisor uses dated evidence to show progression and preserves the operational boundary.",
+      "files": [],
+      "expectations": [
+        "The progression distinguishes exposure, application, and uncertainty.",
+        "The deployment is scoped to what it demonstrates.",
+        "Production-operations uncertainty remains visible."
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "A synthetic Career project page demonstrates that John Doe used Kubernetes, while a Writing article explains a related architecture. Answer what these pages can support about Learning, but keep Career and Writing facts in their owning areas.",
+      "expected_output": "The Advisor links cross-vertical evidence, states the limited Learning implication, and avoids duplicating either record.",
+      "files": [],
+      "expectations": [
+        "Career and Writing pages remain the owners of their original evidence.",
+        "The Learning implication is limited to what the evidence demonstrates.",
+        "No duplicate Career or Writing facts are proposed in Learning."
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Analyze a new synthetic source that repeats an already established Learning concept and its evidence state. Report whether there is a meaningful update; do not create a duplicate topic just because another source was read.",
+      "expected_output": "The Advisor reports a successful no-op when appropriate and distinguishes source retention from profile mutation.",
+      "files": [],
+      "expectations": [
+        "No duplicate Learning concept is created for redundant evidence.",
+        "The answer explicitly permits No meaningful Learning update.",
+        "Source provenance and profile mutation are kept separate."
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "After a synthetic explanation of distributed systems, I explicitly ask you to retain the explanation because I will reuse it. Check existing Learning pages first and persist only a small linked derived synthesis if justified; do not update my knowledge state.",
+      "expected_output": "The Advisor treats explicit future reuse as a persistence signal, keeps the result derived, and leaves Learning facts unchanged.",
+      "files": [],
+      "expectations": [
+        "Explicit retention is recognized as a continuity signal.",
+        "The persisted result is a linked derived synthesis rather than a Learning fact.",
+        "Existing pages are checked for duplicates and the knowledge state is not silently updated."
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "A synthetic existing vault has no learning directory. First answer a read-only question about the person's prior knowledge without creating files. Then describe what SelfContext would create only after an explicit request to ingest new Learning evidence.",
+      "expected_output": "The Advisor treats a missing Learning area as empty for read-only work and describes minimal on-demand creation only for a requested mutation.",
+      "files": [],
+      "expectations": [
+        "Read-only work does not create a Learning index or backup.",
+        "A requested mutation would add only learning/index.md and the root link after backup.",
+        "Existing schema and taxonomy are not silently migrated."
+      ]
+    }
+  ]
+}

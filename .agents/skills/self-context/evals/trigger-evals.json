@@ -100,6 +100,38 @@
     "should_trigger": true
   },
   {
+    "query": "What do I already understand about distributed systems, and which parts are demonstrated versus only familiar?",
+    "should_trigger": true
+  },
+  {
+    "query": "Capture this meaningful Learning gap about concurrent rendering without treating one question as proof of incompetence.",
+    "should_trigger": true
+  },
+  {
+    "query": "Explain monads using concepts that my Context Vault supports as known prerequisites.",
+    "should_trigger": true
+  },
+  {
+    "query": "I corrected a misconception about closures. Preserve the old and new models and the evidence for the change.",
+    "should_trigger": true
+  },
+  {
+    "query": "Have I changed my understanding of microservices over time? Use dated Learning evidence.",
+    "should_trigger": true
+  },
+  {
+    "query": "Did completing this course prove that I understand functional programming? Check my evidence instead of assuming it did.",
+    "should_trigger": true
+  },
+  {
+    "query": "Use a Career project as evidence for what I know, but keep the professional record in Career.",
+    "should_trigger": true
+  },
+  {
+    "query": "What should I learn before category theory given the concepts already in my vault?",
+    "should_trigger": true
+  },
+  {
     "query": "Write a generic blog post about queues for a fictional audience; do not read any personal files or create a Context Vault.",
     "should_trigger": false
   },

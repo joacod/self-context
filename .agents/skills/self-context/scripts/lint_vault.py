@@ -60,7 +60,7 @@ WRITING_ROLE_COMBINATIONS = {
 }
 LINK_PATTERN = re.compile(r"(?<!!)\[[^\]]*\]\(([^)]+)\)")
 SCHEMA_VERSION_PATTERN = re.compile(r"^\s*schema_version:\s*([0-9]+)\.([0-9]+)\s*$", re.MULTILINE)
-OPTIONAL_ROOT_INDEX_LINKS = ("writing/index.md",)
+OPTIONAL_ROOT_INDEX_LINKS = ("learning/index.md", "writing/index.md")
 
 
 def parse_scalar(value: str) -> Any:

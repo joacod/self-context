@@ -9,9 +9,9 @@ The project is intentionally implemented one phase at a time. After each phase, 
 ## Current State
 
 - **Current phase:** Phase 5 - First-run dry run and v0.1 bootstrap complete; no later bootstrap phase is active.
-- **Repository state:** Tracked foundation documentation, the canonical SelfContext skill, and the Career Advisor Pack are present alongside the original `LICENSE` and funding configuration.
-- **Private vault state:** No `vault/` directory is present. This is expected; the repository must not depend on an ignored empty directory.
-- **Next experiment:** Dogfood SelfContext with real career information, only after explicit user direction. This is not another bootstrap phase.
+- **Repository state:** Tracked foundation documentation, the canonical SelfContext skill, and the Career, Learning, and Writing Advisor Packs are present alongside the original `LICENSE` and funding configuration.
+- **Private vault state:** Any local `vault/` directory is private and ignored. A fresh clone must not depend on an ignored empty directory; the SelfContext skill initializes it on demand.
+- **Next experiment:** Dogfood the Career, Learning, and Writing workflows with real context only after explicit user direction. This is not another bootstrap phase.
 - **Operational maintenance:** Local pre-write vault backups are implemented outside the bootstrap phases after explicit user direction; they retain the latest three timestamped ZIPs under the root `backups/` directory beside `vault/`.
 
 ## Non-Negotiable Constraints
@@ -169,6 +169,24 @@ evals cover first evidence, conservative promotion, no-op and redundancy
 handling, mode refinement, contradictions, evolution, AI-assisted revisions,
 cross-vertical boundaries, provenance, and advisor persistence.
 
+### Post-bootstrap Extension - Learning Vertical
+
+**Status:** Implemented as a focused operational extension after the v0.1
+bootstrap and Writing extension. It reuses the portable schema version and does
+not add a database, graph, numeric confidence model, or custom runtime.
+
+The Learning extension preserves a small model of what the person understands
+and how that understanding changes. It adds an on-demand `learning/` area,
+shared lifecycle guidance, a Learning Advisor Pack, and synthetic evaluations
+for exposure versus understanding, demonstrated and partial knowledge, durable
+gaps, misconceptions and corrections, prerequisites, progression, and
+cross-vertical evidence. Sources remain provenance; the durable page describes
+the person rather than the source material.
+
+Validation for this extension is recorded in the final change review. The
+implementation must leave Relationships and Media / Taste deferred and must
+keep Career and Writing ownership intact.
+
 ## Key Decisions
 
 - [Markdown and standard links are canonical](decisions/0001-markdown-canonical.md).
@@ -179,6 +197,7 @@ cross-vertical boundaries, provenance, and advisor persistence.
 - [Core context stays extensible while career is the first vertical](decisions/0006-core-and-career-vertical.md).
 - [Pre-write vault backups remain local and bounded](decisions/0009-pre-write-vault-backups.md).
 - [Writing is an evidence-backed, selectively updated vertical](decisions/0010-writing-vertical.md).
+- [Learning is an evidence-backed, evolving knowledge vertical](decisions/0012-learning-vertical.md).
 
 ## Phase Handoff Rules
 
