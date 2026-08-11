@@ -1,21 +1,19 @@
 ---
 name: self-context
 description: >
-  Operate a user's local SelfContext Context Vault as the portable source of
-  truth for personal context. Use this skill whenever the user asks to ingest,
-  remember, add, update, organize, connect, query, retrieve, review, lint,
-  validate, reconcile, or inspect information about themselves, their history,
-  goals, preferences, constraints, experiences, or evidence, including when
-  they do not say "SelfContext" or "vault." Use it for evidence retrieval that
-  supports career questions, resumes, profiles, or professional positioning;
-  a domain-specific Advisor Pack may add specialized reasoning later. It also
-  applies to requests involving resume text, recollections, profiles, authored writing,
-  or other sources that should become durable personal context, and for
-  initializing, copying, restoring, backing up, or exporting a Context Vault.
-  Before any vault write, create the local retained backup described below. Do
-  not use it for generic resume writing, generic Obsidian organization, Git
-  ignore questions,
-  or advice that does not rely on the user's Context Vault.
+  Operate a user's local SelfContext Vault as the portable source of truth for
+  personal context. Use this skill when asked to ingest, remember, add,
+  update, organize, connect, query, retrieve, review, lint, validate, reconcile,
+  or inspect information about themselves, their history, goals, preferences,
+  constraints, experiences, or evidence, even without saying "SelfContext" or
+  "vault." Use for evidence retrieval supporting career questions, resumes,
+  profiles, or professional positioning; a domain-specific Advisor Pack may add
+  specialized reasoning. Also use it for resume text, recollections, profiles,
+  authored writing, or other sources that should become durable personal
+  context, and for initializing, copying, restoring, backing up, or exporting a
+  Context Vault. Before any vault write, create the local retained backup
+  described below. Do not use it for generic resume writing, generic Obsidian
+  organization, Git ignore questions, or advice unrelated to the user's vault.
 compatibility: Requires local filesystem access from the repository root. Uses standard Markdown, YAML frontmatter, relative Markdown links, and optional Python 3 for deterministic linting.
 ---
 
