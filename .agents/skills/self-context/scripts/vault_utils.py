@@ -670,10 +670,7 @@ def parse_schema(root: Path) -> Dict[str, Any]:
             if line.strip() and not line.startswith((" ", "\t")):
                 legacy_section = False
     result["contract_entries"] = contracts
-    result["enabled_contracts"] = [
-        {"id": item.get("id"), "version": item.get("version")}
-        for item in contracts
-    ]
+    result["enabled_contracts"] = list(contracts)
     result["contract_errors"] = contract_errors
     result["legacy_enabled_verticals"] = legacy_enabled
     result["contract_section_present"] = contract_section_present
