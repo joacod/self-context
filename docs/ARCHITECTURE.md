@@ -242,8 +242,8 @@ The repository's compact `verticals.json` catalog defines the available
 verticals, their areas, indexes, procedures, Advisor Packs, ownership, and
 activation rules. Each procedure has a machine-readable header and a Contract
 migrations section. A private vault enables a subset and records the applied
-contract versions in schema 0.2. Catalog paths are resolved from the installed
-SelfContext skill, never from a project-local `.swe-forge` tree.
+contract versions in schema 0.2. Catalog paths are resolved relative to the
+SelfContext skill that owns the catalog.
 
 ## Core Operations
 

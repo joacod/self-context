@@ -71,8 +71,8 @@ WRITING_ROLE_COMBINATIONS = {
 }
 
 
-# The catalog is deliberately resolved relative to this installed project skill,
-# never relative to a project-local .swe-forge tree.
+# Resolve the catalog relative to the SelfContext skill that owns it, rather
+# than relative to the caller's working directory.
 def skill_root() -> Path:
     return Path(__file__).resolve().parent.parent
 
