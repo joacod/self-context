@@ -27,8 +27,8 @@ class BackupVaultTests(unittest.TestCase):
             project_root = Path(temporary)
             vault = project_root / "vault"
             (vault / "career").mkdir(parents=True)
-            (vault / "career" / "profile.md").write_text(
-                "before the operation\n", encoding="utf-8"
+            (vault / "career" / "profile.md").write_bytes(
+                b"before the operation\n"
             )
             (vault / "backups").mkdir()
             legacy_file = vault / "backups" / "notes.txt"
