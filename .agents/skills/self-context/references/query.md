@@ -1,19 +1,37 @@
 # Query and Derived Material
 
-For a large or ambiguous vault, use the index first and then the disposable
-local lexical helper:
+Keep index-first retrieval as the primary workflow. Use the disposable local
+lexical helper only as a fallback when the index is ambiguous, aliases are
+likely to matter, the vault is medium or large, the task spans a few verticals,
+or historical context may matter:
 
 ```bash
 python3 .agents/skills/self-context/scripts/search_vault.py "task words" vault
 ```
 
-`search_vault.py` is read-only, dependency-free, and builds no permanent
-index. It ranks exact ID/title/alias matches first, then title/alias tokens,
-descriptions/tags, headings, and body matches. It excludes deep-review reports
-and noncanonical state by default and returns bounded snippets plus metadata.
-Search is only a retrieval aid: inspect provenance, freshness, status, and
-source links before answering. A vertical filter and explicit source,
-archived, and superseded inclusion flags are available.
+`search_vault.py` is read-only, dependency-free, builds no permanent index, and
+never replaces the Markdown vault. Its deterministic priorities are exact stable
+ID, exact normalized title, exact normalized alias, title/alias phrase, and
+then lexical matches. For non-exact queries, unique query-term coverage is the
+primary signal; matched-term count, field importance (title/alias, description/
+tags, headings, body), phrase matches, term proximity, status, page type, and
+assertion kind refine the ordering. Path is the final tie-breaker. A one-token
+title match should not outrank a page covering nearly all task terms merely
+because the token is in a prominent field.
+
+JSON results include matched fields, bounded snippets, a match type, query-term
+coverage, phrase fields, and a deterministic `rank_score`. The score explains
+ordering only; it is not confidence, truth, or verification. Archived and
+superseded pages are included by default with lower ranking. Use
+`--exclude-archived` or `--exclude-superseded` to omit them. The accepted
+`--include-archived` and `--include-superseded` options are deprecated
+compatibility aliases for one cycle and will be removed in a future release;
+they do not change the default inclusion behavior. Sources remain opt-in via
+`--include-sources`.
+
+Search is only a retrieval aid: inspect provenance, freshness, assertion kind,
+review state, contradictions, and source links before answering. Deep-review
+reports and noncanonical state remain excluded.
 
 ## Deep-lint inventory versus search output
 
@@ -46,10 +64,10 @@ invalid marker structure, treat it as an unreliable navigation aid and run
 managed entries. `sync_indexes.py --write` belongs only inside an authorized
 mutation workflow. For schema 0.2, an absent available vertical is empty; a
 read-only query must not create its area or contract marker. Schema 0.1 is
-likewise preserved during read-only retrieval. Use local lexical search only
-when the index is ambiguous or the vault is large. Do not scan the entire vault
-for a narrow question unless orientation shows that the relevant path is
-unclear.
+likewise preserved during read-only retrieval. Use local lexical search as the
+fallback described above, not as a replacement for index orientation. Do not
+scan the entire vault for a narrow question unless orientation shows that the
+relevant path is unclear.
 
 Start with `SCHEMA.md`, `index.md`, and recent log entries. Use category indexes,
 frontmatter, filenames, targeted text search, and links to locate relevant
