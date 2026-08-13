@@ -1,14 +1,43 @@
 # SelfContext Vault Schema
 
-The vault is intentionally plain. This schema gives agents enough structure to
-orient, preserve provenance, validate integrity, and leave a generic model with
-an understandable file tree. It is not a database schema and is not strict OKF
-conformance.
+The vault is ordinary Markdown, YAML frontmatter, standard relative links, and
+small control files. It is a personal-context format, not a generic wiki or
+knowledge base. The private `vault/` is the source of truth; scripts compile
+disposable navigation and reports but never replace it.
 
-## Top-Level Layout
+## Schema versions and enabled contracts
 
-An initialized vault contains shared control files and the vertical areas
-currently enabled:
+Schema 0.1 remains supported exactly as a legacy vault. Ordinary ingest, query,
+review, lint, and advice do not add contract markers, rewrite indexes, or bump
+its version. Only an explicit schema migration or explicitly authorized deep
+update may upgrade it.
+
+Schema 0.2 is a backward-compatible maintenance upgrade. Its `SCHEMA.md`
+contains a parseable enabled-contract section:
+
+```yaml
+schema_version: 0.2
+vertical_contracts:
+  - career@1
+  - writing@1
+```
+
+The list is selective; a vault does not need every available vertical. The
+repository catalog describes **available verticals**. A private vault has an
+**enabled vertical** only when its area/index is intentionally present and its
+contract is recorded. The **applied contract version** is the recorded version.
+For schema 0.2, a known vertical area without a contract marker is a deep-lint
+finding, not a reason to delete or move it.
+
+The migration helper infers enabled verticals conservatively from existing
+areas, indexes, and schema text. It creates one backup before its first write,
+preserves every page and custom area, adds only control metadata and managed
+index blocks, and reports ambiguity rather than relocating anything. Optional
+page metadata is not bulk-added.
+
+## Top-level layout
+
+A new schema 0.2 vault starts with only universal areas:
 
 ```text
 vault/
@@ -17,213 +46,106 @@ vault/
 |-- log.md
 |-- core/
 |   `-- index.md
-|-- career/
-|   `-- index.md
-|-- learning/
-|   `-- index.md
-|-- writing/
-|   `-- index.md
-|-- relationships/
-|   `-- index.md
-|-- media/
-|   `-- index.md
 |-- review/
-|   |-- index.md
-|   `-- observations/
+|   `-- index.md
+|   `-- observations/       # created when needed
 |-- sources/
 |   `-- index.md
 `-- derived/
     `-- index.md
 ```
 
-The pre-write backup helper stores timestamped ZIP archives in the project-root
-`backups/` directory beside `vault/`. That directory is operational state,
-outside the portable Markdown taxonomy and separate from the vault.
+Create a vertical directory and index only when a triggering mutation requires
+that vertical or the user explicitly adopts it. A read-only query about an
+absent vertical treats it as empty and creates no files. On a first required
+vertical operation, initialize universal structure, make the normal backup at
+the correct point, create only that vertical, record its contract, add its
+root-index link, and continue the operation in the same turn.
 
-Create additional subdirectories only when useful. Common career groupings are
-`roles/`, `history/`, `projects/`, `skills/`, `stories/`, `goals/`, and
-`public-work/`. Learning may use scoped concept groupings when a real
-collection justifies them, but it does not require a fixed taxonomy or resource
-archive. Writing may use scoped observations or revision records when a real
-collection justifies them, but it does not require a fixed taxonomy.
-Relationships may use sparse person or group pages and Media / Taste may use
-work or pattern groupings only when real collections justify them. Do not
-create all possible directories just to fill an empty tree.
+Schema 0.1 vaults may have the historical default areas, custom areas, or only
+some verticals. Preserve their taxonomy. The current available verticals are
+Career, Learning, Writing, Relationships, and Media / Taste; detailed
+ownership/exclusion rules are canonical in the vertical procedures and the
+catalog.
 
-Add a top-level vertical area only when a domain has durable context to own. Give
-it a stable lowercase directory and an `index.md`, document its scope, and use
-the shared metadata and lifecycle. A vertical-specific procedure or Advisor Pack
-is optional; neither may introduce a competing schema or memory store.
+## Durable page metadata
 
-- `SCHEMA.md` explains this organization, metadata, and lifecycle rules.
-- The root `index.md` is the main navigation page.
-- `log.md` records meaningful operations and recent continuity notes.
-- `core/` holds cross-domain personal context.
-- `career/` holds career-specific evidence and concepts.
-- `learning/` holds the person's knowledge states, meaningful gaps,
-  misconceptions, corrections, mental models, prerequisites, and evidence of
-  progression. It does not hold a generic resource or course archive.
-- `writing/` holds observable communication, reasoning-through-writing,
-  reader-awareness, editorial preferences, anti-patterns, and evidenced writing
-  modes. It does not hold beliefs or generated drafts as authentic evidence.
-- `relationships/` holds intentional context about the user's relationships,
-  including shared history, meaningful interactions, commitments, open loops,
-  and dated evolution. It is not a third-party dossier or contact database.
-- `media/` holds reactions to cultural works and evidence-backed taste patterns,
-  including exceptions and evolution. It is not a consumption tracker or media
-  catalog.
-- `review/observations/` holds unresolved agent observations and review items,
-  not silently accepted facts.
-- `sources/` holds retained source or recollection material when preserving it
-  makes provenance clearer.
-- `derived/` holds reusable query or advice syntheses, visibly derived from
-  evidence. It must never silently become factual context.
-
-Obsidian may create a `.obsidian/` directory when a person opens the vault. It
-is optional viewer state, not canonical context. Do not create it during
-initialization, index it, lint it, or treat its files as durable pages.
-
-The root `SCHEMA.md` and `log.md`, plus root and category index pages, do not
-need frontmatter. Durable concept, observation, source, and derived pages do.
-
-## Frontmatter
-
-Use a small YAML frontmatter block at the beginning of durable Markdown pages:
+Durable concept, observation, source, and synthesis pages use:
 
 ```yaml
 ---
 type: concept
-title: Example concept
-description: Short explanation of what this page represents.
+title: Synthetic example concept
+description: Fictional navigation-oriented description.
 tags:
   - example
 status: active
-generated: 2026-08-07
+generated: 2026-08-12
 verified: null
-sources:
-  - ../sources/example.md
+sources: []
 assertion_kind: user_stated_fact
 stale_after: null
 ---
 ```
 
-The fields have these meanings:
+Required shared fields are `type`, `title`, `description`, `tags`, `status`,
+`generated`, `verified`, `sources`, `assertion_kind`, and `stale_after`.
+`type` is `concept`, `observation`, `source`, or `synthesis`. `status` is
+`active`, `draft`, `review`, `archived`, or `superseded`. Assertion kinds are
+`user_stated_fact`, `source_derived_fact`, `agent_inference`,
+`derived_synthesis`, `source_record`, and `mixed`.
 
-- `type`: one of `concept`, `observation`, `source`, or `synthesis`.
-- `title`: the human-readable concept title. Keep it specific and stable.
-- `description`: a required short navigation-oriented description.
-- `tags`: a required YAML list of useful retrieval terms; use `[]` when no tags
-  are appropriate.
-- `status`: one of `active`, `draft`, `review`, `archived`, or `superseded`.
-- `generated`: the ISO date or datetime when the page was normalized or last
-  regenerated by an operation.
-- `verified`: the ISO date or datetime of an explicit confirmation event, or
-  `null` when no such event has occurred. A source can support verification only
-  after the user explicitly requests that check or designates the source as
-  authoritative. Null does not mean false and is not, by itself, a review queue
-  state.
-- `sources`: relative Markdown paths or explicit URLs that support the page.
-  Prefer local source records for important material.
-- `assertion_kind`: one of `user_stated_fact`, `source_derived_fact`,
-  `agent_inference`, `derived_synthesis`, `source_record`, or `mixed`.
-- `stale_after`: an ISO date after which freshness review is due, or `null` when
-  no simple deadline is appropriate. It is a review reminder, not proof that a
-  claim is current or invalid.
-- `id`: an optional stable identifier. If present, it must be unique within the
-  vault.
+Optional durable-page fields:
 
-Writing source and generated-artifact pages tagged `writing` must use the
-portable fields `writing_evidence_role`, `authorship`, and `ai_involvement`.
-SelfContext validates these fields for `type: source` and `type: synthesis`.
-Allowed combinations are `primary/user/none`,
-`human_edited_ai_assisted/shared/assisted`, `generated_derived/agent/generated`,
-and `unknown/unknown/unknown`. These fields make authorship and
-generated-artifact boundaries inspectable without adding a second Writing
-schema. Writing observations must not use a generated artifact as independent
-evidence.
+- `id`: a stable identifier unique in the vault;
+- `aliases`: a YAML list of alternate names useful for retrieval; and
+- `superseded_by`: a relative Markdown link to the canonical successor.
 
-Not every field is meaningful in the same way for every page. Keep the fields
-present on durable pages so linting and generic agents can reason consistently;
-use `null` rather than inventing a date or source.
+Do not bulk-add empty optional fields to existing pages. Alias values must be a
+list of non-empty strings. Exact normalized title and alias collisions are deep
+lint findings. A `status: superseded` page without a valid `superseded_by` link
+gets a warning, but its history is preserved.
 
-The deterministic linter enforces the required durable-page fields, including
-`description` and `tags`. Control and index pages are the documented exception;
-files under `.obsidian/` are outside the canonical vault entirely.
+Sources are provenance, not automatic verification. `verified: null` means no
+explicit confirmation has been recorded; it is not false and does not itself
+create a review item. Agent inferences remain reviewable, and derived
+syntheses never become source evidence.
 
-## Confirmation and Freshness Lifecycle
+## Ownership and compatibility
 
-Use `status: review` to mark a selected page that needs human attention. This
-state is appropriate for important current-state claims, ambiguities,
-contradictions, inferences, or claims the user explicitly asks to verify. Do
-not change every page with `verified: null` to `status: review`; ordinary
-unconfirmed source-derived and user-stated pages may remain active.
+- `core/` holds explicit cross-domain goals, values, preferences,
+  communication/decision patterns, and recurring constraints.
+- A vertical owns its domain-specific evidence in its own area.
+- `review/` holds unresolved observations and human decisions.
+- `sources/` holds retained source or recollection material when provenance is
+  useful.
+- `derived/` holds reusable query/advice syntheses, visibly derived.
 
-Verification is page-scoped. A verification date covers the coherent claims
-represented by that page. Split mixed concepts when a user confirms only part of
-their content. Re-ingesting unchanged evidence must preserve existing
-verification, freshness, status, assertion kind, provenance links, and linked
-review rationale; material new claims require a narrower page or a new
-confirmation decision.
+Deep lint checks type/assertion/path compatibility, source and synthesis
+assertion kinds, active inferences outside the review lifecycle, source cycles,
+derived-only support chains, and stale derived syntheses relative to decisive
+sources. It does not decide whether any personal claim is true.
 
-The default ingest freshness rule assigns a 90-day `stale_after` deadline only
-to narrow, important current-state anchors such as a current role, employer,
-active goal, availability, or hard constraint when the normalized assertion is
-a user-stated or source-derived fact. The date is calculated from the ingest
-date. Historical pages, source records, agent inferences, derived syntheses,
-stable skills, and general preferences may keep `stale_after: null`. Agents must
-surface an expired deadline before relying on a claim as current and must not
-renew a deadline merely by reading or re-ingesting the page.
+## Links and indexes
 
-When an agent inference is explicitly confirmed as a factual statement, change
-its assertion kind to `user_stated_fact` before making it active. A confirmed
-source-derived claim may remain source-derived with a verification date. A
-rejected or deferred inference remains reviewable rather than becoming a fact.
-
-## Epistemic Rules
-
-- A user statement or explicit confirmation may be stored as
-  `user_stated_fact`.
-- A claim supported by a resume, profile, repository, talk, or other retained
-  source is `source_derived_fact`; preserve the source link.
-- An agent interpretation is `agent_inference`, normally with `status: review`
-  and `verified: null`, until the user confirms or rejects it.
-- A comparison, answer, positioning analysis, or other synthesis is
-  `derived_synthesis`; link to the evidence and do not use it as a source for a
-  new fact.
-- A retained raw recollection or external capture is `source_record` and is
-  not automatically a fact.
-- If a page combines categories, use `mixed` only when the body clearly labels
-  which statements belong to which category. Prefer separate pages when that
-  is clearer.
-
-Do not construct a static personality profile. Store evidence-oriented patterns,
-preferences, decisions, tradeoffs, frustrations, and behaviors with their
-uncertainty visible.
-
-## Links and Naming
-
-Use standard relative Markdown links with `.md` targets, for example:
+Use standard relative Markdown links with `.md` targets. The nearest ancestor
+`index.md` owns a durable page's managed catalog entry. The root index must
+reach every canonical durable page through index links; parent indexes may list
+child indexes. A managed block is delimited by:
 
 ```markdown
-See [the MyContext project](../career/projects/mycontext-platform.md) and
-[the source recollection](../sources/mycontext-recollection.md).
+<!-- selfcontext:catalog:start -->
+- [Synthetic concept](concepts/synthetic.md) — Fictional description. `active`
+<!-- selfcontext:catalog:end -->
 ```
 
-Resolve a link relative to the file containing it. Keep filenames lowercase,
-stable, and kebab-case. Do not use `[[wikilinks]]` as a canonical link form.
+`sync_indexes.py` generates entries from the page's existing `title`,
+`description`, `status`, and path, in stable order. Aliases help search but do
+not create duplicate catalog entries. Text outside markers remains user-written
+and is preserved byte-for-byte when possible. Generated catalog blocks are
+navigation surfaces, never evidence.
 
-Update links when moving a page. Avoid relying on filenames alone for
-navigation: keep the affected index pages current.
-
-## Indexes and Log
-
-The root index should link to `SCHEMA.md`, the current vertical areas, core,
-review, sources, derived, and `log.md`. Category indexes should link to their
-current pages and briefly explain the category. Do not list pages that do not
-exist. Existing copied vaults may add a missing vertical index on demand rather
-than being silently migrated.
-
-Log meaningful operations in `log.md` using a date heading and explicit
-operation, summary, changed files, sources, and follow-up items. A trivial
-read-only answer may be omitted; a meaningful query can be logged without
-creating a derived page.
+`.obsidian/` viewer state and project-root `backups/` operational archives are
+noncanonical and excluded from indexing, search, lint, snapshot IDs, and
+retrieval. A deep report under `review/deep-reviews/` is also maintenance
+output, not personal evidence.

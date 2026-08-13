@@ -94,19 +94,23 @@ vault/
 |-- SCHEMA.md       # organization, metadata, and lifecycle rules
 |-- index.md        # navigation and concept entry points
 |-- log.md          # recent operations and continuity notes
-|-- core/           # cross-domain personal context
-|-- career/         # career context
-|-- learning/       # knowledge states and learning evidence
-|-- writing/        # observable communication and writing context
-|-- relationships/  # intentional relationship context and shared history
-|-- media/          # reactions to works and evidence-backed taste context
-|-- sources/        # retained source or recollection material where useful
-`-- derived/        # reusable query/advice synthesis, visibly derived
+|-- core/           # universal cross-domain personal context
+|-- review/         # universal unresolved observations and review items
+|-- sources/        # universal retained source or recollection material
+|-- derived/        # universal reusable query/advice synthesis
+|-- career/         # optional enabled Career area
+|-- learning/       # optional enabled Learning area
+|-- writing/        # optional enabled Writing area
+|-- relationships/  # optional enabled Relationships area
+`-- media/          # optional enabled Media / Taste area
 ```
 
-The SelfContext skill may create additional domain subdirectories on demand, but
-it keeps the vault understandable as ordinary files. Any generated index or
-cache must be disposable and must not become canonical.
+Schema 0.2 initializes only universal areas. The SelfContext skill may create
+an available vertical area on demand when a triggering mutation or explicit
+adoption enables its recorded contract, but a read-only query treats an absent
+vertical as empty. Any generated index catalog, lexical search result, or deep
+review report is disposable/derived maintenance output and must not become
+canonical evidence.
 
 Canonical content uses Markdown, YAML frontmatter, and standard relative Markdown links. Obsidian may display and edit the same files, but Obsidian syntax is not required.
 
@@ -148,9 +152,10 @@ constraints. A vertical contains domain-specific concepts in its own top-level
 vault area. An Advisor Pack reasons over retrieved context for a vertical; it
 does not own storage, provenance, or a second memory system.
 
-### Current Vertical Catalog
+### Available Vertical Catalog
 
-The current verticals have separate scopes and ownership:
+The available verticals have separate scopes and ownership. A private vault
+may enable only a subset; availability does not create an area:
 
 | Vertical | Vault area | Scope | Advisor Pack |
 | --- | --- | --- | --- |
@@ -231,6 +236,15 @@ high-signal evidence, update an existing home when the identity matches, retain
 contradictions and exceptions, and accept “No meaningful update” when a source
 adds no durable personal context.
 
+## Available and enabled vertical contracts
+
+The repository's compact `verticals.json` catalog defines the available
+verticals, their areas, indexes, procedures, Advisor Packs, ownership, and
+activation rules. Each procedure has a machine-readable header and a Contract
+migrations section. A private vault enables a subset and records the applied
+contract versions in schema 0.2. Catalog paths are resolved from the installed
+SelfContext skill, never from a project-local `.swe-forge` tree.
+
 ## Core Operations
 
 The SelfContext skill recognizes natural-language intent and applies a lifecycle rather than a command vocabulary:
@@ -240,6 +254,12 @@ The SelfContext skill recognizes natural-language intent and applies a lifecycle
 3. **Review** unresolved inferences, stale context, contradictions, ambiguous claims, missing provenance, and important changes needing attention.
 4. **Lint** structural and epistemic integrity, including frontmatter, links, indexes, duplicates, metadata consistency, freshness, and schema drift.
 5. **Advise** through an Advisor Pack that retrieves evidence from the core skill and applies a domain-specific reasoning framework.
+6. **Maintain** through ordinary lint, deterministic deep lint, read-only deep review, and explicitly authorized deep update. Deep review uses snapshots and bounded semantic passes but never writes by default. Deep update creates one backup before mutation and stops on failed post-write validation.
+
+`sync_indexes.py` compiles managed catalog blocks from page metadata while
+preserving user-written text outside markers. `search_vault.py` provides
+read-only local lexical retrieval without a permanent index. Neither tool is a
+second source of truth.
 
 Before a significant operation on an existing vault, the skill orients from `SCHEMA.md`, `index.md`, and recent `log.md` entries. This reduces duplicate concepts, missed connections, schema drift, and accidental contradictions without requiring a full-vault scan every time.
 
@@ -253,10 +273,10 @@ Queries and advice are not all permanent documents. Every meaningful operation m
 
 SelfContext requires no cloud service, server, database, vector database,
 embeddings, MCP server, background service, custom chat interface,
-authentication system, sync service, telemetry, or analytics. The core skill
+authentication system, external synchronization layer, telemetry, or analytics. The core skill
 includes a small dependency-free deterministic linter for structural checks; it
 remains subordinate to the Markdown vault and does not replace semantic review.
 
 These exclusions keep the durable asset portable, local, inspectable, and replaceable. Future disposable search indexes or user-controlled off-device copies can be considered only without changing the vault's canonical role.
 
-See the [architectural decisions](decisions/) for the reasoning behind these boundaries, including the [user-mode and project-maintenance separation](decisions/0007-user-mode-project-maintenance.md), the [selective confirmation and freshness policy](decisions/0008-selective-confirmation-and-freshness.md), the [pre-write backup policy](decisions/0009-pre-write-vault-backups.md), the [Writing vertical decision](decisions/0010-writing-vertical.md), the [query persistence triage decision](decisions/0011-query-persistence-triage.md), the [Learning vertical decision](decisions/0012-learning-vertical.md), the [Relationships vertical decision](decisions/0013-relationships-vertical.md), and the [Media / Taste vertical decision](decisions/0014-media-taste-vertical.md).
+See the [architectural decisions](decisions/) for the reasoning behind these boundaries, including the [user-mode and project-maintenance separation](decisions/0007-user-mode-project-maintenance.md), the [selective confirmation and freshness policy](decisions/0008-selective-confirmation-and-freshness.md), the [pre-write backup policy](decisions/0009-pre-write-vault-backups.md), the [Writing vertical decision](decisions/0010-writing-vertical.md), the [query persistence triage decision](decisions/0011-query-persistence-triage.md), the [Learning vertical decision](decisions/0012-learning-vertical.md), the [Relationships vertical decision](decisions/0013-relationships-vertical.md), the [Media / Taste vertical decision](decisions/0014-media-taste-vertical.md), and the [Deep Maintenance and versioned vertical contracts decision](decisions/0015-deep-maintenance-and-versioned-vertical-contracts.md).

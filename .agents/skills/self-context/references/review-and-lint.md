@@ -2,7 +2,10 @@
 
 Review asks a human to resolve epistemic or lifecycle issues. Lint provides
 deterministic structural checks. They complement each other; a clean lint run
-does not prove that a claim is true.
+does not prove that a claim is true. Ordinary review remains targeted; an
+explicit “deep review” selects the full, read-only maintenance protocol in
+[Deep Maintenance](deep-maintenance.md). A normal request such as “review my
+current role” must not trigger a full-vault scan.
 
 If review will resolve a page or append a review/lint operation to `log.md`,
 create the pre-write backup described in [Vault Backups](backups.md) before the
@@ -79,7 +82,15 @@ Run the bundled validator from the repository root:
 
 ```bash
 python3 .agents/skills/self-context/scripts/lint_vault.py vault
+python3 .agents/skills/self-context/scripts/lint_vault.py --deep --format text vault
+python3 .agents/skills/self-context/scripts/lint_vault.py --deep --format json vault
 ```
+
+Ordinary lint is the fast backward-compatible path. Deep lint is deterministic
+and read-only; JSON output contains schema version, enabled contracts, a
+snapshot ID, compact page metadata, link/index relationships, findings, and
+severity counts, never complete page bodies. Neither path produces a numeric
+vault-health score.
 
 Use a copied or explicitly selected vault path when validating another vault.
 The script checks:
@@ -100,6 +111,14 @@ The script checks:
 The linter does not decide whether a claim is true, important, or in need of
 confirmation. It should not warn merely because a normal page has
 `verified: null` or `stale_after: null`.
+
+Deep lint additionally checks canonical-content symlinks, UTF-8 failures,
+root reachability, nearest-index ownership, managed catalog synchronization,
+dead entries, title/alias collisions, duplicate IDs/content, type/assertion/path
+compatibility, lifecycle and supersession links, source cycles, derived source
+chains, enabled contract presence, custom top-level areas, recent log links,
+and exclusion of `.obsidian/` and project-root backups. A weakly connected page
+is a warning, not an automatic error.
 
 The script is intentionally dependency-free and does not replace semantic
 review. It reports errors and warnings, returns a non-zero status for errors,

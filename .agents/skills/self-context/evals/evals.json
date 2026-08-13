@@ -465,6 +465,143 @@
         "The recommendation remains visibly derived and conditional.",
         "No new preference or core fact is promoted automatically."
       ]
+    },
+    {
+      "id": 43,
+      "prompt": "In a synthetic schema 0.1 vault, ask for a deep review of maintenance issues. Keep the review read-only, do not create a backup or report, and distinguish deterministic deep-lint findings from semantic human decisions.",
+      "expected_output": "The skill runs ordinary/deep lint as read-only preflight, records a snapshot, and returns stable findings without mutating the vault.",
+      "expectations": [
+        "Deep review is explicitly read-only by default.",
+        "No backup, log entry, report page, or catalog write is created.",
+        "Deterministic lint findings are separated from semantic proposals and human decisions."
+      ],
+      "files": []
+    },
+    {
+      "id": 44,
+      "prompt": "In a synthetic vault, explicitly authorize a deep update after reviewing a plan. The snapshot changed first, so re-evaluate affected findings, create one backup before writing, apply only a managed-index refresh, validate afterward, and report the backup path.",
+      "expected_output": "The skill detects a stale plan, re-evaluates rather than applying it blindly, backs up before the first write, and performs only safe structural maintenance.",
+      "expectations": [
+        "A snapshot mismatch prevents blind application of a stale plan.",
+        "One pre-write backup is created before mutation.",
+        "Managed index refresh is classified safe_structural and semantic decisions remain deferred.",
+        "Post-write ordinary and deep validation are reported."
+      ],
+      "files": []
+    },
+    {
+      "id": 45,
+      "prompt": "Assess whether a synthetic vault should adopt the available Media / Taste vertical. The vault has no media area but repeated meaningful reactions in recent use cases are visible elsewhere. Keep assessment read-only, report the concrete use case, and accept that the vertical may not be needed.",
+      "expected_output": "The skill treats Media / Taste as available but disabled, assesses a concrete adoption candidate without creating files, and preserves user choice.",
+      "expectations": [
+        "Available and enabled verticals are distinguished.",
+        "Read-only assessment creates no media directory, index, contract marker, or backup.",
+        "Adoption is recommended only when a concrete durable use case exists."
+      ],
+      "files": []
+    },
+    {
+      "id": 46,
+      "prompt": "In a synthetic schema 0.1 vault with a custom archive area and existing personal pages, explicitly request migration to schema 0.2. Infer enabled verticals conservatively, preserve all pages and custom areas, add only control metadata and managed catalogs, and create the backup before the first write.",
+      "expected_output": "The migration is conservative, backed up, selective, and does not rewrite or relocate personal pages.",
+      "expectations": [
+        "Schema 0.1 is not migrated during ordinary operations but is upgraded when explicitly requested.",
+        "The first migration write follows a successful backup.",
+        "Custom areas and existing pages are preserved and ambiguities are reported.",
+        "Only schema control metadata, root links, and managed catalog blocks are added or changed."
+      ],
+      "files": []
+    },
+    {
+      "id": 47,
+      "prompt": "Build a task context packet for a synthetic career interview task using Career and Writing evidence. Include only directly supported context, relevant examples, constraints, stale or provisional items, unknowns, paths, and exclusions. Do not copy Career facts into Writing or expose unrelated Relationships details.",
+      "expected_output": "The packet is the smallest derived retrieval output, preserves vertical ownership and epistemic labels, and remains ephemeral unless explicitly retained.",
+      "expectations": [
+        "Career and Writing evidence remain in their owning areas.",
+        "Unrelated relationship details are excluded.",
+        "Stale, provisional, contradictory, and unknown context is labeled.",
+        "The packet is not treated as evidence or automatically persisted."
+      ],
+      "files": []
+    },
+    {
+      "id": 48,
+      "prompt": "A synthetic vault contains an active derived synthesis whose only sources are another derived synthesis and a newer decisive source. Run deep lint and report the derived-source-chain and freshness findings without deciding whether either personal claim is true.",
+      "expected_output": "Deep lint catches inappropriate derived-only support and a derived page older than a materially updated source while preserving epistemic boundaries.",
+      "expectations": [
+        "Derived syntheses supported only by derived syntheses are reported.",
+        "A derived synthesis older than a newer decisive source is reported.",
+        "The linter does not resolve or verify the personal claims."
+      ],
+      "files": []
+    },
+    {
+      "id": 49,
+      "prompt": "Create a synthetic task context packet for a career interview using Career evidence and Writing communication context. Keep each fact in its owning vertical, include only relevant examples and constraints, and do not expose unrelated Relationships details.",
+      "expected_output": "A smallest-useful packet preserves ownership and privacy while labeling evidence and exclusions.",
+      "expectations": [
+        "Career evidence remains Career-owned.",
+        "Writing context is used only for communication fit.",
+        "Unrelated Relationships details are excluded.",
+        "The packet is derived output rather than evidence."
+      ],
+      "files": []
+    },
+    {
+      "id": 50,
+      "prompt": "Create a synthetic Learning explanation packet about a new concept using only demonstrated prerequisites from the vault. Include the scope of each prerequisite, a meaningful gap, unknowns, and a short generic bridge where evidence is missing.",
+      "expected_output": "The packet starts from demonstrated knowledge without inflating exposure into competence.",
+      "expectations": [
+        "Demonstrated prerequisites are distinguished from exposure.",
+        "Gaps and unknowns are labeled.",
+        "The explanation remains derived and does not update Learning context."
+      ],
+      "files": []
+    },
+    {
+      "id": 51,
+      "prompt": "Build a synthetic task packet for a writing task. The vault also contains unrelated Relationships details and a stale relationship commitment. Exclude both unless directly relevant, and state important exclusions.",
+      "expected_output": "The packet is privacy-preserving and task-scoped.",
+      "expectations": [
+        "Unrelated relationship details are not exposed.",
+        "The packet includes explicit exclusions.",
+        "Only relevant evidence paths and constraints are retained."
+      ],
+      "files": []
+    },
+    {
+      "id": 52,
+      "prompt": "Make a synthetic task context packet for a current career decision where the decisive role page is stale and another page is provisional. Keep both visible as uncertainty, do not use them as settled current facts, and list the bounded confirmation needed.",
+      "expected_output": "The packet preserves stale and provisional context without silently upgrading it.",
+      "expectations": [
+        "Stale context is labeled.",
+        "Provisional review context is labeled.",
+        "The packet identifies unknowns or confirmation needs."
+      ],
+      "files": []
+    },
+    {
+      "id": 53,
+      "prompt": "Create a useful synthetic task context packet for this one-off question. Do not retain it in derived/ or alter any vault page unless a separate explicit persistence request is made.",
+      "expected_output": "A useful packet remains ephemeral and does not mutate the vault.",
+      "expectations": [
+        "No derived page is created automatically.",
+        "The packet is described as derived output, not evidence.",
+        "The answer remains useful without unrelated context."
+      ],
+      "files": []
+    },
+    {
+      "id": 54,
+      "prompt": "Create a synthetic reusable task context packet and explicitly retain it for future work. Store only the smallest linked derived synthesis, preserve source paths and uncertainty, and do not copy facts into Career, Learning, Writing, or core.",
+      "expected_output": "Explicit retention creates a derived packet without changing owning facts.",
+      "expectations": [
+        "Explicit retention is recognized as a persistence signal.",
+        "The retained page is derived_synthesis with evidence links.",
+        "Owning vertical facts and verification remain unchanged.",
+        "The packet excludes irrelevant sensitive context."
+      ],
+      "files": []
     }
   ]
 }

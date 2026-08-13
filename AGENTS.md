@@ -20,17 +20,22 @@ Current vertical routing:
 | Media / Taste | Evidence-backed reactions to cultural works and evolving taste patterns | Media Advisor |
 
 - A future vertical must define its scope and storage area before its procedure
-  or Advisor Pack is added. Do not make a vertical's rules part of the core
-  schema, and do not assume every vertical needs an Advisor Pack.
+  or Advisor Pack is added. The canonical available-vertical catalog is
+  `.agents/skills/self-context/references/verticals.json`; keep detailed rules
+  in the vertical procedure. Do not make a vertical's rules part of the core
+  schema, and do not assume every available vertical is enabled in every vault
+  or that every vertical needs an Advisor Pack.
 - For creating or materially modifying a project skill, use the installed `skill-creator` workflow and place the canonical result under `.agents/skills/`.
 
-Do not invent a competing vault schema or lifecycle ad hoc. Follow the SelfContext skill and the vault's `SCHEMA.md` once they exist. Prefer natural-language interaction; commands are optional conveniences, never the canonical interface.
+Do not invent a competing vault schema or lifecycle ad hoc. Follow the SelfContext skill, the vault's `SCHEMA.md`, and the Deep Maintenance Protocol once they exist. Schema 0.1 remains supported without automatic migration; schema 0.2 records selective vertical contracts and compiled catalogs. Prefer natural-language interaction; commands are optional conveniences, never the canonical interface.
 
 ## Operating Modes
 
-Normal vault use is **user mode**. Ingest, query, review, lint, career,
-learning, writing, relationships, and media/taste advice operate on the private
-vault and the user's response only. They must not
+Normal vault use is **user mode**. Ingest, query, targeted review, ordinary
+lint, career, learning, writing, relationships, and media/taste advice operate
+on the private vault and the user's response only. Deep review is explicitly
+read-only; deep update, vertical adoption, contract updates, and schema
+migration are explicitly authorized project operations. They must not
 modify skills, schemas, architecture, documentation, evals, scripts,
 `.gitignore`, or repository structure as a side effect. Do not create a
 learning log, improvement log, or automatic operations backlog.

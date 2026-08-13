@@ -88,8 +88,20 @@ Infer the operation from natural language:
 - **Ingest:** add supplied information or update existing context.
 - **Query:** retrieve or synthesize existing context.
 - **Review:** surface stale, unresolved, contradictory, ambiguous, or
-  insufficiently sourced context for human attention.
+  insufficiently sourced context for human attention. Ordinary review remains
+  targeted.
 - **Lint:** validate deterministic structural and metadata integrity.
+- **Deep lint:** run the deterministic broad maintenance validator without
+  deciding whether claims are true.
+- **Deep review:** perform the explicit, read-only full-vault maintenance
+  protocol; it needs no backup and creates no report unless retention is asked.
+- **Deep update:** perform an explicitly authorized mutating maintenance batch
+  with snapshot validation, one backup, bounded structural/approved changes,
+  and post-write validation.
+- **Adopt vertical / update vertical contract:** assess read-only first, then
+  mutate only after explicit authorization under the deep-update rules.
+- **Task context packet:** produce the smallest relevant derived retrieval
+  packet for a named task; keep it ephemeral unless explicitly retained.
 - **Evidence retrieval:** gather grounded context for a domain-specific request.
   Do not turn the retrieval into unsupported advice.
 
@@ -175,11 +187,14 @@ confirmation question instead of silently using it as current.
 2. If `vault/` does not exist and the request requires it, initialize it
    automatically using [the initialization procedure](references/initialization.md).
    Do not ask the user to create the taxonomy manually.
-3. If the vault exists, read `SCHEMA.md`, `index.md`, and the most recent
-   entries in `log.md` before a significant operation. Then search only the
-   relevant indexes, metadata, filenames, and linked pages needed for the task.
-   Do not scan `.obsidian/` inside the vault or the project-root `backups/`
-   directory; they are noncanonical operational state, not personal context.
+3. If the vault exists, read `SCHEMA.md`, `index.md`, the most recent
+   entries in `log.md`, and enabled vertical indexes before a significant
+   operation. Then search only the relevant indexes, metadata, filenames, and
+   linked pages needed for the task. For a large or ambiguous vault, use the
+   disposable local lexical helper only as a retrieval aid and inspect
+   provenance, freshness, status, and source links before answering. Do not
+   scan `.obsidian/` inside the vault or the project-root `backups/` directory;
+   they are noncanonical operational state, not personal context.
 4. If the operation will mutate the vault, read [the backup procedure](references/backups.md)
    and create the pre-write backup before the first write. If it is read-only,
    do not create a backup merely because the vault was inspected.
@@ -200,8 +215,11 @@ confirmation question instead of silently using it as current.
      context, shared history, commitments, privacy, and relationship evolution.
    - [Media / Taste vertical](references/media-taste.md) for work reactions,
      evidence-backed patterns, exceptions, and taste evolution.
-   - [Review and lint](references/review-and-lint.md) for human review and the
-     deterministic validator.
+   - [Review and lint](references/review-and-lint.md) for targeted review and
+     ordinary/deep deterministic validation.
+   - [Deep maintenance](references/deep-maintenance.md) for deep lint, read-only
+     deep review, explicit deep update, vertical adoption/contract changes, and
+     task context packets.
 
 For a trivial query, orientation can be brief and no page needs to be created.
 For lint, review, or an explicitly broad request, a wider scan is appropriate.
@@ -210,9 +228,10 @@ For lint, review, or an explicitly broad request, a wider scan is appropriate.
 
 When changing the vault, follow the relevant procedure completely: preserve
 source material when useful, update the smallest coherent set of concepts,
-add meaningful links, update affected indexes, and log the operation. Never
-silently rewrite a conflicting claim; preserve the evidence and surface the
-conflict for review.
+add meaningful links, update affected managed catalogs, and log the operation.
+Never silently rewrite a conflicting claim; preserve the evidence and surface
+the conflict for review. A schema 0.2 vault enables only explicitly adopted
+vertical contracts; a schema 0.1 vault remains untouched by ordinary operations.
 
 End the response with a concise account of:
 

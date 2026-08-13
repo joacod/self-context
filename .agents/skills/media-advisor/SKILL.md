@@ -41,7 +41,14 @@ For every personalized media or taste request:
 
 If the Media / Taste area or personal reactions are missing, say so. Generic
 media knowledge and a generic recommendation can still be offered, but must be
-labeled generic rather than attributed to the user.
+labeled generic rather than attributed to the user. Media / Taste is available
+but not automatically enabled in schema 0.2; read-only work does not create a
+media area or catalog.
+
+For a task context packet, include only the reactions and taste evidence that
+serve the task, plus conflicts, freshness, unknowns, paths, and exclusions.
+Never expose unrelated relationship details merely because they exist. The
+packet is derived output and remains ephemeral unless explicitly retained.
 
 For a request to record, correct, abandon, revisit, supersede, or delete taste
 context, let SelfContext apply the Media / Taste procedure and pre-write

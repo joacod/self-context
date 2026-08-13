@@ -28,12 +28,14 @@ This is not an attempt to create a complete or objective personality profile. It
 - **Lifecycle:** Context can be current, stale, unverified, contradicted, or in need of review. It is more than a static memory dump.
 - **Natural interaction:** Users express intent in ordinary language. Skills determine whether a request means ingest, query, review, lint, or advice.
 - **Smallest useful system:** Markdown and skills should earn their place before code or infrastructure is added.
+- **Explicit maintenance:** ordinary lint is fast and deterministic; deep lint is deterministic; deep review is read-only by default; deep update is explicitly authorized and backed up.
+- **Selective contracts:** available verticals are not automatically enabled, and applied contract versions remain visible in schema 0.2.
 
 ## Why Markdown and Links
 
 Markdown is easy to read, edit, diff, copy, archive, and open in many tools. YAML frontmatter provides enough structured metadata for lifecycle and validation without making a database canonical. Standard Markdown links provide useful connections in Obsidian and generic file-based agents while keeping the format interoperable.
 
-The vault is therefore a small wiki-like knowledge structure, not an arbitrary document dump. A meaningful concept can stand alone, connect to related concepts, and point back to evidence. A trivial answer does not need to become a new permanent page.
+The vault is therefore a small personal-context structure, not a generic wiki or arbitrary document dump. A meaningful concept can stand alone, connect to related concepts, and point back to evidence. A trivial answer does not need to become a new permanent page. Compiled catalogs and disposable lexical search may improve navigation without changing the Markdown source of truth.
 
 ## Lifecycle, Not Just Retrieval
 

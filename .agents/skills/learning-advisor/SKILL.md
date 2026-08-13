@@ -38,7 +38,13 @@ For every request that depends on the person's own knowledge:
 
 If the Learning area or relevant evidence is missing, say so. Generic expertise
 can still help, but it must be labeled generic rather than presented as a fact
-about the person.
+about the person. Learning is available but is not automatically enabled in a
+schema 0.2 vault; read-only questions about an absent area create nothing.
+
+For a task context packet, include only demonstrated or explicitly stated
+prerequisites, their scope and dates, relevant gaps, unknowns, evidence paths,
+and exclusions. A generated explanation remains derived and ephemeral unless
+explicitly retained under SelfContext's persistence rules.
 
 ## Evidence discipline
 

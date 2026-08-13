@@ -1,0 +1,70 @@
+{
+  "catalog_version": 1,
+  "verticals": [
+    {
+      "id": "career",
+      "display_name": "Career",
+      "contract_version": 1,
+      "vault_area": "career",
+      "index_path": "career/index.md",
+      "procedure_path": "references/career.md",
+      "advisor_pack": "career-advisor",
+      "advisor_skill": "career-advisor",
+      "ownership": "Career evidence and concepts: roles, projects, skills, achievements, leadership examples, public work, and professional goals.",
+      "exclusions": "Generic personal context, other vertical facts, and unsupported claims about professional scope.",
+      "activation_rule": "Enable when durable career context is supplied or the user explicitly adopts Career."
+    },
+    {
+      "id": "learning",
+      "display_name": "Learning",
+      "contract_version": 1,
+      "vault_area": "learning",
+      "index_path": "learning/index.md",
+      "procedure_path": "references/learning.md",
+      "advisor_pack": "learning-advisor",
+      "advisor_skill": "learning-advisor",
+      "ownership": "Evidence-backed knowledge states, meaningful gaps, corrections, mental models, prerequisites, and progression.",
+      "exclusions": "Generic notes, resource catalogs, course tracking, and knowledge claims inferred from exposure alone.",
+      "activation_rule": "Enable when durable evidence about the person's understanding is supplied or the user explicitly adopts Learning."
+    },
+    {
+      "id": "writing",
+      "display_name": "Writing",
+      "contract_version": 1,
+      "vault_area": "writing",
+      "index_path": "writing/index.md",
+      "procedure_path": "references/writing.md",
+      "advisor_pack": "writing-advisor",
+      "advisor_skill": "writing-advisor",
+      "ownership": "Evidence-backed communication behavior, reasoning-through-writing, readers, revision, and context-specific writing modes.",
+      "exclusions": "Beliefs, career facts, technical knowledge, generated prose as authentic evidence, and unsupported personality claims.",
+      "activation_rule": "Enable when authored writing or an explicit writing-context request requires durable context, or the user explicitly adopts Writing."
+    },
+    {
+      "id": "relationships",
+      "display_name": "Relationships",
+      "contract_version": 1,
+      "vault_area": "relationships",
+      "index_path": "relationships/index.md",
+      "procedure_path": "references/relationships.md",
+      "advisor_pack": "relationships-advisor",
+      "advisor_skill": "relationships-advisor",
+      "ownership": "Intentional relationship context, shared history, meaningful interactions, commitments, open loops, and dated evolution.",
+      "exclusions": "CRM or contact management, wholesale transcripts, dossiers, rankings, and inferred sensitive third-party characteristics.",
+      "activation_rule": "Enable only when a meaningful relationship use case requires durable context or the user explicitly adopts Relationships."
+    },
+    {
+      "id": "media",
+      "display_name": "Media / Taste",
+      "contract_version": 1,
+      "vault_area": "media",
+      "index_path": "media/index.md",
+      "procedure_path": "references/media-taste.md",
+      "advisor_pack": "media-advisor",
+      "advisor_skill": "media-advisor",
+      "ownership": "Evidence-backed reactions to cultural works, explainable taste patterns, exceptions, and taste evolution.",
+      "exclusions": "Media catalogs, ratings or watchlists without reflection, copied reviews, and sensitive identity inferences from consumption.",
+      "activation_rule": "Enable when a meaningful personal reaction or taste question requires durable context, or the user explicitly adopts Media / Taste."
+    }
+  ]
+}

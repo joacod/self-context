@@ -1,3 +1,10 @@
+---
+vertical_id: media
+contract_version: 1
+vault_area: media
+advisor_skill: media-advisor
+---
+
 # Media / Taste Vertical Procedure
 
 The Media / Taste vertical preserves evidence-backed context about what the
@@ -234,3 +241,11 @@ Not durable by default:
 After a Media / Taste operation, report the works or observations changed, the
 reaction evidence and links retained, pattern support or exceptions, unresolved
 review items, and whether `core/` and `derived/` were intentionally unchanged.
+
+## Contract migrations
+
+Version 1 has no prior migrations. Future versions must identify affected Media
+/ Taste evidence, safe structural changes, semantic review requirements, and
+forbidden automatic changes. A contract update never infers sensitive identity
+or personality, turns consumption into preference, removes an exception, or
+promotes generated reactions into evidence automatically.

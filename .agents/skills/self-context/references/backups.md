@@ -17,6 +17,9 @@ python3 .agents/skills/self-context/scripts/backup_vault.py vault
 
 The helper:
 
+- rejects a supplied vault path that is itself a symlink;
+- rejects every symlink anywhere inside canonical vault content rather than silently omitting linked content;
+- verifies resolved archive paths stay below the resolved vault root;
 - creates the project-root `backups/` directory beside `vault/` on the first
   backup;
 - writes `backups/vault-YYYYMMDDTHHMMSSZ.zip` using a UTC timestamp;
@@ -26,10 +29,17 @@ The helper:
 - keeps only the three newest managed backup ZIPs; and
 - deletes older managed backups only after the new archive has been created.
 
-The archive is built in a temporary file and moved into place only after it is
-complete. Treat a non-zero exit as a write blocker: do not modify canonical
-vault content if the pre-write backup fails. Report the created backup and any
-retention cleanup after the operation completes.
+The archive is built in a temporary file, fully read/tested as a ZIP, and moved
+into place atomically only after validation. A failed validation leaves no
+partial destination. Treat a non-zero exit as a write blocker: do not modify
+canonical vault content if the pre-write backup fails. Report the created backup
+and any retention cleanup after the operation completes.
+
+The helper applies restrictive owner-only directory/file permissions where the
+platform supports them without requiring POSIX behavior. ZIP archives contain
+private vault content and are not encrypted. SelfContext does not add an
+encryption dependency; use a separate user-controlled protection mechanism
+when encryption is required.
 
 Read-only retrieval, lint, or review that does not persist a log entry does not
 need a backup. If the vault does not exist, there is no prior state to archive:

@@ -264,8 +264,10 @@ claim or prove that it is current.
 Add links that explain meaningful relationships, such as a role to its projects,
 a project to its skills and stories, or a goal to supporting evidence. Update
 the nearest category index and the root index when a new durable page is
-created. Do not add links to nonexistent pages or link every page to every
-related page.
+created. Managed catalog blocks can be refreshed with
+`sync_indexes.py --write`; they are navigation surfaces, not evidence. Preserve
+user-written index text outside the markers. Do not add links to nonexistent
+pages or link every page to every related page.
 
 When a page enters `status: review`, keep the review index or a linked review
 observation useful for finding the pending action. Do not create a separate

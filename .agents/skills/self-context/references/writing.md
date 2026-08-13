@@ -1,3 +1,10 @@
+---
+vertical_id: writing
+contract_version: 1
+vault_area: writing
+advisor_skill: writing-advisor
+---
+
 # Writing Vertical
 
 The Writing vertical records evidence-oriented patterns in how a person
@@ -347,3 +354,11 @@ authentic source
 
 The durable asset is the user's inspectable evidence and selectively refined
 context, not any particular Skill, Advisor, model, or generated draft.
+
+## Contract migrations
+
+Version 1 has no prior migrations. Future versions must identify affected
+Writing evidence, safe structural changes, semantic review requirements, and
+forbidden automatic changes. A contract update never treats generated prose as
+primary evidence, changes authorship, resolves a contradiction, or removes
+historical writing context automatically.

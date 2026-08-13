@@ -1,3 +1,5 @@
+import os
+import stat
 import subprocess
 import sys
 import tempfile
@@ -80,6 +82,70 @@ class BackupVaultTests(unittest.TestCase):
 
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("vault does not exist", result.stderr)
+
+    def test_symlinked_vault_path_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            real_vault = root / "real-vault"
+            real_vault.mkdir()
+            link = root / "vault"
+            try:
+                link.symlink_to(real_vault, target_is_directory=True)
+            except (OSError, NotImplementedError) as error:
+                self.skipTest(f"symlinks unavailable: {error}")
+            result = self.run_backup(link)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("symlink", result.stderr)
+
+    def test_symlinked_file_and_directory_inside_vault_are_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            vault = root / "vault"
+            vault.mkdir()
+            outside = root / "outside.txt"
+            outside.write_text("private external", encoding="utf-8")
+            try:
+                (vault / "linked.txt").symlink_to(outside)
+                (vault / "linked-dir").symlink_to(root, target_is_directory=True)
+            except (OSError, NotImplementedError) as error:
+                self.skipTest(f"symlinks unavailable: {error}")
+            result = self.run_backup(vault)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("symlink", result.stderr)
+            self.assertEqual(list((root / "backups").glob("vault-*.zip")), [])
+
+    def test_zip_is_verified_and_permissions_are_restrictive_when_supported(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            vault = root / "vault"
+            vault.mkdir()
+            (vault / "page.md").write_text("synthetic", encoding="utf-8")
+            result = self.run_backup(vault)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            destination = next((root / "backups").glob("vault-*.zip"))
+            with zipfile.ZipFile(destination) as archive:
+                self.assertIsNone(archive.testzip())
+                self.assertEqual(archive.read("page.md"), b"synthetic")
+            if os.name != "nt":
+                self.assertEqual(stat.S_IMODE((root / "backups").stat().st_mode), 0o700)
+                self.assertEqual(stat.S_IMODE(destination.stat().st_mode), 0o600)
+
+    def test_failed_backup_leaves_no_partial_destination(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            vault = root / "vault"
+            vault.mkdir()
+            # A dangling link is a deterministic failure and must not leave a
+            # temporary or final managed archive behind.
+            try:
+                (vault / "dangling").symlink_to(root / "missing")
+            except (OSError, NotImplementedError) as error:
+                self.skipTest(f"symlinks unavailable: {error}")
+            result = self.run_backup(vault)
+            self.assertNotEqual(result.returncode, 0)
+            backup_dir = root / "backups"
+            self.assertFalse(any(path.name.startswith(".vault-backup-") for path in backup_dir.iterdir()))
+            self.assertEqual(list(backup_dir.glob("vault-*.zip")), [])
 
     def test_linter_does_not_scan_project_root_backup_directory(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
