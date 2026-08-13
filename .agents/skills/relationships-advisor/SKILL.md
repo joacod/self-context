@@ -52,8 +52,9 @@ reviewable, stale, and unknown context labeled, and keep the packet derived and
 ephemeral unless the user explicitly asks to retain it.
 
 For an ingest, correction, deletion, or request to update the vault, let
-SelfContext apply the Relationships procedure and pre-write backup. The Advisor
-does not mutate relationship context merely by answering.
+SelfContext apply the Relationships procedure, schema-specific activation, and
+pre-write backup. The Advisor does not define contract markers or mutate
+relationship context merely by answering.
 
 ## Evidence discipline
 

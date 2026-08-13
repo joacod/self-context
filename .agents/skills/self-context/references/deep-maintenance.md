@@ -39,10 +39,27 @@ vertical solely because it is available.
 ## Available, enabled, and applied contracts
 
 The repository catalog lists **available verticals**: verticals implemented by
-this repository. A private vault has **enabled verticals** only when their area
-and index are intentionally present and, in schema 0.2, their contract is
-recorded in `SCHEMA.md`. The **applied contract version** is the version
-recorded by that vault. Availability never implies adoption.
+this repository and their current contract versions. A private vault has an
+**enabled vertical** in schema 0.2 only when `SCHEMA.md` records one applied
+`vertical@version` entry and its area, index, and root link are present. The
+**applied contract version** is the exact version recorded by that vault.
+Schema 0.1 has no contract markers; existing vertical areas are legacy
+structure, not silently converted contracts. Availability never implies
+adoption.
+
+Compare an applied version with the catalog's available version as follows:
+
+- equal: structurally valid and current; no update finding;
+- older: structurally valid but emit an update-available warning; do not
+  automatically migrate, and let deep review inspect documented migrations;
+- newer: error because the current repository cannot safely interpret a future
+  contract.
+
+Unknown vertical IDs, invalid/unknown versions, and duplicate applied entries
+for one vertical ID are errors. Preserve their raw values for reporting rather
+than deleting or coercing them. Duplicate detection is by ID, so both
+`writing@1` plus `writing@1` and `writing@1` plus `writing@2` are invalid. An
+available but disabled vertical is not a missing-contract finding.
 
 The catalog is `.agents/skills/self-context/references/verticals.json`; its
 paths are canonical relative to the installed project skill. It currently
@@ -86,12 +103,15 @@ spam or duplicate evidence.
 
 ### E. Contract and adoption pass
 
-For a newer applied contract, read only the documented migrations between the
+For an older applied contract, read only the documented migrations between the
 applied and available versions, identify affected evidence, and allow “no
-affected evidence.” Do not reinterpret an entire vertical without a migration
-reason. For a disabled available vertical, report an adoption candidate only
-when existing evidence or repeated use cases provide a concrete durable reason;
-“vertical not needed” is successful. Do not create the area during assessment.
+affected evidence.” The update finding is informational until an explicitly
+authorized contract update is planned; do not reinterpret an entire vertical
+without a migration reason. A newer applied contract is not reviewable as a
+safe current contract and remains an error. For a disabled available vertical,
+report an adoption candidate only when existing evidence or repeated use cases
+provide a concrete durable reason; “vertical not needed” is successful. Do not
+create the area during assessment.
 
 ### F. Retrieval-readiness pass
 
@@ -148,10 +168,18 @@ third-party details, or enable a vertical solely because it is available.
 
 Assessment is read-only. Adoption and contract updates are mutations and use
 the deep-update snapshot/backup rules. Adoption adds only the requested area,
-index, recorded contract, and root link. It identifies clearly owned existing
-pages; it moves pages only when ownership is unambiguous and links can be
-updated; it leaves ambiguous pages in place as review findings; and it never
-creates placeholder personal pages or copies facts.
+index, exact available contract marker, and root link. For schema 0.2 first use,
+ordinary mutation follows the same rule: create only the required vertical,
+record its exact available contract, add the root link, and continue the
+original operation after one normal pre-write backup. For schema 0.1 first use,
+create only the legacy area/index/root link and preserve schema text without a
+contract marker or implicit migration. Unrecognized or malformed schema state
+stays conservative and does not guess.
+
+It identifies clearly owned existing pages; it moves pages only when ownership
+is unambiguous and links can be updated; it leaves ambiguous pages in place as
+review findings; and it never creates placeholder personal pages or copies
+facts.
 
 A contract update applies only documented migrations after the currently
 recorded version. It preserves historical evidence, verification, provenance,

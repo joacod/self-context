@@ -167,13 +167,13 @@ def _schema_findings(root: Path) -> List[Dict[str, Any]]:
         return [_finding("error", _read_error_classification(error), error, "SCHEMA.md")]
     version = schema.get("version")
     if version is None:
-        return [_finding("warning", "schema", "SCHEMA.md does not declare a parseable schema_version")]
+        return [_finding("warning", "schema", "SCHEMA.md does not declare a parseable schema_version; activation state is ambiguous")]
     if version not in {(0, 1), (0, 2)}:
         return [
             _finding(
                 "warning",
                 "schema",
-                f"SCHEMA.md declares unsupported schema_version: {schema.get('version_text')}",
+                f"SCHEMA.md declares unsupported schema_version: {schema.get('version_text')}; activation state is ambiguous",
                 "SCHEMA.md",
             )
         ]
@@ -458,7 +458,12 @@ def _contract_map(catalog: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
 
 
 def _contract_strings(contracts: Iterable[Dict[str, Any]]) -> List[str]:
-    return [f"{item.get('id')}@{item.get('version')}" for item in contracts]
+    return [
+        str(item.get("raw"))
+        if item.get("raw") is not None
+        else f"{item.get('id')}@{item.get('version')}"
+        for item in contracts
+    ]
 
 
 def _path_compatibility(record: Dict[str, Any], root: Path) -> List[Dict[str, Any]]:
@@ -617,6 +622,10 @@ def _deep_findings(root: Path, today: date.date) -> Tuple[List[Dict[str, Any]], 
         return findings, {
             "schema_version": None,
             "enabled_vertical_contracts": [],
+            "available_vertical_contracts": [],
+            "enabled_verticals": [],
+            "applied_vertical_contracts": [],
+            "legacy_inferred_verticals": [],
             "enabled_contract_source": "none",
             "snapshot_id": "",
             "pages": [],
@@ -856,23 +865,53 @@ def _deep_findings(root: Path, today: date.date) -> Tuple[List[Dict[str, Any]], 
         if path in reachable and not contextual_inbound.get(path):
             findings.append(_finding("warning", "weak-connectivity", "page is reachable only through an index and has no contextual inbound links", path))
 
-    # Enabled/applied contract checks are deliberately version-aware.  Legacy
+    # Enabled/applied contract checks are deliberately version-aware. Legacy
     # 0.1 vaults get an inferred report but no migration finding.
     schema = parse_schema(root)
     enabled, enabled_source = infer_enabled_contracts(root, catalog)
     records_by_id = _contract_map(catalog)
-    seen_contracts: Set[Tuple[str, int]] = set()
-    for contract in enabled:
+
+    if schema.get("version") == (0, 2):
+        if not schema.get("contract_section_present"):
+            findings.append(_finding("error", "vertical-contract", "schema 0.2 must declare a vertical_contracts section", "SCHEMA.md"))
+        for error in schema.get("contract_errors", []):
+            findings.append(_finding("error", "vertical-contract", str(error), "SCHEMA.md"))
+
+    # Contract validity is keyed by vertical ID. A contract can be current,
+    # older-but-readable, or future-and-unsafe; currency is not validity.
+    # Schema 0.1 area inference is legacy structure, not an applied contract,
+    # so version comparison is only performed for explicit schema 0.2 entries.
+    seen_ids: Set[str] = set()
+    valid_applied: List[Dict[str, Any]] = []
+    contract_entries = schema.get("contract_entries", []) if schema.get("version") == (0, 2) else []
+    contracts_to_check = contract_entries
+    for contract in contracts_to_check:
         identifier = contract.get("id")
         version = contract.get("version")
-        key = (identifier, version)
-        if key in seen_contracts:
-            findings.append(_finding("error", "vertical-contract", f"duplicate enabled vertical contract: {identifier}@{version}", "SCHEMA.md"))
-        seen_contracts.add(key)
-        record = records_by_id.get(str(identifier))
-        if record is None:
-            findings.append(_finding("error", "vertical-contract", f"enabled vertical is not available: {identifier}@{version}", "SCHEMA.md"))
+        raw = str(contract.get("raw") or f"{identifier}@{version}")
+        if not isinstance(identifier, str):
             continue
+        if identifier in seen_ids:
+            findings.append(_finding("error", "vertical-contract", f"duplicate applied vertical contract for {identifier}: {raw}", "SCHEMA.md"))
+        seen_ids.add(identifier)
+
+        record = records_by_id.get(identifier)
+        if record is None:
+            findings.append(_finding("error", "vertical-contract", f"applied vertical is not available: {raw}", "SCHEMA.md"))
+            continue
+        if not isinstance(version, int):
+            continue
+        valid_applied.append(contract)
+
+        available_version = record.get("contract_version")
+        if not isinstance(available_version, int):
+            findings.append(_finding("error", "vertical-contract", f"available contract version is invalid for {identifier}: {available_version!r}", "references/verticals.json"))
+            continue
+        if version > available_version:
+            findings.append(_finding("error", "vertical-contract", f"applied contract is newer than available version: {raw} (available {identifier}@{available_version})", "SCHEMA.md"))
+        elif version < available_version:
+            findings.append(_finding("warning", "vertical-contract-update", f"contract update available: {raw} -> {identifier}@{available_version}; no automatic migration performed", "SCHEMA.md"))
+
         area = str(record.get("vault_area"))
         index_path = str(record.get("index_path"))
         if not (root / area).is_dir():
@@ -882,10 +921,9 @@ def _deep_findings(root: Path, today: date.date) -> Tuple[List[Dict[str, Any]], 
         root_text, _ = safe_read_text(root / "index.md")
         if index_path not in (root_text or ""):
             findings.append(_finding("error", "vertical-contract", f"enabled vertical is missing its root index link: {index_path}", "index.md"))
-        if version != record.get("contract_version"):
-            findings.append(_finding("error", "vertical-contract", f"applied contract does not match available version: {identifier}@{version} (available {record.get('contract_version')})", "SCHEMA.md"))
+
     if schema.get("version") == (0, 2):
-        explicit_ids = {str(item.get("id")) for item in enabled}
+        explicit_ids = {str(item.get("id")) for item in valid_applied if item.get("id") is not None}
         for record in catalog_records(catalog):
             area = record.get("vault_area")
             if isinstance(area, str) and (root / area).is_dir() and str(record.get("id")) not in explicit_ids:
@@ -940,9 +978,55 @@ def _deep_findings(root: Path, today: date.date) -> Tuple[List[Dict[str, Any]], 
             if not exists:
                 findings.append(_finding("warning", "log-link", f"broken link in recent log entry: {destination}", "log.md"))
 
+    root_text, _ = safe_read_text(root / "index.md")
+    enabled_verticals: Set[str] = set()
+    legacy_inferred_verticals: Set[str] = set()
+    structural_entries = valid_applied if schema.get("version") == (0, 2) else []
+    for contract in structural_entries:
+        identifier = contract.get("id")
+        if isinstance(identifier, str) and identifier in records_by_id:
+            # The marker establishes the enabled ID; area/index/root checks
+            # above independently report structural corruption.
+            enabled_verticals.add(identifier)
+
+    legacy_entries = enabled if enabled_source == "inferred-legacy" else []
+    for contract in legacy_entries:
+        identifier = contract.get("id")
+        record = records_by_id.get(str(identifier))
+        if not isinstance(record, dict):
+            continue
+        area = record.get("vault_area")
+        index_path = record.get("index_path")
+        if (
+            isinstance(area, str)
+            and isinstance(index_path, str)
+            and (root / area).is_dir()
+            and (root / index_path).is_file()
+            and index_path in (root_text or "")
+        ):
+            legacy_inferred_verticals.add(str(identifier))
+
+    available_contracts = [
+        f"{record.get('id')}@{record.get('contract_version')}"
+        for record in catalog_records(catalog)
+        if isinstance(record, dict)
+        and record.get("id") is not None
+        and record.get("contract_version") is not None
+    ]
+    applied_contracts = (
+        _contract_strings(contract_entries)
+        if schema.get("version") == (0, 2)
+        else []
+    )
     metadata = {
-        "schema_version": parse_schema(root).get("version_text"),
-        "enabled_vertical_contracts": _contract_strings(enabled),
+        "schema_version": schema.get("version_text"),
+        # Retain the historical field as an alias for explicit applied
+        # contracts; legacy schema 0.1 area inference is exposed separately.
+        "enabled_vertical_contracts": applied_contracts,
+        "available_vertical_contracts": available_contracts,
+        "enabled_verticals": sorted(enabled_verticals),
+        "applied_vertical_contracts": applied_contracts,
+        "legacy_inferred_verticals": sorted(legacy_inferred_verticals),
         "enabled_contract_source": enabled_source,
         "snapshot_id": snapshot_id(root),
         "pages": page_metadata,

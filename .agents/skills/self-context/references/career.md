@@ -23,7 +23,10 @@ relationship task.
 ## Storage and evidence
 
 Use the shared Markdown, YAML frontmatter, provenance, verification, freshness,
-review, and relative-link contract. Common career groupings such as `roles/`,
+review, and relative-link contract. Apply the schema-specific activation rule
+in [Initialization](initialization.md); this procedure does not redefine
+vertical enablement or contract markers. Common career groupings such as
+`roles/`,
 `projects/`, `skills/`, `stories/`, `goals/`, and `public-work/` are optional;
 create them only when a real collection benefits from the grouping.
 
@@ -76,8 +79,11 @@ provenance, persistence, and mutation safety.
 
 ## Contract migrations
 
-Version 1 has no prior migrations. Future versions must identify affected
-career evidence, list safe structural changes separately from semantic review
-requirements, and state forbidden automatic changes. A new contract version
-never invents experience, changes a goal, promotes an inference, resolves a
-contradiction, or removes historical evidence automatically.
+Version 1 has no prior migrations. If the repository later advertises a newer
+version, an older applied Career contract remains readable and reviewable; read
+only the documented migrations before proposing an update. Future versions
+must identify affected career evidence, list safe structural changes separately
+from semantic review requirements, and state forbidden automatic changes. A
+new contract version never invents experience, changes a goal, promotes an
+inference, resolves a contradiction, or removes historical evidence
+automatically.

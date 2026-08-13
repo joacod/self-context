@@ -53,6 +53,10 @@ purpose.
 
 ## Storage and page choices
 
+Use the schema-specific activation rule in [Initialization](initialization.md);
+this procedure does not redefine vertical enablement, contract markers, or
+schema migration.
+
 - `relationships/index.md` is the navigation page for durable relationship
   context.
 - A sparse person or relationship page normally lives directly under
@@ -252,8 +256,11 @@ were intentionally unchanged.
 
 ## Contract migrations
 
-Version 1 has no prior migrations. Future versions must identify affected
-relationship evidence, safe structural changes, semantic review requirements,
-and forbidden automatic changes. A contract update never infers a sensitive
-third-party detail, decides a motive or relationship judgment, resurrects
-redacted context, or deletes historical evidence automatically.
+Version 1 has no prior migrations. If the repository later advertises a newer
+version, an older applied Relationships contract remains readable and
+reviewable; read only the documented migrations before proposing an update.
+Future versions must identify affected relationship evidence, safe structural
+changes, semantic review requirements, and forbidden automatic changes. A
+contract update never infers a sensitive third-party detail, decides a motive or
+relationship judgment, resurrects redacted context, or deletes historical
+evidence automatically.

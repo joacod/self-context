@@ -23,12 +23,8 @@ NON_CANONICAL_DIRECTORIES = {".obsidian", "backups", ".DS_Store"}
 SCHEMA_VERSION_PATTERN = re.compile(
     r"^\s*schema_version:\s*([0-9]+)\.([0-9]+)\s*$", re.MULTILINE
 )
-CONTRACT_PATTERN = re.compile(
-    r"^\s*-\s*([a-z0-9][a-z0-9_-]*)@([0-9]+)\s*(?:#.*)?$", re.IGNORECASE
-)
-INLINE_CONTRACT_PATTERN = re.compile(
-    r"([a-z0-9][a-z0-9_-]*)@([0-9]+)", re.IGNORECASE
-)
+CONTRACT_ID_PATTERN = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
+CONTRACT_VERSION_PATTERN = re.compile(r"^(?:0|[1-9][0-9]*)$")
 LINK_PATTERN = re.compile(r"(?<!!)\[[^\]]*\]\(([^)]+)\)")
 MALFORMED_LINK_PATTERN = re.compile(r"(?<!!)\[[^\]]*\]\([^)]*$")
 
@@ -314,6 +310,51 @@ def parse_iso_date(value: Any) -> Optional[date.date]:
         return None
 
 
+def parse_contract_version(value: Any) -> Optional[int]:
+    """Parse the intentionally small non-negative-integer version form."""
+
+    if not isinstance(value, str):
+        return None
+    text = value
+    if not CONTRACT_VERSION_PATTERN.fullmatch(text):
+        return None
+    return int(text)
+
+
+def parse_contract_entry(value: str) -> Dict[str, Any]:
+    """Parse one ``vertical@version`` entry without coercing malformed input.
+
+    Contract versions intentionally use canonical non-negative decimal
+    integers (for example, ``0``, ``1``, or ``2``). Semantic-version strings,
+    ranges, and other formats are rejected because the current repository
+    cannot compare them safely.
+    """
+
+    raw = value.strip()
+    without_comment = raw.split("#", 1)[0].strip()
+    identifier: Optional[str] = None
+    version_text = ""
+    if without_comment.count("@") == 1:
+        # Outer YAML/list whitespace was removed above; whitespace inside the
+        # pair is not normalized because malformed entries must remain errors.
+        identifier, version_text = without_comment.split("@", 1)
+
+    result: Dict[str, Any] = {
+        "id": identifier,
+        "version": parse_contract_version(version_text),
+        "version_text": version_text,
+        "raw": raw,
+    }
+    if identifier is None or not CONTRACT_ID_PATTERN.fullmatch(identifier):
+        result["error"] = f"invalid vertical contract entry: {raw or '<empty>'}"
+    elif result["version"] is None:
+        result["error"] = (
+            f"invalid contract version for {identifier}: "
+            f"{version_text or '<empty>'} (expected a non-negative integer)"
+        )
+    return result
+
+
 def iter_markdown_links(text: str) -> Iterable[str]:
     in_fence = False
     visible_lines: List[str] = []
@@ -553,6 +594,8 @@ def parse_schema(root: Path) -> Dict[str, Any]:
         "version": None,
         "version_text": None,
         "enabled_contracts": [],
+        "contract_entries": [],
+        "contract_errors": [],
         "legacy_enabled_verticals": [],
         "error": error,
         "text": text or "",
@@ -564,22 +607,44 @@ def parse_schema(root: Path) -> Dict[str, Any]:
         result["version"] = (int(match.group(1)), int(match.group(2)))
         result["version_text"] = f"{match.group(1)}.{match.group(2)}"
     contracts: List[Dict[str, Any]] = []
+    contract_errors: List[str] = []
+    contract_section_present = False
     in_section = False
     for line in text.splitlines():
-        if re.match(r"^\s*vertical_contracts:\s*(?:\[.*\])?\s*$", line):
+        section_match = re.match(r"^\s*vertical_contracts:\s*(.*)$", line)
+        if section_match:
+            contract_section_present = True
             in_section = True
-            inline = line.split(":", 1)[1].strip()
-            if inline.startswith("["):
-                for match in INLINE_CONTRACT_PATTERN.finditer(inline):
-                    contracts.append({"id": match.group(1), "version": int(match.group(2))})
+            inline = section_match.group(1).strip()
+            if inline and not inline.startswith("#"):
+                if inline.startswith("[") and inline.endswith("]"):
+                    for token in inline[1:-1].split(","):
+                        if token.strip():
+                            entry = parse_contract_entry(token)
+                            contracts.append(entry)
+                            if entry.get("error"):
+                                contract_errors.append(str(entry["error"]))
+                else:
+                    error_message = f"invalid vertical_contracts value: {inline}"
+                    contract_errors.append(error_message)
+                    contracts.append({"id": None, "version": None, "version_text": "", "raw": inline, "error": error_message})
             continue
         if in_section:
-            match = CONTRACT_PATTERN.match(line)
-            if match:
-                contracts.append({"id": match.group(1), "version": int(match.group(2))})
+            stripped = line.strip()
+            if not stripped:
                 continue
-            if line.strip() and not line.startswith((" ", "\t", "-")):
-                in_section = False
+            if stripped.startswith("-"):
+                entry = parse_contract_entry(stripped[1:].strip())
+                contracts.append(entry)
+                if entry.get("error"):
+                    contract_errors.append(str(entry["error"]))
+                continue
+            if line.startswith((" ", "\t")):
+                error_message = f"invalid vertical contract entry: {stripped}"
+                contract_errors.append(error_message)
+                contracts.append({"id": None, "version": None, "version_text": "", "raw": stripped, "error": error_message})
+                continue
+            in_section = False
     # Legacy vaults may have an explicit enabled_verticals section. Treat it
     # as a conservative signal; prose that merely lists available areas is not
     # enough to enable an absent vertical.
@@ -604,8 +669,11 @@ def parse_schema(root: Path) -> Dict[str, Any]:
                 continue
             if line.strip() and not line.startswith((" ", "\t")):
                 legacy_section = False
-    result["enabled_contracts"] = contracts
+    result["contract_entries"] = contracts
+    result["enabled_contracts"] = list(contracts)
+    result["contract_errors"] = contract_errors
     result["legacy_enabled_verticals"] = legacy_enabled
+    result["contract_section_present"] = contract_section_present
     return result
 
 
@@ -616,6 +684,10 @@ def infer_enabled_contracts(
     schema = parse_schema(root)
     if schema["version"] == (0, 2):
         return list(schema["enabled_contracts"]), "schema"
+    if schema["version"] != (0, 1):
+        # An unrecognized or malformed schema cannot safely identify enabled
+        # verticals. Do not infer a migration or a current contract version.
+        return [], "unknown-schema"
     root_index_text, _ = safe_read_text(root / "index.md")
     explicit_legacy = {str(identifier) for identifier in schema.get("legacy_enabled_verticals", [])}
     root_index_text = root_index_text or ""

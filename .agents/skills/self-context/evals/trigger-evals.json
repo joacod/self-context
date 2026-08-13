@@ -160,7 +160,7 @@
     "should_trigger": true
   },
   {
-    "query": "Did I promise Martín I would send the repository, or was it just a vague plan?",
+    "query": "Did I promise Mart\u00edn I would send the repository, or was it just a vague plan?",
     "should_trigger": true
   },
   {
@@ -306,5 +306,29 @@
   {
     "query": "Make a generic project brief from fictional data without using my vault.",
     "should_trigger": false
+  },
+  {
+    "query": "In my schema 0.2 Context Vault, ask a read-only question about Writing and make sure the absent vertical is not created or enabled.",
+    "should_trigger": true
+  },
+  {
+    "query": "When I first ingest an authored essay into a schema 0.2 vault, activate only Writing at its catalog contract version and keep the other verticals disabled.",
+    "should_trigger": true
+  },
+  {
+    "query": "My old applied Writing contract is behind the repository version. Review its documented migrations and tell me whether any evidence is affected, without automatically migrating it.",
+    "should_trigger": true
+  },
+  {
+    "query": "Why does an applied future vertical contract fail lint while an older contract only reports an available update?",
+    "should_trigger": true
+  },
+  {
+    "query": "Create a generic semver parser for a web app's package versions.",
+    "should_trigger": false
+  },
+  {
+    "query": "Review my older applied vertical contract against its documented migration, and report no meaningful update when no evidence is affected.",
+    "should_trigger": true
   }
 ]

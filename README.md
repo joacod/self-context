@@ -29,7 +29,9 @@ based on my context, how should I position myself for [a role]?
 The skills infer whether the request is for ingest, query, targeted review,
 ordinary lint, deep lint, read-only deep review, explicitly authorized deep
 update, or career, learning, writing, relationships, and media/taste evidence
-and reasoning. No custom CLI or slash command is required.
+and reasoning. No custom CLI or slash command is required. Schema-specific
+activation and contract comparison are defined once in the SelfContext
+initialization and vault-schema references.
 
 ## Repository Validation
 
@@ -70,9 +72,12 @@ core:
 | Media / Taste | `media/` | Reactions to experienced cultural works, explainable taste patterns, exceptions, and taste evolution | Media Advisor |
 
 A schema 0.2 vault starts with universal `core/`, `review/`, `sources/`, and
-`derived/` areas. It creates a vertical area and records its contract only when
-a triggering mutation or explicit adoption requires it. A legacy schema 0.1
-vault remains supported without automatic migration. Any vault can contain
+`derived/` areas. It creates only the required vertical area and records its
+exact available contract when a triggering mutation or explicit adoption
+requires it; unrelated available verticals remain disabled. A legacy schema
+0.1 vault remains supported without automatic migration: first meaningful use
+may add the needed legacy area/index/root link but never adds contract markers.
+Read-only queries and assessments create nothing. Any vault can contain
 retained `sources/`, unresolved `review/` items, and clearly labeled `derived/`
 analyses. Vertical context stays in its owning area; an Advisor Pack may combine
 relevant areas without duplicating them. Learning treats sources as evidence

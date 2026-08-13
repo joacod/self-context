@@ -55,8 +55,10 @@ alone is not permission to fabricate context.
 ## Contract and task packets
 
 Career is an available vertical, not automatically enabled in every schema 0.2
-vault. Treat an absent Career area as empty for read-only advice; do not create
-it merely because Career Advisor is available. For a task context packet,
+vault. Apply the SelfContext schema-specific activation rule for any mutation;
+this Advisor Pack does not define contract markers. Treat an absent Career area
+as empty for read-only advice; do not create it merely because Career Advisor is
+available. For a task context packet,
 include only the objective, directly supported career evidence, relevant
 examples, explicit constraints/preferences, stale or provisional items,
 unknowns, evidence paths, and important exclusions. The packet is derived and

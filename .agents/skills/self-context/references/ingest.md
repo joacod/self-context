@@ -3,10 +3,14 @@
 Use this procedure when the user supplies new information, a source document,
 a recollection, or a correction to existing context.
 
-After orientation and once the operation is known to require a write, create
-the pre-write backup described in [Vault Backups](backups.md) before changing a
-page, index, source record, review item, or log. Do not continue with the write
-if backup creation fails.
+After orientation and once the operation is known to require a write,
+determine the schema-specific vertical activation plan in
+[Initialization](initialization.md). Create one pre-write backup described in
+[Vault Backups](backups.md) before applying that plan or changing a page, index,
+source record, review item, or log. Schema 0.1 preserves its legacy schema
+without contract markers; schema 0.2 records only the exact contract for the
+required vertical. Read-only work never activates a vertical. Do not continue
+with the write if backup creation fails.
 
 ## 1. Understand the Input
 

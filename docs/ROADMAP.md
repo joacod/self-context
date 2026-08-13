@@ -190,7 +190,8 @@ The implemented maintenance path is deliberately explicit:
 - deep update is explicitly authorized, snapshot-checked, backed up once, and
   bounded to safe structural changes plus approved semantic proposals;
 - available Career, Learning, Writing, Relationships, and Media / Taste
-  verticals are selectively enabled in schema 0.2; and
+  verticals are selectively enabled in schema 0.2, with schema-specific first
+  use and explicit contract comparison; and
 - managed catalogs and local lexical search are disposable navigation aids, not
   evidence or a second store.
 
