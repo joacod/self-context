@@ -47,7 +47,7 @@ class DeepLintTests(unittest.TestCase):
             (vault / directory / "index.md").write_text(f"# {directory}\n", encoding="utf-8")
         return vault
 
-    def run(self, vault: Path, *args: str) -> tuple[subprocess.CompletedProcess, dict]:
+    def run_deep_lint(self, vault: Path, *args: str) -> tuple[subprocess.CompletedProcess, dict]:
         result = subprocess.run(
             [sys.executable, str(LINT), "--deep", "--format", "json", *args, str(vault)],
             capture_output=True,
@@ -60,7 +60,7 @@ class DeepLintTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             vault = self.base_vault(Path(temporary))
             (vault / "core" / "orphan.md").write_text(page(title="Orphan"), encoding="utf-8")
-            _, report = self.run(vault)
+            _, report = self.run_deep_lint(vault)
             classes = {item["classification"] for item in report["findings"]}
             self.assertIn("root-reachability", classes)
             self.assertIn("catalog-sync", classes)
@@ -75,7 +75,7 @@ class DeepLintTests(unittest.TestCase):
                 "<!-- selfcontext:catalog:end -->\n",
                 encoding="utf-8",
             )
-            _, report = self.run(vault)
+            _, report = self.run_deep_lint(vault)
             classes = [item["classification"] for item in report["findings"]]
             self.assertIn("catalog-sync", classes)
             self.assertIn("dead-catalog-entry", classes)
@@ -89,7 +89,7 @@ class DeepLintTests(unittest.TestCase):
                 "<!-- selfcontext:catalog:end -->\n",
                 encoding="utf-8",
             )
-            _, report = self.run(vault)
+            _, report = self.run_deep_lint(vault)
             self.assertTrue(any(item["classification"] == "nearest-index-ownership" for item in report["findings"]))
 
     def test_index_only_page_is_warning_when_catalog_is_synchronized(self) -> None:
@@ -101,7 +101,7 @@ class DeepLintTests(unittest.TestCase):
             _sys.path.insert(0, str(SCRIPTS))
             import sync_indexes
             sync_indexes.synchronize(vault, write=True)
-            _, report = self.run(vault)
+            _, report = self.run_deep_lint(vault)
             weak = [item for item in report["findings"] if item["classification"] == "weak-connectivity"]
             self.assertEqual(len(weak), 1)
             self.assertEqual(weak[0]["severity"], "warning")
@@ -112,7 +112,7 @@ class DeepLintTests(unittest.TestCase):
             (vault / "core" / "one.md").write_text(page(title="Same Name", extra="aliases:\n  - Shared\n"), encoding="utf-8")
             (vault / "core" / "two.md").write_text(page(title="Other", extra="aliases:\n  - same name\n"), encoding="utf-8")
             (vault / "core" / "old.md").write_text(page(title="Old", extra="status: superseded\n"), encoding="utf-8")
-            _, report = self.run(vault)
+            _, report = self.run_deep_lint(vault)
             self.assertTrue(any(item["classification"] == "title-alias-collision" for item in report["findings"]))
             self.assertTrue(any(item["classification"] == "supersession" for item in report["findings"]))
 
@@ -121,7 +121,7 @@ class DeepLintTests(unittest.TestCase):
             vault = self.base_vault(Path(temporary))
             (vault / "sources" / "wrong.md").write_text(page(assertion="user_stated_fact", title="Wrong Source"), encoding="utf-8")
             (vault / "derived" / "wrong.md").write_text(page(page_type="concept", assertion="derived_synthesis", title="Wrong Derived"), encoding="utf-8")
-            _, report = self.run(vault)
+            _, report = self.run_deep_lint(vault)
             classes = [item["classification"] for item in report["findings"]]
             self.assertIn("type-assertion-compatibility", classes)
             self.assertIn("path-compatibility", classes)
@@ -136,7 +136,7 @@ class DeepLintTests(unittest.TestCase):
             _sys.path.insert(0, str(SCRIPTS))
             import sync_indexes
             sync_indexes.synchronize(vault, write=True)
-            _, report = self.run(vault)
+            _, report = self.run_deep_lint(vault)
             classes = [item["classification"] for item in report["findings"]]
             self.assertIn("derived-source-chain", classes)
             self.assertIn("derived-freshness", classes)
@@ -144,13 +144,13 @@ class DeepLintTests(unittest.TestCase):
     def test_snapshot_ignores_obsidian_and_backup_state(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             vault = self.base_vault(Path(temporary))
-            _, one = self.run(vault)
+            _, one = self.run_deep_lint(vault)
             (vault / ".obsidian").mkdir()
             (vault / ".obsidian" / "state.json").write_text("viewer", encoding="utf-8")
             root_backup = vault.parent / "backups"
             root_backup.mkdir()
             (root_backup / "vault-20260812T000000Z.zip").write_bytes(b"private")
-            _, two = self.run(vault)
+            _, two = self.run_deep_lint(vault)
             self.assertEqual(one["snapshot_id"], two["snapshot_id"])
 
 

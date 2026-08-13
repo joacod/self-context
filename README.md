@@ -31,6 +31,16 @@ ordinary lint, deep lint, read-only deep review, explicitly authorized deep
 update, or career, learning, writing, relationships, and media/taste evidence
 and reasoning. No custom CLI or slash command is required.
 
+## Repository Validation
+
+From the repository root, run the canonical dependency-free validation command:
+
+```bash
+python3 scripts/validate_repo.py
+```
+
+It checks test discovery and execution plus every tracked JSON file.
+
 ## How It Is Organized
 
 SelfContext has a shared foundation, available domain-specific verticals, and
