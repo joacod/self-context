@@ -26,14 +26,17 @@ review my context for stale or conflicting information
 based on my context, how should I position myself for [a role]?
 ```
 
-The skills infer whether the request is for ingest, query, review, lint, or
-career, learning, writing, relationships, and media/taste evidence and
-reasoning. No custom CLI or slash command is required.
+The skills infer whether the request is for ingest, query, targeted review,
+ordinary lint, deep lint, read-only deep review, explicitly authorized deep
+update, or career, learning, writing, relationships, and media/taste evidence
+and reasoning. No custom CLI or slash command is required.
 
 ## How It Is Organized
 
-SelfContext has a shared foundation, domain-specific verticals, and optional
-Advisor Packs. Each layer has a separate owner:
+SelfContext has a shared foundation, available domain-specific verticals, and
+optional Advisor Packs. A private vault selectively enables only the verticals
+it needs; an available vertical is not automatically enabled. Each layer has a
+separate owner:
 
 | Layer | Owns | Does not own |
 | --- | --- | --- |
@@ -41,11 +44,12 @@ Advisor Packs. Each layer has a separate owner:
 | Vertical | Evidence and concepts for one domain in its own vault area | Shared schema rules or facts owned by another vertical |
 | Advisor Pack | Reasoning and output for a vertical, using retrieved evidence | Vault storage, provenance, or automatic fact creation |
 
-### Current Verticals
+### Available Verticals
 
-The current verticals are deliberately separate. Their scopes and Advisor Packs
-are documented independently so another vertical can be added without mixing its
-rules into the core:
+The available verticals are deliberately separate. A private vault enables only
+the subset it needs. Their scopes and Advisor Packs are documented
+independently so another vertical can be added without mixing its rules into the
+core:
 
 | Vertical | Vault area | Owns | Advisor Pack |
 | --- | --- | --- | --- |
@@ -55,7 +59,10 @@ rules into the core:
 | Relationships | `relationships/` | Intentional relationship context, shared history, meaningful interactions, commitments, open loops, and relationship evolution | Relationships Advisor |
 | Media / Taste | `media/` | Reactions to experienced cultural works, explainable taste patterns, exceptions, and taste evolution | Media Advisor |
 
-The same vault can contain shared `core/` context, the vertical areas above,
+A schema 0.2 vault starts with universal `core/`, `review/`, `sources/`, and
+`derived/` areas. It creates a vertical area and records its contract only when
+a triggering mutation or explicit adoption requires it. A legacy schema 0.1
+vault remains supported without automatic migration. Any vault can contain
 retained `sources/`, unresolved `review/` items, and clearly labeled `derived/`
 analyses. Vertical context stays in its owning area; an Advisor Pack may combine
 relevant areas without duplicating them. Learning treats sources as evidence
@@ -107,7 +114,9 @@ The implementation supports:
   reaction and preserves exceptions.
 
 The project does not require cloud services, telemetry, automatic sync, a
-database, or a custom runtime.
+database, embeddings, MCP, a background service, an external synchronization
+layer, or a custom runtime. Local lexical search and compiled index catalogs
+are deterministic, disposable aids rather than canonical storage.
 
 ## Further Reading
 
@@ -116,5 +125,6 @@ database, or a custom runtime.
 - [Vision](docs/VISION.md): the product thesis and design commitments.
 - [Architecture](docs/ARCHITECTURE.md): boundaries and lifecycle details.
 - [Roadmap](docs/ROADMAP.md): current scope and future experiments.
+- [Deep Maintenance Protocol](.agents/skills/self-context/references/deep-maintenance.md): explicit maintenance modes.
 - [Build record](docs/BUILD_PLAN.md): historical bootstrap phases and validation
   history.

@@ -8,6 +8,8 @@ when its behavior is validated and documented; Git records the change history.
 The current system provides:
 
 - a portable Markdown vault with YAML frontmatter and standard links;
+- schema 0.1 compatibility plus an explicit schema 0.2 maintenance path with selective vertical contracts;
+- deterministic ordinary/deep lint, managed index catalogs, and disposable local lexical search;
 - first-run initialization and orientation of existing vaults;
 - natural-language ingest, query, review, and lint workflows;
 - shared provenance, lifecycle, freshness, review, and epistemic boundaries;
@@ -176,6 +178,27 @@ The main risks are duplicated concepts rather than incompatible storage:
 - All verticals may reuse a source or link to a project, work, or event. Reuse
   provenance and links rather than copying the same claim into multiple owning
   areas.
+
+## Deep Maintenance Protocol
+
+The implemented maintenance path is deliberately explicit:
+
+- ordinary lint remains the fast compatibility path;
+- deep lint inventories deterministic structural, navigation, contract, and
+  freshness relationships without deciding truth;
+- deep review is read-only by default and targeted review remains ordinary;
+- deep update is explicitly authorized, snapshot-checked, backed up once, and
+  bounded to safe structural changes plus approved semantic proposals;
+- available Career, Learning, Writing, Relationships, and Media / Taste
+  verticals are selectively enabled in schema 0.2; and
+- managed catalogs and local lexical search are disposable navigation aids, not
+  evidence or a second store.
+
+A future contract version must document migrations in its owning procedure,
+including affected evidence, safe structural changes, semantic review
+requirements, and forbidden automatic changes. No background maintenance,
+external enrichment, embeddings, database, MCP, sync layer, or custom runtime
+is planned.
 
 ## Near-Term Experiments
 

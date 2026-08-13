@@ -1,3 +1,10 @@
+---
+vertical_id: learning
+contract_version: 1
+vault_area: learning
+advisor_skill: learning-advisor
+---
+
 # Learning Vertical Procedure
 
 The Learning vertical preserves a small, evidence-backed model of what the
@@ -298,3 +305,11 @@ After a Learning operation, report the pages and sources changed, the state or
 scope updated, links added, unresolved review items, and whether `core/` and
 `derived/` were intentionally left unchanged. For a no-op, say “No meaningful
 Learning update” rather than manufacturing a topic or trait.
+
+## Contract migrations
+
+Version 1 has no prior migrations. Future versions must identify affected
+Learning evidence, safe structural changes, semantic review requirements, and
+forbidden automatic changes. A contract update never invents competence,
+promotes an inference, erases a prior model, or converts a generated
+explanation into evidence.

@@ -1,8 +1,32 @@
 # Query and Derived Material
 
+For a large or ambiguous vault, use the index first and then the disposable
+local lexical helper:
+
+```bash
+python3 .agents/skills/self-context/scripts/search_vault.py "task words" vault
+```
+
+`search_vault.py` is read-only, dependency-free, and builds no permanent
+index. It ranks exact ID/title/alias matches first, then title/alias tokens,
+descriptions/tags, headings, and body matches. It excludes deep-review reports
+and noncanonical state by default and returns bounded snippets plus metadata.
+Search is only a retrieval aid: inspect provenance, freshness, status, and
+source links before answering. A vertical filter and explicit source,
+archived, and superseded inclusion flags are available.
+
 Use this procedure for retrieval, comparison, synthesis, or evidence gathering.
 
 ## Targeted Retrieval
+
+Start with `SCHEMA.md`, `index.md`, recent log entries, enabled vertical
+indexes, and the smallest relevant linked pages. Managed catalog blocks are
+compiled navigation, not evidence; inspect the linked durable page and its
+provenance before relying on an entry. For schema 0.2, an absent
+available vertical is empty; a read-only query must not create its area or
+contract marker. Use local lexical search only when the index is ambiguous or
+the vault is large. Do not scan the entire vault for a narrow question unless
+orientation shows that the relevant path is unclear.
 
 Start with `SCHEMA.md`, `index.md`, and recent log entries. Use category indexes,
 frontmatter, filenames, targeted text search, and links to locate relevant
@@ -174,6 +198,17 @@ as a newly confirmed goal.
 Before creating the derived page, updating its index, or appending any
 operation log for the query, create the pre-write backup described in [Vault
 Backups](backups.md).
+
+## Task context packets
+
+When the user asks for a task context packet, return only the smallest relevant
+material: the task objective, directly supported personal context, relevant
+examples, constraints and explicit preferences, stale/provisional/contradictory
+context, unknowns, evidence paths, and important exclusions. Keep relationship
+and other sensitive context out unless directly relevant. The packet is derived
+output, not evidence, and remains ephemeral unless the user explicitly asks to
+retain a reusable packet under `derived/` through the normal persistence and
+backup rules.
 
 ## Log and Response
 

@@ -202,5 +202,109 @@
   {
     "query": "Summarize a movie's plot and cast for my film club without using my context.",
     "should_trigger": false
+  },
+  {
+    "query": "Run a deep lint of my Context Vault and show deterministic maintenance findings.",
+    "should_trigger": true
+  },
+  {
+    "query": "Deep-review my vault read-only; do not create a backup or report.",
+    "should_trigger": true
+  },
+  {
+    "query": "I explicitly authorize a deep update after you compare the snapshot with the reviewed plan.",
+    "should_trigger": true
+  },
+  {
+    "query": "Assess whether my vault should adopt the Learning vertical without creating it yet.",
+    "should_trigger": true
+  },
+  {
+    "query": "Adopt the Media / Taste vertical and migrate only clearly owned existing pages.",
+    "should_trigger": true
+  },
+  {
+    "query": "Review my vault against the new Writing contract and tell me whether any evidence is affected.",
+    "should_trigger": true
+  },
+  {
+    "query": "Update my Career vertical contract using only documented migrations.",
+    "should_trigger": true
+  },
+  {
+    "query": "Migrate my legacy schema 0.1 vault to schema 0.2, preserving custom areas and pages.",
+    "should_trigger": true
+  },
+  {
+    "query": "Make a small task context packet for my interview using only relevant career evidence and constraints.",
+    "should_trigger": true
+  },
+  {
+    "query": "Search my large Context Vault locally for the exact project alias, then inspect provenance before answering.",
+    "should_trigger": true
+  },
+  {
+    "query": "Synchronize the managed index catalogs without changing manual text outside the markers.",
+    "should_trigger": true
+  },
+  {
+    "query": "Why is my current role stale? Do a targeted review, not a full-vault deep review.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write a generic database-backed knowledge base with vector search.",
+    "should_trigger": false
+  },
+  {
+    "query": "Start a background agent to maintain my notes continuously.",
+    "should_trigger": false
+  },
+  {
+    "query": "Enrich every book page from the web and build a recommendation database.",
+    "should_trigger": false
+  },
+  {
+    "query": "Give my vault a single numeric health score.",
+    "should_trigger": false
+  },
+  {
+    "query": "Create every available vertical directory even though my vault has no evidence for them.",
+    "should_trigger": false
+  },
+  {
+    "query": "Use embeddings and MCP to retrieve all of my personal context.",
+    "should_trigger": false
+  },
+  {
+    "query": "Rewrite my entire vault into a generic wiki with one page per concept.",
+    "should_trigger": false
+  },
+  {
+    "query": "Confirm all unverified pages automatically because the model is confident.",
+    "should_trigger": false
+  },
+  {
+    "query": "Make a career task context packet using Career and Writing, excluding unrelated relationship details.",
+    "should_trigger": true
+  },
+  {
+    "query": "Explain this concept from demonstrated prerequisites in my Learning context as a task packet.",
+    "should_trigger": true
+  },
+  {
+    "query": "Create a task packet that keeps stale decisive context visible instead of treating it as current.",
+    "should_trigger": true
+  },
+  {
+    "query": "Keep this useful task packet ephemeral; do not save it as derived context.",
+    "should_trigger": true
+  },
+  {
+    "query": "Retain this reusable task context packet as a linked derived synthesis.",
+    "should_trigger": true
+  },
+  {
+    "query": "Make a generic project brief from fictional data without using my vault.",
+    "should_trigger": false
   }
 ]

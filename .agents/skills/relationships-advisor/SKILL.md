@@ -43,6 +43,13 @@ For every request that depends on the user's relationship context:
 If the Relationships area or relevant evidence is missing, say so. Generic
 social or communication expertise may still help, but it must be labeled
 generic rather than presented as knowledge about the user's relationships.
+Relationships is available but not automatically enabled in schema 0.2; a
+read-only question about an absent area creates no person page or index.
+
+Task context packets must exclude unrelated relationship or third-party detail
+unless the named task directly requires it. Keep reported, observed,
+reviewable, stale, and unknown context labeled, and keep the packet derived and
+ephemeral unless the user explicitly asks to retain it.
 
 For an ingest, correction, deletion, or request to update the vault, let
 SelfContext apply the Relationships procedure and pre-write backup. The Advisor

@@ -1,3 +1,10 @@
+---
+vertical_id: relationships
+contract_version: 1
+vault_area: relationships
+advisor_skill: relationships-advisor
+---
+
 # Relationships Vertical Procedure
 
 The Relationships vertical preserves intentional continuity about the user's
@@ -242,3 +249,11 @@ After a Relationships operation, report the pages or sources changed, the
 relationship-specific evidence and links retained, commitments or review items
 left unresolved, any redaction decision, and whether `core/` and `derived/`
 were intentionally unchanged.
+
+## Contract migrations
+
+Version 1 has no prior migrations. Future versions must identify affected
+relationship evidence, safe structural changes, semantic review requirements,
+and forbidden automatic changes. A contract update never infers a sensitive
+third-party detail, decides a motive or relationship judgment, resurrects
+redacted context, or deletes historical evidence automatically.

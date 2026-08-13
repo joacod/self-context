@@ -1,16 +1,26 @@
 # Vault Initialization and Compatibility
 
+The repository catalog at `references/verticals.json` is the canonical list of
+available verticals. A private vault enables only verticals it intentionally
+contains and, in schema 0.2, records their applied contract versions. Schema
+0.1 remains a legacy format during ordinary operations; do not add contract
+markers or migrate it automatically.
+
 ## Missing Vault
 
 When a request requires a vault and `<repository-root>/vault/` does not exist:
 
-1. Create the `vault/` directory and the small top-level layout described in
-   [the schema](vault-schema.md).
-2. Create `SCHEMA.md`, `index.md`, `log.md`, and the category index pages from
+1. Create the `vault/` directory and universal schema 0.2 layout described in
+   [the schema](vault-schema.md): `core/`, `review/`, `sources/`, and
+   `derived/` plus the three root control files.
+2. Create `SCHEMA.md`, `index.md`, `log.md`, and universal index pages from
    the templates below. Use the current ISO date in the initialization log.
-3. Do not add personal placeholder concepts. Empty indexes may explain that
+3. Do not create every available vertical. Create and record only a vertical
+   whose first requested mutation requires it, or one the user explicitly
+   adopts. A read-only query about an absent vertical treats it as empty.
+4. Do not add personal placeholder concepts. Empty indexes may explain that
    context will be added through natural-language operations.
-4. Continue the requested operation in the same turn. Initialization is not a
+5. Continue the requested operation in the same turn. Initialization is not a
    reason to make the user repeat the request.
 
 There is no prior vault state to archive before first-run initialization. After
@@ -22,6 +32,15 @@ The private directory is intentionally not tracked. Never add a `.gitkeep` or
 other vault file to the repository merely to preserve the directory.
 
 ## Existing Vault
+
+For a schema 0.2 vault, parse the `vertical_contracts` section and treat it as
+selective. Do not create missing available verticals during read-only work. A
+missing enabled area or index is a lint/maintenance finding. Use the explicit
+migration helper for a 0.1 to 0.2 upgrade; it backs up before writing, preserves
+pages and custom areas, and reports ambiguous structure.
+
+A schema 0.1 vault remains supported without automatic migration. Ordinary
+operations preserve its schema text and existing indexes.
 
 An existing vault may have more files, a different ordering, or a previously
 initialized schema. Preserve its knowledge and orient before changing it.
@@ -80,15 +99,22 @@ and linting. It is not a source, concept, or other canonical vault page.
 
 ## Initialization Templates
 
-Use these as content shapes, replacing `YYYY-MM-DD` with the current date. The
-templates contain no personal information.
+Use the universal templates below as content shapes, replacing `YYYY-MM-DD`
+with the current date. The optional vertical index templates are reference
+shapes only; do not create them until a triggering mutation or explicit
+adoption enables that vertical. The templates contain no personal information.
 
 ### `SCHEMA.md`
+
+New vaults use the following schema 0.2 control metadata. Legacy 0.1 vaults
+retain their existing schema text until an explicit migration.
 
 ```markdown
 # SelfContext Vault Schema
 
-schema_version: 0.1
+schema_version: 0.2
+
+vertical_contracts:
 
 This directory is a portable SelfContext Context Vault. Markdown files are
 canonical; standard relative Markdown links are canonical links.
@@ -100,15 +126,13 @@ records, agent observations, and derived syntheses visibly distinct.
 Top-level areas:
 
 - `core/`: cross-domain personal context.
-- `career/`: career-specific evidence and concepts.
-- `learning/`: personal knowledge states, gaps, corrections, and progression evidence.
-- `writing/`: observable writing and communication context.
-- `relationships/`: intentional relationship context, shared history,
-  commitments, and open loops.
-- `media/`: reactions to experienced cultural works and evidence-backed taste.
 - `review/`: unresolved observations and review items.
 - `sources/`: retained source or recollection material.
 - `derived/`: reusable query or advice syntheses.
+
+Vertical areas are optional and are created only when their contract is enabled
+by a triggering mutation or explicit adoption. Available verticals are Career,
+Learning, Writing, Relationships, and Media / Taste.
 
 Durable pages use YAML frontmatter described in this file's operational
 documentation. The common fields are:
@@ -134,6 +158,13 @@ silently change a fact or goal. Do not use Obsidian wikilinks as canonical
 syntax.
 ```
 
+### Optional vertical initialization
+
+When a first mutation requires a vertical, create only its area and
+`index.md`, add the matching `vertical_contracts` entry, and add its link to the
+root index after the normal pre-write backup. Never create a vertical for a
+read-only query.
+
 ### Root `index.md`
 
 ```markdown
@@ -145,19 +176,15 @@ changes and [the recent log](log.md) for continuity.
 ## Areas
 
 - [Core context](core/index.md)
-- [Career context](career/index.md)
-- [Learning context](learning/index.md)
-- [Writing context](writing/index.md)
-- [Relationships context](relationships/index.md)
-- [Media / Taste context](media/index.md)
 - [Review queue](review/index.md)
 - [Sources](sources/index.md)
 - [Derived material](derived/index.md)
 ```
 
-### Category indexes
+### Universal category indexes
 
-Create these simple pages, changing only the heading and description:
+Create only the Core, Review, Sources, and Derived pages at initialization,
+changing only the heading and description:
 
 ```markdown
 # Core Context
@@ -166,6 +193,10 @@ Cross-domain context such as goals, values, preferences, communication
 patterns, decision patterns, and recurring constraints.
 ```
 
+### Optional vertical index shapes
+
+When a vertical is enabled, create its index using the corresponding shape:
+
 ```markdown
 # Career Context
 
@@ -173,6 +204,9 @@ Career-specific roles, history, projects, skills, stories, evidence, and
 professional goals.
 ```
 
+
+<!-- selfcontext:catalog:start -->
+<!-- selfcontext:catalog:end -->
 ```markdown
 # Learning Context
 
@@ -181,6 +215,9 @@ states, meaningful gaps, corrections, mental models, prerequisites, and dated
 evidence. This is not a resource or course archive.
 ```
 
+
+<!-- selfcontext:catalog:start -->
+<!-- selfcontext:catalog:end -->
 ```markdown
 # Writing Context
 
@@ -189,6 +226,9 @@ editorial preferences, anti-patterns, and useful context-specific writing modes.
 Generated drafts and generic writing advice are not authentic Writing evidence.
 ```
 
+
+<!-- selfcontext:catalog:start -->
+<!-- selfcontext:catalog:end -->
 ```markdown
 # Relationships Context
 
@@ -197,6 +237,9 @@ interactions, commitments, open loops, and dated evolution. This is not a
 contact database or a profile of everything known about another person.
 ```
 
+
+<!-- selfcontext:catalog:start -->
+<!-- selfcontext:catalog:end -->
 ```markdown
 # Media / Taste Context
 
@@ -204,6 +247,9 @@ Reactions to cultural works and the evidence behind taste patterns, exceptions,
 and evolution. This is not a complete media catalog or consumption tracker.
 ```
 
+
+<!-- selfcontext:catalog:start -->
+<!-- selfcontext:catalog:end -->
 ```markdown
 # Review Queue
 
@@ -211,12 +257,18 @@ Unresolved observations, stale claims, contradictions, ambiguous assertions,
 and missing provenance that need human attention.
 ```
 
+
+<!-- selfcontext:catalog:start -->
+<!-- selfcontext:catalog:end -->
 ```markdown
 # Sources
 
 Retained source material and important recollections that provide provenance.
 ```
 
+
+<!-- selfcontext:catalog:start -->
+<!-- selfcontext:catalog:end -->
 ```markdown
 # Derived Material
 
@@ -237,11 +289,6 @@ automatically personal fact.
   - [schema](SCHEMA.md)
   - [index](index.md)
   - [core index](core/index.md)
-  - [career index](career/index.md)
-  - [learning index](learning/index.md)
-  - [writing index](writing/index.md)
-  - [relationships index](relationships/index.md)
-  - [media index](media/index.md)
   - [review index](review/index.md)
   - [sources index](sources/index.md)
   - [derived index](derived/index.md)

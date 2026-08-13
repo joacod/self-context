@@ -52,6 +52,16 @@ career history. State what is unavailable. Let SelfContext handle
 initialization when the operation genuinely requires it; a request for advice
 alone is not permission to fabricate context.
 
+## Contract and task packets
+
+Career is an available vertical, not automatically enabled in every schema 0.2
+vault. Treat an absent Career area as empty for read-only advice; do not create
+it merely because Career Advisor is available. For a task context packet,
+include only the objective, directly supported career evidence, relevant
+examples, explicit constraints/preferences, stale or provisional items,
+unknowns, evidence paths, and important exclusions. The packet is derived and
+ephemeral unless SelfContext's explicit retention rules justify a page.
+
 ## Evidence Discipline
 
 - Keep user-stated or user-confirmed facts distinct from source-derived facts,
