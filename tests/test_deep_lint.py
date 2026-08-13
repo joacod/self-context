@@ -154,6 +154,239 @@ class DeepLintTests(unittest.TestCase):
             self.assertIn("derived-source-chain", classes)
             self.assertIn("derived-freshness", classes)
 
+    def test_json_inventory_includes_compact_metadata_links_and_source_relationships(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.base_vault(Path(temporary))
+            (vault / "career").mkdir()
+            (vault / "career" / "index.md").write_text("# Career\n", encoding="utf-8")
+            (vault / "career" / "role.md").write_text(
+                page(title="Synthetic Career Role", extra="id: career-role\n"),
+                encoding="utf-8",
+            )
+            with (vault / "index.md").open("a", encoding="utf-8") as root_index:
+                root_index.write("- [Career](career/index.md)\n")
+            source = vault / "sources" / "evidence.md"
+            source.write_text(
+                page(
+                    page_type="source",
+                    assertion="source_record",
+                    title="Synthetic Evidence",
+                    extra="id: source-evidence\n",
+                )
+                + "\nLONG_SYNTHETIC_SOURCE_CONTENT_MUST_NOT_APPEAR_IN_INVENTORY\n",
+                encoding="utf-8",
+            )
+            related = vault / "core" / "related.md"
+            related.write_text(
+                page(title="Related Synthetic Page")
+                + "\n[Concept](concept.md)\n",
+                encoding="utf-8",
+            )
+            concept = vault / "core" / "concept.md"
+            concept.write_text(
+                page(
+                    title="Synthetic Concept",
+                    extra=(
+                        "id: concept-stable-id\n"
+                        "aliases:\n"
+                        "  - Compact Concept\n"
+                        "tags:\n"
+                        "  - synthetic\n"
+                        "  - triage\n"
+                        "sources:\n"
+                        "  - ../sources/evidence.md\n"
+                        "  - https://example.test/synthetic-source\n"
+                    ),
+                )
+                + "\n[Related](related.md)\n[Broken](missing.md)\nBODY_ONLY_SYNTHETIC_SECRET_7f3b1\n",
+                encoding="utf-8",
+            )
+
+            sys.path.insert(0, str(SCRIPTS))
+            import sync_indexes
+            sync_indexes.synchronize(vault, write=True)
+
+            first = self.run_deep_lint(vault)
+            second = self.run_deep_lint(vault)
+            self.assertEqual(first[0].returncode, second[0].returncode)
+            self.assertEqual(first[0].stdout, second[0].stdout)
+            report = first[1]
+            pages = report["pages"]
+            self.assertEqual([item["path"] for item in pages], sorted(item["path"] for item in pages))
+            item = next(page_item for page_item in pages if page_item["path"] == "core/concept.md")
+
+            self.assertEqual(item["id"], "concept-stable-id")
+            self.assertEqual(item["title"], "Synthetic Concept")
+            self.assertEqual(item["aliases"], ["Compact Concept"])
+            self.assertEqual(item["tags"], ["synthetic", "triage"])
+            self.assertEqual(item["type"], "concept")
+            self.assertEqual(item["assertion_kind"], "user_stated_fact")
+            self.assertEqual(item["status"], "active")
+            self.assertEqual(item["generated"], "2026-08-12")
+            self.assertIsNone(item["verified"])
+            self.assertIsNone(item["stale_after"])
+            self.assertEqual(item["owner_index"], "core/index.md")
+            self.assertIsNone(item["vertical"])
+            career_item = next(page_item for page_item in pages if page_item["path"] == "career/role.md")
+            self.assertEqual(career_item["vertical"], "career")
+            self.assertEqual(career_item["owner_index"], "career/index.md")
+            self.assertTrue(item["content_hash"])
+            self.assertEqual(item["outbound_links"], ["core/missing.md", "core/related.md"])
+            self.assertIn("core/index.md", item["inbound_links"])
+            self.assertIn("core/related.md", item["inbound_links"])
+            self.assertEqual(item["sources"], ["../sources/evidence.md", "https://example.test/synthetic-source"])
+
+            relationships = item["source_relationships"]
+            self.assertEqual(len(relationships), 2)
+            internal = next(entry for entry in relationships if entry["internal"])
+            self.assertEqual(
+                internal,
+                {
+                    "original": "../sources/evidence.md",
+                    "normalized_target": "sources/evidence.md",
+                    "internal": True,
+                    "external": False,
+                    "exists": True,
+                    "target_kind": "source",
+                },
+            )
+            external = next(entry for entry in relationships if entry["external"])
+            self.assertEqual(external["original"], "https://example.test/synthetic-source")
+            self.assertFalse(external["internal"])
+            self.assertIsNone(external["exists"])
+            self.assertIsNone(external["target_kind"])
+
+            output = first[0].stdout
+            self.assertNotIn("BODY_ONLY_SYNTHETIC_SECRET_7f3b1", output)
+            self.assertNotIn("LONG_SYNTHETIC_SOURCE_CONTENT_MUST_NOT_APPEAR_IN_INVENTORY", output)
+            self.assertNotIn("Synthetic page body", output)
+            self.assertNotIn('"body"', output)
+            second_item = next(page_item for page_item in second[1]["pages"] if page_item["path"] == "core/concept.md")
+            self.assertEqual(item["content_hash"], second_item["content_hash"])
+
+    def test_source_relationships_classify_derived_targets_and_missing_provenance(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.base_vault(Path(temporary))
+            (vault / "sources" / "evidence.md").write_text(
+                page(page_type="source", assertion="source_record", title="Evidence"),
+                encoding="utf-8",
+            )
+            (vault / "derived" / "base.md").write_text(
+                page(
+                    page_type="synthesis",
+                    assertion="derived_synthesis",
+                    title="Base Synthesis",
+                    extra="sources:\n  - ../sources/evidence.md\n",
+                ),
+                encoding="utf-8",
+            )
+            (vault / "derived" / "top.md").write_text(
+                page(
+                    page_type="synthesis",
+                    assertion="derived_synthesis",
+                    title="Top Synthesis",
+                    extra="sources:\n  - base.md\n",
+                ),
+                encoding="utf-8",
+            )
+            (vault / "derived" / "missing.md").write_text(
+                page(
+                    page_type="synthesis",
+                    assertion="derived_synthesis",
+                    title="Missing Provenance",
+                ),
+                encoding="utf-8",
+            )
+            sys.path.insert(0, str(SCRIPTS))
+            import sync_indexes
+            sync_indexes.synchronize(vault, write=True)
+            _, report = self.run_deep_lint(vault)
+
+            top = next(item for item in report["pages"] if item["path"] == "derived/top.md")
+            self.assertEqual(top["source_relationships"][0]["normalized_target"], "derived/base.md")
+            self.assertEqual(top["source_relationships"][0]["target_kind"], "derived")
+            provenance = [
+                item for item in report["findings"]
+                if item.get("classification") == "provenance" and item.get("path") == "derived/missing.md"
+            ]
+            self.assertTrue(provenance)
+            self.assertIn("has no sources", provenance[0]["message"])
+
+    def test_derived_freshness_is_a_bounded_review_signal_in_text_and_json(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.base_vault(Path(temporary))
+            (vault / "sources" / "newer.md").write_text(
+                page(
+                    page_type="source",
+                    assertion="source_record",
+                    title="Newer Source",
+                    extra="generated: 2025-01-01\nupdated: 2026-08-12\n",
+                ),
+                encoding="utf-8",
+            )
+            (vault / "derived" / "synthesis.md").write_text(
+                page(
+                    page_type="synthesis",
+                    assertion="derived_synthesis",
+                    title="Derived Synthesis",
+                    extra="generated: 2026-01-01\nsources:\n  - ../sources/newer.md\n",
+                ),
+                encoding="utf-8",
+            )
+            sys.path.insert(0, str(SCRIPTS))
+            import sync_indexes
+            sync_indexes.synchronize(vault, write=True)
+            _, report = self.run_deep_lint(vault)
+            finding = next(item for item in report["findings"] if item["classification"] == "derived-freshness")
+            message = finding["message"]
+            self.assertIn("newer generated or updated timestamp", message)
+            self.assertIn("Review whether regeneration is needed", message)
+            self.assertEqual(finding["source_path"], "sources/newer.md")
+            for overclaim in ("materially", "decisive", "wrong", "mandatory"):
+                self.assertNotIn(overclaim, message.casefold())
+
+            text_result = subprocess.run(
+                [sys.executable, str(LINT), "--deep", "--format", "text", str(vault)],
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=10,
+            )
+            self.assertIn(message, text_result.stdout)
+            self.assertNotIn("materially updated decisive source", text_result.stdout)
+
+    def test_malformed_metadata_remains_valid_json_and_is_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.base_vault(Path(temporary))
+            (vault / "core" / "malformed.md").write_text(
+                page(
+                    title="Malformed Metadata",
+                    extra=(
+                        "tags: synthetic\n"
+                        "sources: ../sources/missing.md\n"
+                        "type: []\n"
+                        "status: []\n"
+                        "assertion_kind: []\n"
+                    ),
+                ),
+                encoding="utf-8",
+            )
+            result, report = self.run_deep_lint(vault)
+            self.assertIn(result.returncode, (0, 1))
+            self.assertEqual(json.loads(result.stdout), report)
+            findings = [
+                item for item in report["findings"]
+                if item.get("path") == "core/malformed.md"
+            ]
+            self.assertTrue(any("tags must be a YAML list" in item["message"] for item in findings))
+            self.assertTrue(any("sources must be a YAML list" in item["message"] for item in findings))
+            self.assertTrue(any("invalid type" in item["message"] for item in findings))
+            self.assertTrue(any("invalid status" in item["message"] for item in findings))
+            self.assertTrue(any("invalid assertion_kind" in item["message"] for item in findings))
+            page_item = next(item for item in report["pages"] if item["path"] == "core/malformed.md")
+            self.assertNotIn("tags", page_item)
+            self.assertEqual(page_item["source_relationships"], [])
+
     def test_root_and_child_indexes_form_a_terminating_cycle(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             vault = self.base_vault(Path(temporary))

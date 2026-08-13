@@ -79,6 +79,47 @@ report is a compact inventory: it includes schema version, enabled contracts,
 page metadata, link/index relationships, findings, and severity counts, but not
 complete page bodies.
 
+Each `pages` entry uses stable, metadata-only fields when valid: `path`, `id`,
+`title`, `description`, `aliases`, `tags`, `type`, `assertion_kind`, `status`,
+the existing lifecycle dates (`generated`, `verified`, `stale_after`, plus any
+already-present valid `observed`, `reviewed`, or `updated` dates), `owner_index`,
+`vertical`, `content_hash`, `outbound_links`, `inbound_links`, `sources`, and
+`source_relationships`. `vertical` is the catalog vertical ID; it is `null` for
+shared `core/`, `review/`, `sources/`, and `derived/` areas. Link arrays contain
+normalized relative internal targets and are separate from frontmatter
+provenance. `sources` preserves valid frontmatter references, while each
+`source_relationships` record contains only `original`, `normalized_target`,
+`internal`, `external`, `exists`, and `target_kind` (`source`, `derived`, or
+another known page type). External existence is left `null`; no source is
+labeled authoritative, decisive, true, or otherwise privileged unless durable
+metadata explicitly stores that role.
+
+Use this inventory as a deterministic map of evidence files, not as evidence by
+itself. First sort and batch pages by `vertical`, `owner_index`, `status`,
+assertion kind, tags, and path. Then use the findings and relationships to
+choose a bounded semantic pass:
+
+- **Page batching:** begin with the smallest relevant page set rather than
+  opening every body. Tags and aliases improve selection, but they are
+  retrieval metadata, not new personal claims.
+- **Ownership triage:** use `vertical` and `owner_index` to identify the owning
+  area and avoid duplicating a page across verticals.
+- **Provenance triage:** inspect `source_relationships` and provenance findings
+  to locate missing, broken, external, source, and derived pointers. A
+  body/context link in `outbound_links` is not a frontmatter source.
+- **Stale-source candidates:** use `derived-freshness` findings and their
+  linked source path to select candidates for review. A newer timestamp is only
+  a review signal; it does not prove material change, decisiveness, error, or
+  mandatory regeneration.
+- **Index and link triage:** use `inbound_links`, `outbound_links`,
+  `index_relationships`, ownership findings, and reachability findings to focus
+  navigation checks.
+
+Open full pages, source records, and linked evidence only when this metadata and
+the selected question show that their content is needed. Keep the batch bounded
+and preserve the distinction between deterministic triggers and semantic
+conclusions.
+
 ### B. Page-local semantic pass
 
 Review bounded batches by owning vertical. Consider coherent subject and claim
@@ -126,7 +167,12 @@ epistemic labels, not exact generated prose.
 Return stable finding IDs with severity, classification, affected files,
 evidence/metadata trigger, recommended action, automation class, risk, and
 status. Automation classes are `safe_structural`, `semantic_proposal`,
-`human_decision`, and `no_change`. Keep successful no-change outcomes visible.
+`human_decision`, and `no_change`. Keep successful no-change outcomes
+visible. A full-vault review or retained report must not copy page bodies,
+source transcripts, snippets, or generated task packets; retain only the bounded
+metadata map, paths, findings, decisions, and links needed to explain the
+review. `No meaningful update` remains a valid result when the selected
+evidence does not change an owning page or decision.
 
 ## Retained reports
 

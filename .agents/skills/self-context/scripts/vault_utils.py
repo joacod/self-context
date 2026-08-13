@@ -426,11 +426,13 @@ def markdown_link_records(path: Path, root: Path, text: str) -> List[Dict[str, A
                 target_label = relative_label(target, root)
                 exists = _safe_is_file(target)
             except ValueError:
-                target_label = str(target)
+                # Keep link findings path-relative and avoid leaking absolute
+                # filesystem paths into the JSON maintenance inventory.
+                target_label = None
                 leaves = True
                 exists = False
             except (OSError, RuntimeError):
-                target_label = str(target)
+                target_label = None
                 exists = False
                 resolution_error = True
         record: Dict[str, Any] = {

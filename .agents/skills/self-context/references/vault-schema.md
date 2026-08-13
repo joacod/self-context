@@ -129,6 +129,25 @@ list of non-empty strings. Exact normalized title and alias collisions are deep
 lint findings. A `status: superseded` page without a valid `superseded_by` link
 gets a warning, but its history is preserved.
 
+### Deep-lint inventory metadata
+
+Deep-lint JSON may expose valid page metadata without copying page bodies. The
+stable page fields are `path`, `id`, `title`, `description`, `aliases`, `tags`,
+`type`, `assertion_kind`, `status`, present lifecycle dates, `owner_index`,
+`vertical`, `content_hash`, `outbound_links`, `inbound_links`, `sources`, and
+`source_relationships`. The catalog vertical ID is used for `vertical`; shared
+`core/`, `review/`, `sources/`, and `derived/` pages use `null`. Internal link
+arrays are normalized relative paths. Frontmatter `sources` remain distinct
+from ordinary body links, and each source relationship records its original
+reference, normalized target, internal/external state, internal existence, and
+known target kind. These relationships do not assign authority, decisiveness,
+truth, or a health/confidence score.
+
+The current shared schema defines `generated`, `verified`, and `stale_after`;
+if an existing page already carries a valid `observed`, `reviewed`, or `updated`
+date, the inventory may expose it without making that field required. Invalid
+metadata remains a lint finding and is not allowed to make the JSON malformed.
+
 Sources are provenance, not automatic verification. `verified: null` means no
 explicit confirmation has been recorded; it is not false and does not itself
 create a review item. Agent inferences remain reviewable, and derived
@@ -146,8 +165,10 @@ syntheses never become source evidence.
 
 Deep lint checks type/assertion/path compatibility, source and synthesis
 assertion kinds, active inferences outside the review lifecycle, source cycles,
-derived-only support chains, and stale derived syntheses relative to decisive
-sources. It does not decide whether any personal claim is true.
+derived-only support chains, and derived pages whose linked source has a
+newer generated or updated timestamp. That freshness result is a review signal;
+it does not prove material change, decisiveness, error, or mandatory
+regeneration. It does not decide whether any personal claim is true.
 
 ## Links and indexes
 

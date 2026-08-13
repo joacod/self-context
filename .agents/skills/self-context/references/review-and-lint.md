@@ -92,6 +92,25 @@ enabled verticals, applied contracts, a snapshot ID, compact page metadata,
 link/index relationships, findings, and severity counts, never complete page
 bodies. Neither path produces a numeric vault-health score.
 
+The deep-lint `pages` inventory is intentionally compact. Valid entries expose
+`path`, stable `id`, `title`, `description`, `aliases`, `tags`, `type`,
+`assertion_kind`, `status`, lifecycle dates, `owner_index`, catalog `vertical`,
+`content_hash`, normalized `outbound_links` and `inbound_links`, the raw valid
+frontmatter `sources` list, and `source_relationships`. A source relationship
+records `original`, `normalized_target`, `internal`, `external`, `exists`, and
+`target_kind`; it is a provenance pointer, not an authority or truth score.
+Body/context links remain ordinary navigation metadata and do not become
+provenance merely because they point at a source-looking page. Deep-lint JSON
+contains no complete page bodies, source transcripts, snippets, generated task
+packets, or ignored operational state. Tags and aliases can guide page
+selection without becoming personal claims.
+
+A newer generated or updated timestamp on a linked source produces only the
+review signal: “Linked source has a newer generated or updated timestamp than
+this derived synthesis. Review whether regeneration is needed.” It does not
+prove that the change was material, that the source was decisive, that the
+synthesis is wrong, or that regeneration is mandatory.
+
 Deep lint has two distinct rule layers. Universal filesystem and decoding safety
 checks apply everywhere in canonical content below the vault root, including
 custom top-level areas: symlinks, unreadable files, invalid UTF-8, and unsafe

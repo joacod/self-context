@@ -276,7 +276,7 @@ def _ordinary_findings(root: Path, today: date.date) -> List[Dict[str, Any]]:
             findings.append(_finding("error", "metadata", f"invalid assertion_kind: {assertion!r}", relative))
 
         tags = fields.get("tags")
-        if page_type in {"source", "synthesis"} and isinstance(tags, list) and "writing" in tags:
+        if isinstance(page_type, str) and page_type in {"source", "synthesis"} and isinstance(tags, list) and "writing" in tags:
             role_fields = (
                 fields.get("writing_evidence_role"),
                 fields.get("authorship"),
@@ -330,7 +330,7 @@ def _ordinary_findings(root: Path, today: date.date) -> List[Dict[str, Any]]:
             else:
                 ids[page_id] = path
 
-        for field in ("generated", "verified"):
+        for field in ("generated", "verified", "observed", "reviewed", "updated", "stale_after"):
             value = fields.get(field)
             if value not in (None, "", "null") and parse_iso_date(value) is None:
                 findings.append(_finding("error", "metadata", f"{field} is not an ISO date or datetime", relative))
@@ -346,7 +346,7 @@ def _ordinary_findings(root: Path, today: date.date) -> List[Dict[str, Any]]:
 
         if (
             (assertion == "agent_inference" or page_type == "observation")
-            and status not in {"archived", "superseded"}
+            and (not isinstance(status, str) or status not in {"archived", "superseded"})
         ):
             if fields.get("verified") in (None, "", "null"):
                 findings.append(_finding("warning", "review", "observation or inference is unverified", relative))
@@ -361,6 +361,17 @@ def _ordinary_findings(root: Path, today: date.date) -> List[Dict[str, Any]]:
             findings.append(_finding("error", "metadata", "description must be a YAML string", relative))
         if "tags" in fields and not isinstance(fields.get("tags"), list):
             findings.append(_finding("error", "metadata", "tags must be a YAML list (use [] when empty)", relative))
+        elif isinstance(fields.get("tags"), list) and any(
+            not isinstance(tag, str) or not tag.strip() for tag in fields["tags"]
+        ):
+            findings.append(_finding("error", "metadata", "tags must contain only non-empty strings", relative))
+
+        if "sources" in fields and not isinstance(fields.get("sources"), list):
+            findings.append(_finding("error", "metadata", "sources must be a YAML list (use [] when empty)", relative))
+        elif isinstance(fields.get("sources"), list) and any(
+            not isinstance(source, str) or not source.strip() for source in fields["sources"]
+        ):
+            findings.append(_finding("error", "metadata", "sources must contain only non-empty strings", relative))
 
         sources = as_list(fields.get("sources"))
         if isinstance(assertion, str) and assertion in {"source_derived_fact", "derived_synthesis"} and not sources:
@@ -431,6 +442,104 @@ def _record_path(record: Dict[str, Any]) -> str:
     return str(record.get("path", ""))
 
 
+_PAGE_DATE_FIELDS = ("generated", "verified", "observed", "reviewed", "updated", "stale_after")
+
+
+def _owning_vertical(path: str, catalog: Dict[str, Any]) -> Optional[str]:
+    parts = Path(path).parts
+    if not parts:
+        return None
+    area = parts[0]
+    for record in catalog_records(catalog):
+        if isinstance(record, dict) and record.get("vault_area") == area:
+            identifier = record.get("id")
+            return str(identifier) if identifier is not None else None
+    # core, review, sources, and derived are shared areas rather than verticals.
+    return None
+
+
+def _valid_date_metadata(value: Any) -> bool:
+    return value is None or parse_iso_date(value) is not None
+
+
+def _valid_string_list(value: Any) -> bool:
+    return isinstance(value, list) and all(
+        isinstance(item, str) and bool(item.strip()) for item in value
+    )
+
+
+def _target_kind(record: Optional[Dict[str, Any]]) -> Optional[str]:
+    if not isinstance(record, dict):
+        return None
+    fields = record.get("frontmatter")
+    if not isinstance(fields, dict):
+        return None
+    page_type = fields.get("type")
+    assertion = fields.get("assertion_kind")
+    if page_type == "source" or assertion == "source_record":
+        return "source"
+    if page_type == "synthesis" or assertion == "derived_synthesis":
+        return "derived"
+    return page_type if isinstance(page_type, str) and page_type in ALLOWED_TYPES else None
+
+
+def _source_relationships(
+    record: Dict[str, Any],
+    root: Path,
+    records_by_path: Dict[str, Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    fields = record.get("frontmatter")
+    if not isinstance(fields, dict) or not isinstance(fields.get("sources"), list):
+        return []
+
+    source_page = root / str(record["path"])
+    relationships: List[Dict[str, Any]] = []
+    for source in fields["sources"]:
+        if not isinstance(source, str) or not source.strip():
+            continue
+        original = source.strip()
+        external = is_external(original)
+        relationship: Dict[str, Any] = {
+            "original": original,
+            "normalized_target": original if external else None,
+            "internal": not external,
+            "external": external,
+            "exists": None if external else False,
+            "target_kind": None,
+        }
+        if external:
+            relationships.append(relationship)
+            continue
+
+        try:
+            target = link_target(source_page, original, root)
+        except (OSError, RuntimeError, ValueError):
+            target = None
+        if target is None:
+            relationships.append(relationship)
+            continue
+        try:
+            target.relative_to(root.resolve())
+        except (OSError, RuntimeError, ValueError):
+            # Do not expose absolute paths from malformed/out-of-vault links.
+            relationships.append(relationship)
+            continue
+
+        try:
+            normalized_target = relative_label(target, root)
+        except (OSError, RuntimeError, ValueError):
+            relationships.append(relationship)
+            continue
+        relationship["normalized_target"] = normalized_target
+        try:
+            relationship["exists"] = target.is_file()
+        except (OSError, RuntimeError, ValueError):
+            relationship["exists"] = False
+        relationship["target_kind"] = _target_kind(records_by_path.get(normalized_target))
+        relationships.append(relationship)
+    return relationships
+
+
 def _target_label(source: Path, destination: str, root: Path) -> Optional[str]:
     if is_external(destination):
         return None
@@ -494,9 +603,12 @@ def _path_compatibility(record: Dict[str, Any], root: Path) -> List[Dict[str, An
     if parts and parts[0] == "derived" and page_type != "synthesis":
         findings.append(_finding("error", "path-compatibility", "pages under derived/ must have type: synthesis", path))
     if len(parts) >= 2 and parts[0] == "review" and parts[1] == "observations":
-        if page_type != "observation" or assertion not in {"agent_inference", "mixed"}:
+        if page_type != "observation" or not isinstance(assertion, str) or assertion not in {"agent_inference", "mixed"}:
             findings.append(_finding("error", "path-compatibility", "review observations must be observation pages with an inference-compatible assertion kind", path))
-    if assertion == "agent_inference" and fields.get("status") not in {"review", "archived", "superseded"}:
+    if assertion == "agent_inference" and (
+        not isinstance(fields.get("status"), str)
+        or fields.get("status") not in {"review", "archived", "superseded"}
+    ):
         findings.append(_finding("error", "review-lifecycle", "active agent inferences must remain inside the review lifecycle", path))
     return findings
 
@@ -531,6 +643,15 @@ def _supersession_findings(record: Dict[str, Any], root: Path, records_by_path: 
         if not valid:
             findings.append(_finding("warning", "supersession", f"invalid superseded_by link: {successor}", record["path"]))
     return findings
+
+
+def _generated_or_updated_date(fields: Dict[str, Any]) -> Optional[date.date]:
+    values = [
+        parsed
+        for key in ("generated", "updated")
+        if (parsed := parse_iso_date(fields.get(key))) is not None
+    ]
+    return max(values) if values else None
 
 
 def _source_graph_findings(records: List[Dict[str, Any]], root: Path) -> List[Dict[str, Any]]:
@@ -589,21 +710,22 @@ def _source_graph_findings(records: List[Dict[str, Any]], root: Path) -> List[Di
             for target in targets
         ):
             findings.append(_finding("error", "derived-source-chain", "derived synthesis is supported only by other derived syntheses", path))
-        own_date = parse_iso_date(fields.get("generated"))
+        own_date = _generated_or_updated_date(fields)
         if own_date is None:
             continue
         for target in targets:
             source_fields = records_by_path.get(target, {}).get("frontmatter")
             if not isinstance(source_fields, dict):
                 continue
-            source_date = parse_iso_date(source_fields.get("generated"))
+            source_date = _generated_or_updated_date(source_fields)
             if source_date and source_date > own_date:
                 findings.append(
                     _finding(
                         "warning",
                         "derived-freshness",
-                        f"derived synthesis is older than materially updated decisive source: {target}",
+                        "Linked source has a newer generated or updated timestamp than this derived synthesis. Review whether regeneration is needed.",
                         path,
+                        source_path=target,
                     )
                 )
     return findings
@@ -679,26 +801,42 @@ def _deep_findings(root: Path, today: date.date) -> Tuple[List[Dict[str, Any]], 
             "path": path,
             "content_hash": record.get("content_hash"),
             "owner_index": None,
+            "vertical": _owning_vertical(path, catalog),
+            "outbound_links": [],
+            "inbound_links": [],
+            "sources": [],
+            "source_relationships": [],
         }
         owner = nearest_index(root / path, root)
         if owner:
             page_metadata_item["owner_index"] = relative_label(owner, root)
         if isinstance(fields, dict):
-            for key in (
-                "id",
-                "type",
-                "title",
-                "description",
-                "status",
-                "generated",
-                "verified",
-                "assertion_kind",
-                "stale_after",
-                "aliases",
-                "superseded_by",
-            ):
-                if key in fields:
+            if isinstance(fields.get("id"), str) and fields["id"].strip():
+                page_metadata_item["id"] = fields["id"]
+            if isinstance(fields.get("type"), str) and fields["type"] in ALLOWED_TYPES:
+                page_metadata_item["type"] = fields["type"]
+            if isinstance(fields.get("title"), str) and fields["title"].strip():
+                page_metadata_item["title"] = fields["title"]
+            if isinstance(fields.get("description"), str) and fields["description"].strip():
+                page_metadata_item["description"] = fields["description"]
+            if isinstance(fields.get("status"), str) and fields["status"] in ALLOWED_STATUSES:
+                page_metadata_item["status"] = fields["status"]
+            if isinstance(fields.get("assertion_kind"), str) and fields["assertion_kind"] in ALLOWED_ASSERTIONS:
+                page_metadata_item["assertion_kind"] = fields["assertion_kind"]
+            if _valid_string_list(fields.get("aliases")):
+                page_metadata_item["aliases"] = fields["aliases"]
+            if _valid_string_list(fields.get("tags")):
+                page_metadata_item["tags"] = fields["tags"]
+            if _valid_string_list(fields.get("sources")):
+                page_metadata_item["sources"] = fields["sources"]
+            if isinstance(fields.get("superseded_by"), str) and fields["superseded_by"].strip():
+                page_metadata_item["superseded_by"] = fields["superseded_by"]
+            for key in _PAGE_DATE_FIELDS:
+                if key in fields and _valid_date_metadata(fields[key]):
                     page_metadata_item[key] = fields[key]
+            page_metadata_item["source_relationships"] = _source_relationships(
+                record, root, records_by_path
+            )
         page_metadata.append(page_metadata_item)
         findings.extend(_path_compatibility(record, root))
         findings.extend(_supersession_findings(record, root, records_by_path))
@@ -772,6 +910,36 @@ def _deep_findings(root: Path, today: date.date) -> Tuple[List[Dict[str, Any]], 
                 findings.append(_finding("error", "links", f"link leaves vault: {link['destination']}", link["source"]))
             elif not link.get("external") and not link.get("exists"):
                 findings.append(_finding("error", "links", f"broken link: {link['destination']}", link["source"]))
+
+    # Page-local direction is a compact navigation aid.  Frontmatter sources
+    # stay separate in source_relationships so ordinary body links are never
+    # promoted to provenance.
+    metadata_by_path = {str(item["path"]): item for item in page_metadata}
+    outbound_by_source: Dict[str, Set[str]] = defaultdict(set)
+    inbound_by_target: Dict[str, Set[str]] = defaultdict(set)
+    for link in link_relationships:
+        if link.get("external") or link.get("leaves_vault") or link.get("resolution_error"):
+            continue
+        source = link.get("source")
+        target = link.get("target")
+        if not isinstance(source, str) or not isinstance(target, str):
+            continue
+        outbound_by_source[source].add(target)
+        if target in canonical_labels:
+            inbound_by_target[target].add(source)
+    for path, item in metadata_by_path.items():
+        item["outbound_links"] = sorted(outbound_by_source.get(path, set()))
+        item["inbound_links"] = sorted(inbound_by_target.get(path, set()))
+
+    # Stable ordering keeps JSON inventories comparable across repeated runs.
+    link_relationships.sort(
+        key=lambda item: (
+            str(item.get("source", "")),
+            str(item.get("target") or ""),
+            str(item.get("destination", "")),
+            str(item.get("kind", "")),
+        )
+    )
 
     root_index = root / "index.md"
     reachable: Set[str] = set()

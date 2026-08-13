@@ -526,11 +526,12 @@
     },
     {
       "id": 48,
-      "prompt": "A synthetic vault contains an active derived synthesis whose only sources are another derived synthesis and a newer decisive source. Run deep lint and report the derived-source-chain and freshness findings without deciding whether either personal claim is true.",
-      "expected_output": "Deep lint catches inappropriate derived-only support and a derived page older than a materially updated source while preserving epistemic boundaries.",
+      "prompt": "A synthetic vault contains an active derived synthesis whose only sources are another derived synthesis and a linked source page with a newer timestamp. Run deep lint and report the derived-source-chain and freshness findings without deciding whether either personal claim is true.",
+      "expected_output": "Deep lint catches inappropriate derived-only support and emits a bounded newer-linked-timestamp review signal while preserving epistemic boundaries.",
       "expectations": [
         "Derived syntheses supported only by derived syntheses are reported.",
-        "A derived synthesis older than a newer decisive source is reported.",
+        "A newer linked source timestamp produces a review candidate that recommends reviewing regeneration.",
+        "The finding does not claim material change, source decisiveness, synthesis error, or mandatory regeneration.",
         "The linter does not resolve or verify the personal claims."
       ],
       "files": []
@@ -667,6 +668,84 @@
         "The documented migration is reviewed rather than guessed.",
         "No affected evidence produces an explicit No meaningful Career update.",
         "No automatic contract or page mutation occurs."
+      ],
+      "files": []
+    },
+    {
+      "id": 61,
+      "prompt": "In a synthetic vault with many ordinary pages and a few review/status candidates, perform a read-only deep review by running the deep-lint JSON inventory first. Batch pages by owning area, status, tags, and provenance findings, then open only the selected full pages needed for semantic questions. Do not scan every body or retain page text.",
+      "expected_output": "The deep review uses the deterministic inventory as a map to reduce irrelevant reads while preserving the underlying pages as the evidence source.",
+      "expectations": [
+        "Deep-lint JSON is read before broad page-body inspection.",
+        "Page batches and ownership triage use inventory metadata and findings.",
+        "Full pages are opened only when the selected semantic pass needs their content.",
+        "The inventory is not presented as evidence by itself and the review remains read-only."
+      ],
+      "files": []
+    },
+    {
+      "id": 62,
+      "prompt": "A synthetic derived synthesis has an older generated date and a frontmatter link to a newer synthetic source page. Run deep lint and plan a read-only review. Treat the newer timestamp as a regeneration candidate only: do not rewrite the synthesis, call the source decisive, or claim the synthesis is wrong.",
+      "expected_output": "The newer linked timestamp creates a bounded review signal rather than an automatic semantic update.",
+      "expectations": [
+        "The finding says a linked source has a newer generated or updated timestamp and recommends reviewing regeneration.",
+        "The finding does not claim material change, decisiveness, error, or mandatory regeneration.",
+        "No page body or metadata is automatically rewritten."
+      ],
+      "files": []
+    },
+    {
+      "id": 63,
+      "prompt": "A synthetic vault uses tags such as `technical` and `current-review` on fictional pages. Use the deep-lint inventory tags to select a bounded review batch, but do not turn the tags into claims about a person's interests, identity, or preferences.",
+      "expected_output": "Tags improve deterministic page selection while remaining metadata rather than personal evidence.",
+      "expectations": [
+        "Stored tags are present in compact page metadata and can guide batching.",
+        "Tags are not treated as user-stated facts or semantic proof.",
+        "The review opens only the relevant selected pages and preserves privacy."
+      ],
+      "files": []
+    },
+    {
+      "id": 64,
+      "prompt": "In a synthetic vault, one page has a frontmatter source reference to a retained source, an external source URL, and an ordinary body link to another page. Inspect deep-lint JSON and explain the normalized source relationships. Keep provenance pointers separate from contextual body links and do not assign authority or truth to any target.",
+      "expected_output": "The inventory makes source relationships explicit and compact without conflating navigation with provenance.",
+      "expectations": [
+        "Each frontmatter source has an original reference, normalized target, internal/external state, existence state, and known target kind when available.",
+        "The ordinary body link appears only as navigation, not as a frontmatter provenance relationship.",
+        "No source is labeled decisive, authoritative, or true unless durable metadata explicitly says so."
+      ],
+      "files": []
+    },
+    {
+      "id": 65,
+      "prompt": "Run deep lint on a synthetic derived page whose assertion kind requires provenance but whose `sources` list is empty, and on a source-derived page with a missing source reference. Report the deterministic findings without inventing replacement evidence.",
+      "expected_output": "Missing provenance is surfaced as a finding and the linter remains deterministic and non-mutating.",
+      "expectations": [
+        "Missing sources for derived or source-derived material become provenance findings.",
+        "A missing referenced target is reported without copying or fabricating source content.",
+        "The JSON remains valid and no page is rewritten."
+      ],
+      "files": []
+    },
+    {
+      "id": 66,
+      "prompt": "Perform a full synthetic-vault deep review and explicitly retain a metadata-focused report. The vault contains distinctive body-only strings and a long fictional source transcript. Keep the retained report limited to paths, compact metadata, relationships, findings, decisions, and validation; do not copy page bodies, snippets, or the transcript.",
+      "expected_output": "The retained full-vault report remains privacy-conscious and metadata-focused.",
+      "expectations": [
+        "Distinctive body-only and long source-content strings are absent from the retained report.",
+        "The report preserves compact inventory metadata and provenance pointers needed for triage.",
+        "No generated task packet or complete page body is retained."
+      ],
+      "files": []
+    },
+    {
+      "id": 67,
+      "prompt": "Review a synthetic vertical whose new source repeats the existing evidence and changes no ownership, provenance, freshness decision, or semantic pattern. Preserve the source pointer, report No meaningful update, and leave durable pages unchanged.",
+      "expected_output": "No meaningful update is treated as a successful deep-review result rather than a reason to manufacture a finding or rewrite.",
+      "expectations": [
+        "The review explicitly reports No meaningful update.",
+        "Existing pages, lifecycle metadata, and ownership remain unchanged.",
+        "Useful provenance can remain visible even when no semantic update is needed."
       ],
       "files": []
     }
