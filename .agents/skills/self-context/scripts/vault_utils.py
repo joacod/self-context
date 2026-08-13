@@ -177,8 +177,13 @@ def parse_frontmatter(path: Path) -> Tuple[Optional[Dict[str, Any]], List[str]]:
 def safe_read_text(path: Path) -> Tuple[Optional[str], Optional[str]]:
     try:
         return path.read_text(encoding="utf-8"), None
-    except (OSError, UnicodeError) as error:
-        return None, f"{type(error).__name__}: {error}"
+    except UnicodeError:
+        # Keep malformed input details out of reports.  The finding carries the
+        # affected relative path, while this stable message is enough to
+        # distinguish a decoding failure from other read errors.
+        return None, "UnicodeDecodeError: file is not valid UTF-8"
+    except OSError as error:
+        return None, f"{type(error).__name__}: unable to read file"
 
 
 def safe_read_bytes(path: Path) -> Tuple[Optional[bytes], Optional[str]]:
@@ -341,12 +346,26 @@ def link_target(source: Path, destination: str, root: Path) -> Optional[Path]:
     target_text = destination.split("#", 1)[0].split("?", 1)[0]
     if not target_text:
         return source
-    target = (source.parent / unquote(target_text)).resolve()
+    raw_target = source.parent / unquote(target_text)
+    try:
+        target = raw_target.resolve()
+    except (OSError, RuntimeError, ValueError):
+        # Preserve a reportable path when resolution encounters an unreadable
+        # target or a symlink loop. Callers will classify it as unsafe or
+        # broken rather than allowing the linter to raise.
+        return raw_target
     try:
         target.relative_to(root.resolve())
     except ValueError:
         return target
     return target
+
+
+def _safe_is_file(path: Path) -> bool:
+    try:
+        return path.is_file()
+    except (OSError, RuntimeError, ValueError):
+        return False
 
 
 def markdown_link_records(path: Path, root: Path, text: str) -> List[Dict[str, Any]]:
@@ -357,25 +376,31 @@ def markdown_link_records(path: Path, root: Path, text: str) -> List[Dict[str, A
         target_label: Optional[str] = None
         exists = True
         leaves = False
+        resolution_error = False
         if not external and target is not None:
             try:
                 target_label = relative_label(target, root)
-                exists = target.is_file()
+                exists = _safe_is_file(target)
             except ValueError:
                 target_label = str(target)
                 leaves = True
                 exists = False
-        records.append(
-            {
-                "source": relative_label(path, root),
-                "destination": destination,
-                "target": target_label,
-                "external": external,
-                "exists": exists,
-                "leaves_vault": leaves,
-                "kind": "index" if path.name == "index.md" else "contextual",
-            }
-        )
+            except (OSError, RuntimeError):
+                target_label = str(target)
+                exists = False
+                resolution_error = True
+        record: Dict[str, Any] = {
+            "source": relative_label(path, root),
+            "destination": destination,
+            "target": target_label,
+            "external": external,
+            "exists": exists,
+            "leaves_vault": leaves,
+            "kind": "index" if path.name == "index.md" else "contextual",
+        }
+        if resolution_error:
+            record["resolution_error"] = True
+        records.append(record)
     return records
 
 

@@ -21,9 +21,9 @@ from typing import Iterable, List, Tuple
 ROOT = Path(__file__).resolve().parents[1]
 TESTS_DIR = ROOT / "tests"
 TEST_PATTERN = "test_*.py"
-CURRENT_EXPECTED_TESTS = 43
+CURRENT_EXPECTED_TESTS = 53
 MIN_EXPECTED_TESTS = 40
-EXPECTED_DEEP_LINT_TESTS = 8
+EXPECTED_DEEP_LINT_TESTS = 15
 
 
 class RecordingTextTestResult(unittest.TextTestResult):

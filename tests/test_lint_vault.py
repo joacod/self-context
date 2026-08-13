@@ -1,8 +1,10 @@
+import datetime as date
 import json
 import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 
@@ -73,6 +75,7 @@ class LintVaultTests(unittest.TestCase):
             capture_output=True,
             text=True,
             check=False,
+            timeout=10,
         )
 
     def test_schema_01_remains_accepted_without_contract_migration(self) -> None:
@@ -111,11 +114,140 @@ class LintVaultTests(unittest.TestCase):
     def test_malformed_utf8_is_a_controlled_finding(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             vault = self.make_vault(Path(temporary), schema="0.1")
-            (vault / "broken.md").write_bytes(b"\xff\xfe")
+            custom = vault / "custom-notes"
+            custom.mkdir()
+            broken = custom / "broken.md"
+            broken.write_bytes(b"\xff\xfeunrelated-private-marker")
+            healthy = vault / "core" / "healthy.md"
+            healthy.write_text(
+                PAGE.format(slug="healthy", title="Healthy Synthetic Page", alias="healthy alias"),
+                encoding="utf-8",
+            )
+
             result = self.run_lint(vault, "--deep", "--format", "json")
             self.assertNotIn("Traceback", result.stderr)
             report = json.loads(result.stdout)
-            self.assertTrue(any(item["classification"] == "utf8" for item in report["findings"]))
+            malformed = [
+                item
+                for item in report["findings"]
+                if item["classification"] == "utf8" and item.get("path") == "custom-notes/broken.md"
+            ]
+            self.assertEqual(len(malformed), 1)
+            self.assertNotIn("unrelated-private-marker", result.stdout)
+            self.assertTrue(any(item.get("path") == "core/healthy.md" for item in report["pages"]))
+
+            text_result = self.run_lint(vault, "--deep", "--format", "text")
+            self.assertNotIn("Traceback", text_result.stderr)
+            self.assertIn("custom-notes/broken.md", text_result.stdout)
+
+    def test_custom_area_is_unmanaged_but_universal_link_safety_still_applies(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.make_vault(Path(temporary), schema="0.1")
+            custom = vault / "custom-notes"
+            custom.mkdir()
+            (custom / "index.md").write_text(
+                "# Custom index\n\n- [Self](index.md)\n", encoding="utf-8"
+            )
+            (custom / "plain.md").write_text(
+                "# Custom notes\n\nNo SelfContext frontmatter is required here.\n",
+                encoding="utf-8",
+            )
+            unsafe = custom / "unsafe.md"
+            unsafe.write_text("# Custom link\n\n[Escape](../../outside.md)\n", encoding="utf-8")
+
+            result = self.run_lint(vault, "--deep", "--format", "json")
+            report = json.loads(result.stdout)
+            self.assertTrue(
+                any(
+                    item["classification"] == "custom-area"
+                    and item.get("path") == "custom-notes/plain.md"
+                    for item in report["findings"]
+                )
+            )
+            self.assertTrue(
+                any(
+                    item["classification"] == "links"
+                    and item.get("path") == "custom-notes/unsafe.md"
+                    for item in report["findings"]
+                )
+            )
+            self.assertFalse(any(item.get("path") == "custom-notes/plain.md" for item in report["pages"]))
+            self.assertFalse(
+                any(
+                    item["classification"] == "root-reachability"
+                    and item.get("path") == "custom-notes/index.md"
+                    for item in report["findings"]
+                )
+            )
+            managed_classes = {
+                "frontmatter",
+                "metadata",
+                "root-reachability",
+                "nearest-index-ownership",
+                "catalog-sync",
+                "vertical-contract",
+            }
+            self.assertFalse(
+                any(
+                    item.get("path", "").startswith("custom-notes/")
+                    and item["classification"] in managed_classes
+                    for item in report["findings"]
+                )
+            )
+
+    def test_custom_area_symlink_is_reported_as_a_safety_finding(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            vault = self.make_vault(root, schema="0.1")
+            custom = vault / "custom-notes"
+            custom.mkdir()
+            outside = root / "outside.md"
+            outside.write_text("synthetic outside target\n", encoding="utf-8")
+            linked = custom / "linked.md"
+            try:
+                linked.symlink_to(outside)
+            except (OSError, NotImplementedError) as error:
+                self.skipTest(f"symlinks unavailable: {error}")
+
+            result = self.run_lint(vault, "--deep", "--format", "json")
+            report = json.loads(result.stdout)
+            self.assertTrue(
+                any(
+                    item["classification"] == "symlink"
+                    and item["severity"] == "error"
+                    and item.get("path") == "custom-notes/linked.md"
+                    for item in report["findings"]
+                )
+            )
+
+    def test_unreadable_file_is_reported_without_raising(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.make_vault(Path(temporary), schema="0.1")
+            custom = vault / "custom-notes"
+            custom.mkdir()
+            unreadable = custom / "unreadable.md"
+            unreadable.write_text("synthetic unreadable content\n", encoding="utf-8")
+
+            sys.path.insert(0, str(SCRIPTS))
+            import lint_vault
+
+            original_read = lint_vault.safe_read_text
+
+            def fake_read(path: Path):
+                if path == unreadable:
+                    return None, "PermissionError: unable to read file"
+                return original_read(path)
+
+            with mock.patch.object(lint_vault, "safe_read_text", side_effect=fake_read):
+                report = lint_vault.deep_lint_vault(vault, date.date(2026, 8, 12))
+
+            self.assertTrue(
+                any(
+                    item["classification"] == "filesystem"
+                    and item.get("path") == "custom-notes/unreadable.md"
+                    for item in report["findings"]
+                )
+            )
 
     def test_json_omits_page_bodies_and_snapshot_is_deterministic(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

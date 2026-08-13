@@ -97,7 +97,9 @@ NON_CANONICAL_DIRECTORIES = {".obsidian", "backups"}
 
 
 def parse_frontmatter(path: Path) -> Tuple[Optional[Dict[str, Any]], List[str]]:
-    text = path.read_text(encoding="utf-8")
+    text, error = safe_read_text(path)
+    if text is None:
+        return None, [error or "unable to read file"]
     fields, errors, _ = parse_frontmatter_text(text)
     return fields, errors
 
@@ -134,6 +136,10 @@ def _legacy(finding: Dict[str, Any]) -> str:
     return f"{path}: {message}" if path else message
 
 
+def _read_error_classification(error: Optional[str]) -> str:
+    return "utf8" if (error or "").startswith("UnicodeDecodeError") else "filesystem"
+
+
 def _known_top_level_areas() -> Set[str]:
     known = {"core", "review", "sources", "derived"}
     try:
@@ -157,7 +163,8 @@ def _is_custom_top_level(path: Path, root: Path) -> bool:
 def _schema_findings(root: Path) -> List[Dict[str, Any]]:
     schema = parse_schema(root)
     if schema.get("error"):
-        return [_finding("error", "utf8", str(schema["error"]), "SCHEMA.md")]
+        error = str(schema["error"])
+        return [_finding("error", _read_error_classification(error), error, "SCHEMA.md")]
     version = schema.get("version")
     if version is None:
         return [_finding("warning", "schema", "SCHEMA.md does not declare a parseable schema_version")]
@@ -196,7 +203,14 @@ def _ordinary_findings(root: Path, today: date.date) -> List[Dict[str, Any]]:
             continue
         text, error = safe_read_text(path)
         if text is None:
-            findings.append(_finding("error", "utf8", error or "unable to read file", relative))
+            findings.append(
+                _finding(
+                    "error",
+                    _read_error_classification(error),
+                    error or "unable to read file",
+                    relative,
+                )
+            )
             continue
 
         if "[[" in text:
@@ -206,17 +220,30 @@ def _ordinary_findings(root: Path, today: date.date) -> List[Dict[str, Any]]:
         for destination in iter_markdown_links(text):
             if is_external(destination) or not destination:
                 continue
-            target = link_target(path, destination, root)
+            try:
+                target = link_target(path, destination, root)
+            except (OSError, RuntimeError, ValueError):
+                findings.append(
+                    _finding("error", "links", f"unsafe link target: {destination}", relative)
+                )
+                continue
             if target is None:
                 continue
             try:
                 target.relative_to(root.resolve())
-            except ValueError:
+            except (OSError, RuntimeError, ValueError):
                 findings.append(
                     _finding("error", "links", f"link leaves vault: {destination}", relative)
                 )
                 continue
-            if not target.is_file():
+            try:
+                exists = target.is_file()
+            except (OSError, RuntimeError, ValueError):
+                findings.append(
+                    _finding("error", "links", f"unsafe link target: {destination}", relative)
+                )
+                continue
+            if not exists:
                 findings.append(
                     _finding("error", "links", f"broken link: {destination}", relative)
                 )
@@ -335,21 +362,30 @@ def _ordinary_findings(root: Path, today: date.date) -> List[Dict[str, Any]]:
         for source in sources:
             if not isinstance(source, str) or is_external(source):
                 continue
-            source_target = link_target(path, source, root)
+            try:
+                source_target = link_target(path, source, root)
+            except (OSError, RuntimeError, ValueError):
+                findings.append(_finding("error", "provenance", f"unsafe source reference: {source}", relative))
+                continue
             if source_target is None:
                 continue
             try:
                 source_target.relative_to(root.resolve())
-            except ValueError:
+            except (OSError, RuntimeError, ValueError):
                 findings.append(_finding("error", "provenance", f"source reference leaves vault: {source}", relative))
                 continue
-            if not source_target.is_file():
+            try:
+                exists = source_target.is_file()
+            except (OSError, RuntimeError, ValueError):
+                findings.append(_finding("error", "provenance", f"unsafe source reference: {source}", relative))
+                continue
+            if not exists:
                 findings.append(_finding("error", "provenance", f"missing source reference: {source}", relative))
 
     root_index = root / "index.md"
     root_text, root_error = safe_read_text(root_index)
     if root_error:
-        findings.append(_finding("error", "utf8", root_error, "index.md"))
+        findings.append(_finding("error", _read_error_classification(root_error), root_error, "index.md"))
     root_text = root_text or ""
     for expected in (
         "SCHEMA.md",
@@ -392,12 +428,15 @@ def _record_path(record: Dict[str, Any]) -> str:
 def _target_label(source: Path, destination: str, root: Path) -> Optional[str]:
     if is_external(destination):
         return None
-    target = link_target(source, destination, root)
+    try:
+        target = link_target(source, destination, root)
+    except (OSError, RuntimeError, ValueError):
+        return None
     if target is None:
         return None
     try:
         return relative_label(target, root)
-    except ValueError:
+    except (OSError, RuntimeError, ValueError):
         return str(target)
 
 
@@ -467,13 +506,16 @@ def _supersession_findings(record: Dict[str, Any], root: Path, records_by_path: 
             findings.append(_finding("warning", "supersession", "status: superseded needs a valid superseded_by link", record["path"]))
             return findings
     if isinstance(successor, str) and successor.strip():
-        target = link_target(path, successor, root)
+        try:
+            target = link_target(path, successor, root)
+        except (OSError, RuntimeError, ValueError):
+            target = None
         valid = target is not None and target.suffix.lower() == ".md"
         if valid:
             try:
                 target_label = relative_label(target, root)
                 valid = target_label in records_by_path and target_label != record["path"]
-            except ValueError:
+            except (OSError, RuntimeError, ValueError):
                 valid = False
         if not valid:
             findings.append(_finding("warning", "supersession", f"invalid superseded_by link: {successor}", record["path"]))
@@ -492,12 +534,15 @@ def _source_graph_findings(records: List[Dict[str, Any]], root: Path) -> List[Di
         for source in as_list(fields.get("sources")):
             if not isinstance(source, str) or is_external(source):
                 continue
-            target = link_target(source_page, source, root)
+            try:
+                target = link_target(source_page, source, root)
+            except (OSError, RuntimeError, ValueError):
+                continue
             if target is None:
                 continue
             try:
                 label = relative_label(target, root)
-            except ValueError:
+            except (OSError, RuntimeError, ValueError):
                 continue
             if label in records_by_path:
                 graph[str(record["path"])].append(label)
@@ -563,6 +608,11 @@ def _deep_findings(root: Path, today: date.date) -> Tuple[List[Dict[str, Any]], 
         item for item in ordinary_findings
         if not (item.get("path") and _is_custom_top_level(root / str(item["path"]), root))
     ]
+    reported_read_paths = {
+        str(item["path"])
+        for item in findings
+        if item.get("classification") in {"utf8", "filesystem"} and item.get("path")
+    }
     if not root.exists() or not root.is_dir():
         return findings, {
             "schema_version": None,
@@ -577,17 +627,20 @@ def _deep_findings(root: Path, today: date.date) -> Tuple[List[Dict[str, Any]], 
     if root.is_symlink():
         findings.append(_finding("error", "symlink", "vault path itself is a symlink", str(root)))
     for path in iter_symlinks(root):
-        findings.append(_finding("error", "symlink", "symlink found in canonical vault content", relative_label(path, root)))
+        findings.append(_finding("error", "symlink", "symlink found in vault content", relative_label(path, root)))
     for path in iter_symlinks(root, include_noncanonical=True):
         if is_noncanonical(path, root):
             findings.append(_finding("info", "noncanonical-state", "noncanonical symlink remains excluded from canonical state", relative_label(path, root)))
 
-    # Read every canonical file as UTF-8 in deep mode.  The snapshot itself is
-    # byte-hash based so a malformed file still receives a deterministic ID.
+    # Read every canonical file as UTF-8 in deep mode, including custom
+    # areas. The snapshot itself is byte-hash based so a malformed file still
+    # receives a deterministic ID. Ordinary findings already cover managed
+    # files, so avoid emitting the same read finding twice.
     for path in canonical_files(root):
+        relative = relative_label(path, root)
         _, error = safe_read_text(path)
-        if error:
-            findings.append(_finding("error", "utf8", error, relative_label(path, root)))
+        if error and relative not in reported_read_paths:
+            findings.append(_finding("error", _read_error_classification(error), error, relative))
 
     try:
         catalog = load_vertical_catalog()
@@ -676,18 +729,31 @@ def _deep_findings(root: Path, today: date.date) -> Tuple[List[Dict[str, Any]], 
     # used to determine root reachability and weak contextual connectivity.
     link_relationships: List[Dict[str, Any]] = []
     by_source: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    canonical_markdown_paths = canonical_markdown_files(root)
     canonical_labels = {
         relative_label(path, root)
-        for path in canonical_markdown_files(root)
+        for path in canonical_markdown_paths
     }
-    for path in canonical_markdown_files(root):
+    managed_labels = {
+        relative_label(path, root)
+        for path in canonical_markdown_paths
+        if not _is_custom_top_level(path, root)
+    }
+    managed_index_labels = {
+        relative_label(path, root)
+        for path in canonical_markdown_paths
+        if path.name == "index.md" and not _is_custom_top_level(path, root)
+    }
+    for path in canonical_markdown_paths:
         text, error = safe_read_text(path)
         if error or text is None:
             continue
         for link in markdown_link_records(path, root, text):
             link_relationships.append(link)
             by_source[link["source"]].append(link)
-            if link.get("leaves_vault"):
+            if link.get("resolution_error"):
+                findings.append(_finding("error", "links", f"unsafe link target: {link['destination']}", link["source"]))
+            elif link.get("leaves_vault"):
                 findings.append(_finding("error", "links", f"link leaves vault: {link['destination']}", link["source"]))
             elif not link.get("external") and not link.get("exists"):
                 findings.append(_finding("error", "links", f"broken link: {link['destination']}", link["source"]))
@@ -695,41 +761,57 @@ def _deep_findings(root: Path, today: date.date) -> Tuple[List[Dict[str, Any]], 
     root_index = root / "index.md"
     reachable: Set[str] = set()
     queue: deque[str] = deque()
+    processed_indexes: Set[str] = set()
+    scheduled_indexes: Set[str] = set()
     if root_index.is_file():
         root_label = relative_label(root_index, root)
         reachable.add(root_label)
         queue.append(root_label)
+        scheduled_indexes.add(root_label)
     while queue:
         source_label = queue.popleft()
+        if source_label in processed_indexes:
+            continue
+        # Mark before expanding links. A permanent processed set is required
+        # for both cycles and duplicate links; queue membership alone is not a
+        # traversal invariant.
+        processed_indexes.add(source_label)
         for link in by_source.get(source_label, []):
             target = link.get("target")
             if not target or target not in canonical_labels:
                 continue
             if target not in reachable:
                 reachable.add(target)
-            if target.endswith("index.md") and target not in set(queue):
+            if (
+                target in managed_index_labels
+                and target not in processed_indexes
+                and target not in scheduled_indexes
+            ):
                 queue.append(target)
+                scheduled_indexes.add(target)
     for path in sorted(records_by_path):
         if path not in reachable:
             findings.append(_finding("error", "root-reachability", "durable page is not reachable from root index through index links", path))
-    for index_path in sorted(path for path in canonical_labels if path.endswith("index.md")):
+    for index_path in sorted(managed_index_labels):
         if index_path not in reachable:
             findings.append(_finding("error", "root-reachability", "index is not reachable from root index", index_path))
 
     owner_entries: Dict[str, Dict[str, str]] = {}
-    for index in canonical_markdown_files(root):
+    for index in canonical_markdown_paths:
         if index.name != "index.md":
+            continue
+        label = relative_label(index, root)
+        if label not in managed_index_labels:
             continue
         text, error = safe_read_text(index)
         if text is None:
             continue
-        label = relative_label(index, root)
         owner_entries[label] = _managed_target_labels(index, text, root)
         for target_label in owner_entries[label]:
             owner_entries[label][target_label] = target_label
         for entry in sync_indexes.managed_entries(text):
             target = _target_label(index, entry["path"], root)
-            if target is None or target not in canonical_labels:
+            if target is None or target not in managed_labels:
                 findings.append(_finding("error", "dead-catalog-entry", f"dead catalog entry: {entry['path']}", label))
 
     sync_result = sync_indexes.synchronize(root, write=False)
@@ -764,7 +846,11 @@ def _deep_findings(root: Path, today: date.date) -> Tuple[List[Dict[str, Any]], 
 
     contextual_inbound: Dict[str, Set[str]] = defaultdict(set)
     for link in link_relationships:
-        if link.get("kind") == "contextual" and link.get("target") in records_by_path:
+        if (
+            link.get("kind") == "contextual"
+            and link.get("source") in managed_labels
+            and link.get("target") in records_by_path
+        ):
             contextual_inbound[str(link["target"])].add(str(link["source"]))
     for path in sorted(records_by_path):
         if path in reachable and not contextual_inbound.get(path):
@@ -808,7 +894,18 @@ def _deep_findings(root: Path, today: date.date) -> Tuple[List[Dict[str, Any]], 
         str(record.get("vault_area")) for record in catalog_records(catalog)
     }
     if root.is_dir():
-        for child in sorted(root.iterdir()):
+        try:
+            children = sorted(root.iterdir(), key=lambda path: path.name)
+        except OSError as error:
+            children = []
+            findings.append(
+                _finding(
+                    "error",
+                    "filesystem",
+                    f"{type(error).__name__}: unable to inspect vault root",
+                )
+            )
+        for child in children:
             if child.is_dir() and child.name not in known_areas and child.name not in {".obsidian", "backups"}:
                 findings.append(_finding("info", "custom-area", f"unrecognized custom top-level area preserved: {child.name}/", child.name + "/"))
 
@@ -816,22 +913,31 @@ def _deep_findings(root: Path, today: date.date) -> Tuple[List[Dict[str, Any]], 
     # malformed or broken links become findings, never log prose.
     log_text, log_error = safe_read_text(root / "log.md")
     if log_error:
-        findings.append(_finding("error", "utf8", log_error, "log.md"))
+        findings.append(_finding("error", _read_error_classification(log_error), log_error, "log.md"))
     elif log_text is not None:
         for malformed in malformed_links(log_text):
             findings.append(_finding("warning", "log-link", f"malformed Markdown link in recent log entry: {malformed}" , "log.md"))
         for destination in iter_markdown_links(log_text):
             if is_external(destination):
                 continue
-            target = link_target(root / "log.md", destination, root)
+            try:
+                target = link_target(root / "log.md", destination, root)
+            except (OSError, RuntimeError, ValueError):
+                findings.append(_finding("warning", "log-link", f"unsafe log link target: {destination}", "log.md"))
+                continue
             if target is None:
                 continue
             try:
                 label = relative_label(target, root)
-            except ValueError:
+            except (OSError, RuntimeError, ValueError):
                 findings.append(_finding("warning", "log-link", f"log link leaves vault: {destination}", "log.md"))
                 continue
-            if not target.is_file():
+            try:
+                exists = target.is_file()
+            except (OSError, RuntimeError, ValueError):
+                findings.append(_finding("warning", "log-link", f"unsafe log link target: {destination}", "log.md"))
+                continue
+            if not exists:
                 findings.append(_finding("warning", "log-link", f"broken link in recent log entry: {destination}", "log.md"))
 
     metadata = {
