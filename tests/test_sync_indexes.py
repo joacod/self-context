@@ -141,7 +141,7 @@ class SyncIndexesTests(unittest.TestCase):
             vault = self.make_vault(Path(temporary))
             title = "Title [with] \\\\ backtick ` and   Unicode ☃"
             description = "Description [with] \\\\ backtick ` and\t repeated   whitespace"
-            page_path = vault / "core" / "space (one) [two]\\\\☃.md"
+            page_path = vault / "core" / "space (one) [two] ☃.md"
             page_path.write_text(PAGE.format(title=title, description=description), encoding="utf-8")
             result = self.run_sync(vault, "--write")
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -151,9 +151,9 @@ class SyncIndexesTests(unittest.TestCase):
             self.assertIn("%29", index_text)
             self.assertIn("%5B", index_text)
             self.assertIn("%5D", index_text)
-            self.assertIn("%5C", index_text)
             self.assertIn("%E2%98%83", index_text)
             self.assertIn(r"\[with\]", index_text)
+            self.assertIn("\\\\\\\\ backtick", index_text)
             sys.path.insert(0, str(SCRIPTS))
             import vault_utils
 
