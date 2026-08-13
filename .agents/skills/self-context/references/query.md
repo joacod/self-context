@@ -22,12 +22,16 @@ Use this procedure for retrieval, comparison, synthesis, or evidence gathering.
 Start with `SCHEMA.md`, `index.md`, recent log entries, enabled vertical
 indexes, and the smallest relevant linked pages. Managed catalog blocks are
 compiled navigation, not evidence; inspect the linked durable page and its
-provenance before relying on an entry. For schema 0.2, an absent
-available vertical is empty; a read-only query must not create its area or
-contract marker. Schema 0.1 is likewise preserved during read-only retrieval.
-Use local lexical search only when the index is ambiguous or the vault is large.
-Do not scan the entire vault for a narrow question unless orientation shows
-that the relevant path is unclear.
+provenance before relying on an entry. If a catalog is missing, drifted, or has
+invalid marker structure, treat it as an unreliable navigation aid and run
+`sync_indexes.py --check` as a read-only diagnostic. Do not manually edit
+managed entries. `sync_indexes.py --write` belongs only inside an authorized
+mutation workflow. For schema 0.2, an absent available vertical is empty; a
+read-only query must not create its area or contract marker. Schema 0.1 is
+likewise preserved during read-only retrieval. Use local lexical search only
+when the index is ambiguous or the vault is large. Do not scan the entire vault
+for a narrow question unless orientation shows that the relevant path is
+unclear.
 
 Start with `SCHEMA.md`, `index.md`, and recent log entries. Use category indexes,
 frontmatter, filenames, targeted text search, and links to locate relevant

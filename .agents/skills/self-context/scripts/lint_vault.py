@@ -351,6 +351,8 @@ def _ordinary_findings(root: Path, today: date.date) -> List[Dict[str, Any]]:
                     _finding("warning", "review", "observation or inference should normally have status: review", relative)
                 )
 
+        if "title" in fields and not isinstance(fields.get("title"), str):
+            findings.append(_finding("error", "metadata", "title must be a YAML string", relative))
         if "description" in fields and not isinstance(fields.get("description"), str):
             findings.append(_finding("error", "metadata", "description must be a YAML string", relative))
         if "tags" in fields and not isinstance(fields.get("tags"), list):
@@ -825,17 +827,39 @@ def _deep_findings(root: Path, today: date.date) -> Tuple[List[Dict[str, Any]], 
 
     sync_result = sync_indexes.synchronize(root, write=False)
     for item in sync_result.get("findings", []):
-        if item.get("classification") == "catalog-sync":
+        classification = item.get("classification")
+        if classification in {"catalog-sync", "catalog-missing"}:
+            # Keep catalog-sync as the deep-lint compatibility umbrella while
+            # retaining the more precise missing-block state from the sync
+            # report. This lets callers distinguish absence from drift.
+            finding = _finding(
+                "error",
+                "catalog-sync",
+                item.get("message", "managed catalog block is out of sync"),
+                item.get("path"),
+                state=item.get("state"),
+            )
+            findings.append(finding)
+            if classification == "catalog-missing":
+                findings.append(
+                    _finding(
+                        "error",
+                        "catalog-missing",
+                        item.get("message", "managed catalog block is missing"),
+                        item.get("path"),
+                        state=item.get("state"),
+                    )
+                )
+        elif item.get("severity") == "error":
             findings.append(
                 _finding(
                     "error",
-                    "catalog-sync",
-                    item.get("message", "managed catalog block is out of sync"),
+                    item.get("classification", "catalog"),
+                    item.get("message", ""),
                     item.get("path"),
+                    state=item.get("state"),
                 )
             )
-        elif item.get("severity") == "error":
-            findings.append(_finding("error", item.get("classification", "catalog"), item.get("message", ""), item.get("path")))
 
     for record in records:
         path = str(record["path"])

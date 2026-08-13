@@ -124,7 +124,9 @@ confirmation. It should not warn merely because a normal page has
 
 Deep lint additionally checks canonical-content symlinks, UTF-8 failures,
 root reachability, nearest-index ownership, managed catalog synchronization,
-dead entries, title/alias collisions, duplicate IDs/content, type/assertion/path
+strict managed-marker structure, missing or ambiguous catalog blocks, catalog
+owner mismatches, metadata that prevents safe rendering, dead entries,
+title/alias collisions, duplicate IDs/content, type/assertion/path
 compatibility, lifecycle and supersession links, source cycles, derived source
 chains, schema-specific vertical contract validity and currency, custom top-level
 areas, recent log links, and exclusion of `.obsidian/` and project-root backups.

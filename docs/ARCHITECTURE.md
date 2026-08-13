@@ -273,10 +273,15 @@ The SelfContext skill recognizes natural-language intent and applies a lifecycle
 5. **Advise** through an Advisor Pack that retrieves evidence from the core skill and applies a domain-specific reasoning framework.
 6. **Maintain** through ordinary lint, deterministic deep lint, read-only deep review, and explicitly authorized deep update. Deep review uses snapshots and bounded semantic passes but never writes by default. Deep update creates one backup before mutation and stops on failed post-write validation.
 
-`sync_indexes.py` compiles managed catalog blocks from page metadata while
-preserving user-written text outside markers. `search_vault.py` provides
-read-only local lexical retrieval without a permanent index. Neither tool is a
-second source of truth.
+`sync_indexes.py` compiles deterministic managed catalog blocks from page
+metadata while preserving user-written text outside markers. It requires one
+unambiguous marker pair per managed index, escapes Markdown-significant text,
+percent-encodes unsafe path characters, and plans all index writes before an
+atomic replacement/rollback sequence. `--check` is read-only; `--write` is
+reserved for an authorized mutation workflow. Catalog entries remain
+navigation surfaces rather than evidence. `search_vault.py` provides read-only
+local lexical retrieval without a permanent index. Neither tool is a second
+source of truth.
 
 Before a significant operation on an existing vault, the skill orients from `SCHEMA.md`, `index.md`, and recent `log.md` entries. This reduces duplicate concepts, missed connections, schema drift, and accidental contradictions without requiring a full-vault scan every time.
 

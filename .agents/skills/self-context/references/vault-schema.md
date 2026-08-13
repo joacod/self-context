@@ -154,7 +154,8 @@ sources. It does not decide whether any personal claim is true.
 Use standard relative Markdown links with `.md` targets. The nearest ancestor
 `index.md` owns a durable page's managed catalog entry. The root index must
 reach every canonical durable page through index links; parent indexes may list
-child indexes. A managed block is delimited by:
+child indexes. Every managed index supports exactly one block, with the markers
+on their own lines:
 
 ```markdown
 <!-- selfcontext:catalog:start -->
@@ -162,11 +163,25 @@ child indexes. A managed block is delimited by:
 <!-- selfcontext:catalog:end -->
 ```
 
+Duplicate, nested, overlapping, reversed, or unmatched markers are invalid;
+the synchronizer never guesses which block is authoritative. A missing block
+is reported by `--check` and added by an authorized `--write`. `--check` never
+writes. `--write` scans all pages and managed indexes, plans every replacement,
+and writes nothing if any marker, ownership, read, or rendering validation
+fails. Changed indexes are staged in temporary sibling files and atomically
+replaced, with bounded rollback if a multi-file replacement fails.
+
 `sync_indexes.py` generates entries from the page's existing `title`,
-`description`, `status`, and path, in stable order. Aliases help search but do
-not create duplicate catalog entries. Text outside markers remains user-written
-and is preserved byte-for-byte when possible. Generated catalog blocks are
-navigation surfaces, never evidence.
+`description`, `status`, and path, in stable order. Presentation whitespace is
+collapsed so metadata line breaks cannot create extra Markdown lines. Markdown
+punctuation in text is escaped, and path components such as spaces,
+parentheses, brackets, backslashes, and Unicode are percent-encoded. The
+underlying metadata is not repaired or replaced; ordinary/deep lint still
+reports invalid or missing fields. Aliases help search but do not create
+duplicate catalog entries. Text outside markers remains user-written and is
+preserved byte-for-byte when possible, including manual suffix content and the
+file's newline style. Generated catalog blocks are navigation surfaces, never
+evidence.
 
 `.obsidian/` viewer state and project-root `backups/` operational archives are
 noncanonical and excluded from indexing, search, lint, snapshot IDs, and

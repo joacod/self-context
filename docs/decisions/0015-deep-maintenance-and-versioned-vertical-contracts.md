@@ -112,10 +112,16 @@ valid successor link is warned about but retained.
 ### Compiled catalogs and retrieval
 
 `sync_indexes.py` compiles managed catalog blocks delimited by explicit markers.
-Entries use the durable page's existing title, description, status, and path,
-with stable ordering. Aliases affect retrieval only, not catalog duplication.
-The nearest ancestor index owns the entry; parent indexes may list child
-indexes. Text outside marker blocks is preserved byte-for-byte when possible.
+Each managed index must contain exactly one unambiguous start/end pair; duplicate,
+nested, overlapping, reversed, or unmatched markers are reported without
+choosing an authoritative block. Entries use the durable page's existing title,
+description, status, and path, with stable ordering. Markdown text is escaped,
+path components are percent-encoded, and presentation whitespace is normalized
+without repairing the underlying metadata. Aliases affect retrieval only, not
+catalog duplication. The nearest ancestor index owns the entry; parent indexes
+may list child indexes. Text outside marker blocks is preserved byte-for-byte
+when possible. `--check` is read-only; `--write` plans every affected index and
+uses temporary sibling files plus atomic replacement and bounded rollback.
 Catalog blocks are navigation surfaces, never evidence.
 
 `search_vault.py` is a dependency-free, read-only lexical helper. It builds no

@@ -25,8 +25,11 @@ SCHEMA_VERSION_PATTERN = re.compile(
 )
 CONTRACT_ID_PATTERN = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
 CONTRACT_VERSION_PATTERN = re.compile(r"^(?:0|[1-9][0-9]*)$")
-LINK_PATTERN = re.compile(r"(?<!!)\[[^\]]*\]\(([^)]+)\)")
-MALFORMED_LINK_PATTERN = re.compile(r"(?<!!)\[[^\]]*\]\([^)]*$")
+# Link labels may contain backslash-escaped Markdown punctuation. Generated
+# catalogs use this form for titles containing brackets, backslashes, or
+# backticks, so the shared link scanner must not stop at an escaped bracket.
+LINK_PATTERN = re.compile(r"(?<!!)\[(?:\\.|[^\\\]])*\]\(([^)\r\n]+)\)")
+MALFORMED_LINK_PATTERN = re.compile(r"(?<!!)\[(?:\\.|[^\\\]])*\]\([^)]*$")
 
 REQUIRED_ROOT_FILES = ("SCHEMA.md", "index.md", "log.md")
 REQUIRED_FIELDS = (
