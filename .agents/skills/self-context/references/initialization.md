@@ -167,9 +167,6 @@ read-only query.
 
 ### Root `index.md`
 
-
-<!-- selfcontext:catalog:start -->
-<!-- selfcontext:catalog:end -->
 ```markdown
 # SelfContext Vault
 
@@ -182,10 +179,6 @@ changes and [the recent log](log.md) for continuity.
 - [Review queue](review/index.md)
 - [Sources](sources/index.md)
 - [Derived material](derived/index.md)
-
-
-<!-- selfcontext:catalog:start -->
-<!-- selfcontext:catalog:end -->
 ```
 
 ### Universal category indexes
@@ -193,36 +186,22 @@ changes and [the recent log](log.md) for continuity.
 Create only the Core, Review, Sources, and Derived pages at initialization,
 changing only the heading and description:
 
-
-<!-- selfcontext:catalog:start -->
-<!-- selfcontext:catalog:end -->
 ```markdown
 # Core Context
 
 Cross-domain context such as goals, values, preferences, communication
 patterns, decision patterns, and recurring constraints.
-
-
-<!-- selfcontext:catalog:start -->
-<!-- selfcontext:catalog:end -->
 ```
 
 ### Optional vertical index shapes
 
 When a vertical is enabled, create its index using the corresponding shape:
 
-
-<!-- selfcontext:catalog:start -->
-<!-- selfcontext:catalog:end -->
 ```markdown
 # Career Context
 
 Career-specific roles, history, projects, skills, stories, evidence, and
 professional goals.
-
-
-<!-- selfcontext:catalog:start -->
-<!-- selfcontext:catalog:end -->
 ```
 
 
@@ -234,10 +213,6 @@ professional goals.
 What the person understands and how that understanding evolves: knowledge
 states, meaningful gaps, corrections, mental models, prerequisites, and dated
 evidence. This is not a resource or course archive.
-
-
-<!-- selfcontext:catalog:start -->
-<!-- selfcontext:catalog:end -->
 ```
 
 
@@ -249,10 +224,6 @@ evidence. This is not a resource or course archive.
 Evidence-backed communication, reasoning-through-writing, reader awareness,
 editorial preferences, anti-patterns, and useful context-specific writing modes.
 Generated drafts and generic writing advice are not authentic Writing evidence.
-
-
-<!-- selfcontext:catalog:start -->
-<!-- selfcontext:catalog:end -->
 ```
 
 
@@ -264,10 +235,6 @@ Generated drafts and generic writing advice are not authentic Writing evidence.
 Intentional context about the user's relationships: shared history, meaningful
 interactions, commitments, open loops, and dated evolution. This is not a
 contact database or a profile of everything known about another person.
-
-
-<!-- selfcontext:catalog:start -->
-<!-- selfcontext:catalog:end -->
 ```
 
 
@@ -278,10 +245,6 @@ contact database or a profile of everything known about another person.
 
 Reactions to cultural works and the evidence behind taste patterns, exceptions,
 and evolution. This is not a complete media catalog or consumption tracker.
-
-
-<!-- selfcontext:catalog:start -->
-<!-- selfcontext:catalog:end -->
 ```
 
 
@@ -292,10 +255,6 @@ and evolution. This is not a complete media catalog or consumption tracker.
 
 Unresolved observations, stale claims, contradictions, ambiguous assertions,
 and missing provenance that need human attention.
-
-
-<!-- selfcontext:catalog:start -->
-<!-- selfcontext:catalog:end -->
 ```
 
 
@@ -305,10 +264,6 @@ and missing provenance that need human attention.
 # Sources
 
 Retained source material and important recollections that provide provenance.
-
-
-<!-- selfcontext:catalog:start -->
-<!-- selfcontext:catalog:end -->
 ```
 
 
@@ -319,10 +274,6 @@ Retained source material and important recollections that provide provenance.
 
 Reusable queries, comparisons, analyses, or advice. Derived material is not
 automatically personal fact.
-
-
-<!-- selfcontext:catalog:start -->
-<!-- selfcontext:catalog:end -->
 ```
 
 ### `log.md`
