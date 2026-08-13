@@ -92,6 +92,16 @@ snapshot ID, compact page metadata, link/index relationships, findings, and
 severity counts, never complete page bodies. Neither path produces a numeric
 vault-health score.
 
+Deep lint has two distinct rule layers. Universal filesystem and decoding safety
+checks apply everywhere in canonical content below the vault root, including
+custom top-level areas: symlinks, unreadable files, invalid UTF-8, and unsafe
+internal link targets are reported wherever they occur. Explicitly noncanonical
+viewer/backup state remains excluded from canonical inventory and snapshot
+semantics. SelfContext semantic, schema, vertical-contract, managed-catalog,
+reachability, and ownership rules apply only to managed areas. Custom areas are
+preserved and are not added to retrieval, managed indexes, vertical contracts,
+or migrations by lint.
+
 Use a copied or explicitly selected vault path when validating another vault.
 The script checks:
 

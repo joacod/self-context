@@ -53,8 +53,21 @@ class DeepLintTests(unittest.TestCase):
             capture_output=True,
             text=True,
             check=False,
+            timeout=10,
         )
         return result, json.loads(result.stdout)
+
+    def write_index(self, vault: Path, relative: str, links: list[str]) -> None:
+        path = vault / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("# Synthetic index\n\n" + "\n".join(links) + "\n", encoding="utf-8")
+
+    def reachability_paths(self, report: dict) -> set[str]:
+        return {
+            str(item["path"])
+            for item in report["findings"]
+            if item["classification"] == "root-reachability"
+        }
 
     def test_root_reachability_and_nearest_index_ownership(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -140,6 +153,107 @@ class DeepLintTests(unittest.TestCase):
             classes = [item["classification"] for item in report["findings"]]
             self.assertIn("derived-source-chain", classes)
             self.assertIn("derived-freshness", classes)
+
+    def test_root_and_child_indexes_form_a_terminating_cycle(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.base_vault(Path(temporary))
+            (vault / "core" / "index.md").write_text(
+                "# Core\n\n- [Root](../index.md)\n", encoding="utf-8"
+            )
+            first, report = self.run_deep_lint(vault)
+            second, repeated = self.run_deep_lint(vault)
+            self.assertEqual(first.returncode, second.returncode)
+            self.assertEqual(report["snapshot_id"], repeated["snapshot_id"])
+            unreachable = self.reachability_paths(report)
+            self.assertNotIn("index.md", unreachable)
+            self.assertNotIn("core/index.md", unreachable)
+
+    def test_two_index_cycle_and_duplicate_link_terminates(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.base_vault(Path(temporary))
+            (vault / "core" / "index.md").write_text(
+                "# Core\n\n- [A](cycle/a/index.md)\n", encoding="utf-8"
+            )
+            self.write_index(
+                vault,
+                "core/cycle/a/index.md",
+                ["- [B](../b/index.md)", "- [B again](../b/index.md)"],
+            )
+            self.write_index(vault, "core/cycle/b/index.md", ["- [A](../a/index.md)"])
+            _, report = self.run_deep_lint(vault)
+            unreachable = self.reachability_paths(report)
+            self.assertNotIn("core/cycle/a/index.md", unreachable)
+            self.assertNotIn("core/cycle/b/index.md", unreachable)
+
+    def test_self_linked_index_terminates(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.base_vault(Path(temporary))
+            (vault / "core" / "index.md").write_text(
+                "# Core\n\n- [Self](index.md)\n- [Self again](index.md)\n", encoding="utf-8"
+            )
+            _, report = self.run_deep_lint(vault)
+            self.assertNotIn("core/index.md", self.reachability_paths(report))
+
+    def test_three_index_cycle_terminates(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.base_vault(Path(temporary))
+            (vault / "core" / "index.md").write_text(
+                "# Core\n\n- [A](triangle/a/index.md)\n", encoding="utf-8"
+            )
+            self.write_index(vault, "core/triangle/a/index.md", ["- [B](../b/index.md)"])
+            self.write_index(vault, "core/triangle/b/index.md", ["- [C](../c/index.md)"])
+            self.write_index(vault, "core/triangle/c/index.md", ["- [A](../a/index.md)"])
+            _, report = self.run_deep_lint(vault)
+            unreachable = self.reachability_paths(report)
+            self.assertFalse(
+                unreachable.intersection(
+                    {
+                        "core/triangle/a/index.md",
+                        "core/triangle/b/index.md",
+                        "core/triangle/c/index.md",
+                    }
+                )
+            )
+
+    def test_cyclic_indexes_still_reach_a_durable_page(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.base_vault(Path(temporary))
+            (vault / "core" / "index.md").write_text(
+                "# Core\n\n- [A](cycle/a/index.md)\n", encoding="utf-8"
+            )
+            self.write_index(vault, "core/cycle/a/index.md", ["- [B](../b/index.md)"])
+            self.write_index(
+                vault,
+                "core/cycle/b/index.md",
+                ["- [A](../a/index.md)", "- [Durable](page.md)"],
+            )
+            (vault / "core" / "cycle" / "b" / "page.md").write_text(
+                page(title="Reachable synthetic page"), encoding="utf-8"
+            )
+            _, report = self.run_deep_lint(vault)
+            self.assertNotIn("core/cycle/b/page.md", self.reachability_paths(report))
+
+    def test_disconnected_cyclic_indexes_remain_unreachable(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.base_vault(Path(temporary))
+            self.write_index(vault, "core/disconnected/a/index.md", ["- [B](../b/index.md)"])
+            self.write_index(vault, "core/disconnected/b/index.md", ["- [A](../a/index.md)"])
+            _, report = self.run_deep_lint(vault)
+            unreachable = self.reachability_paths(report)
+            self.assertIn("core/disconnected/a/index.md", unreachable)
+            self.assertIn("core/disconnected/b/index.md", unreachable)
+
+    def test_snapshot_is_deterministic_for_a_cyclic_index_graph(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.base_vault(Path(temporary))
+            (vault / "core" / "index.md").write_text(
+                "# Core\n\n- [A](cycle/a/index.md)\n", encoding="utf-8"
+            )
+            self.write_index(vault, "core/cycle/a/index.md", ["- [B](../b/index.md)"])
+            self.write_index(vault, "core/cycle/b/index.md", ["- [A](../a/index.md)"])
+            _, first = self.run_deep_lint(vault)
+            _, second = self.run_deep_lint(vault)
+            self.assertEqual(first["snapshot_id"], second["snapshot_id"])
 
     def test_snapshot_ignores_obsidian_and_backup_state(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
