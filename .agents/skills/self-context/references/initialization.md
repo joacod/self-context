@@ -168,6 +168,9 @@ review.
 
 ### Root `index.md`
 
+The root index is copyable as-is. Its managed block is empty at initialization
+and may later contain generated entries if the layout gains durable root pages.
+
 ```markdown
 # SelfContext Vault
 
@@ -180,102 +183,59 @@ changes and [the recent log](log.md) for continuity.
 - [Review queue](review/index.md)
 - [Sources](sources/index.md)
 - [Derived material](derived/index.md)
+
+<!-- selfcontext:catalog:start -->
+<!-- selfcontext:catalog:end -->
 ```
 
 ### Universal category indexes
 
-Create only the Core, Review, Sources, and Derived pages at initialization,
-changing only the heading and description:
+Create only the Core, Review, Sources, and Derived pages at initialization.
+Copy this shape and change only the heading and description; keep the managed
+block inside the Markdown example:
 
 ```markdown
 # Core Context
 
 Cross-domain context such as goals, values, preferences, communication
 patterns, decision patterns, and recurring constraints.
+
+<!-- selfcontext:catalog:start -->
+<!-- selfcontext:catalog:end -->
 ```
 
-### Optional vertical index shapes
+### Optional vertical index shape
 
-When a vertical is enabled, create its index using the corresponding shape:
+When a vertical is enabled, copy this one canonical shape, replacing the
+heading and description with the owning vertical's text. The available
+vertical descriptions are defined in the vertical procedures and catalog.
 
 ```markdown
 # Career Context
 
 Career-specific roles, history, projects, skills, stories, evidence, and
 professional goals.
-```
-
 
 <!-- selfcontext:catalog:start -->
 <!-- selfcontext:catalog:end -->
-```markdown
-# Learning Context
-
-What the person understands and how that understanding evolves: knowledge
-states, meaningful gaps, corrections, mental models, prerequisites, and dated
-evidence. This is not a resource or course archive.
 ```
 
+The same shape applies to Learning, Writing, Relationships, and Media / Taste;
+do not create optional areas merely because they are available.
 
-<!-- selfcontext:catalog:start -->
-<!-- selfcontext:catalog:end -->
-```markdown
-# Writing Context
+### Managed catalog rules
 
-Evidence-backed communication, reasoning-through-writing, reader awareness,
-editorial preferences, anti-patterns, and useful context-specific writing modes.
-Generated drafts and generic writing advice are not authentic Writing evidence.
-```
-
-
-<!-- selfcontext:catalog:start -->
-<!-- selfcontext:catalog:end -->
-```markdown
-# Relationships Context
-
-Intentional context about the user's relationships: shared history, meaningful
-interactions, commitments, open loops, and dated evolution. This is not a
-contact database or a profile of everything known about another person.
-```
-
-
-<!-- selfcontext:catalog:start -->
-<!-- selfcontext:catalog:end -->
-```markdown
-# Media / Taste Context
-
-Reactions to cultural works and the evidence behind taste patterns, exceptions,
-and evolution. This is not a complete media catalog or consumption tracker.
-```
-
-
-<!-- selfcontext:catalog:start -->
-<!-- selfcontext:catalog:end -->
-```markdown
-# Review Queue
-
-Unresolved observations, stale claims, contradictions, ambiguous assertions,
-and missing provenance that need human attention.
-```
-
-
-<!-- selfcontext:catalog:start -->
-<!-- selfcontext:catalog:end -->
-```markdown
-# Sources
-
-Retained source material and important recollections that provide provenance.
-```
-
-
-<!-- selfcontext:catalog:start -->
-<!-- selfcontext:catalog:end -->
-```markdown
-# Derived Material
-
-Reusable queries, comparisons, analyses, or advice. Derived material is not
-automatically personal fact.
-```
+- User introductions, manual navigation, comments, headings, and blank-line
+  conventions live outside the managed block and remain user-written.
+- Generated entries are disposable navigation, not evidence. Inspect the
+  linked durable page and its provenance instead of treating a catalog line as
+  a fact.
+- Do not manually edit generated entries. Change page metadata or the manual
+  text outside the block, then regenerate the catalog.
+- `sync_indexes.py --check` is read-only and only reports missing, drifted, or
+  invalid catalogs.
+- `sync_indexes.py --write` is a mutating operation and may be invoked only
+  inside an authorized mutation workflow after its validation and backup gates.
 
 ### `log.md`
 
