@@ -602,6 +602,73 @@
         "The packet excludes irrelevant sensitive context."
       ],
       "files": []
+    },
+    {
+      "id": 55,
+      "prompt": "In a synthetic schema 0.2 vault with no optional verticals, ask a read-only question about Writing and verify that no writing directory, root link, contract marker, or backup is created.",
+      "expected_output": "The absent available vertical remains disabled and the read-only operation creates nothing.",
+      "expectations": [
+        "Available and enabled are distinguished.",
+        "No Writing files, contract marker, root link, or backup is created."
+      ],
+      "files": []
+    },
+    {
+      "id": 56,
+      "prompt": "In a synthetic schema 0.2 vault with no optional verticals, explicitly ingest one authored essay requiring Writing. Activate exactly Writing at the catalog version, create its area and index, add the root link after one normal backup, and continue the ingest without enabling other verticals.",
+      "expected_output": "The first mutating use records exactly one available Writing contract and continues the original operation.",
+      "expectations": [
+        "Exactly one vertical is activated.",
+        "The recorded contract matches the available version.",
+        "Unrelated verticals remain disabled.",
+        "The pre-write backup occurs before the mutation."
+      ],
+      "files": []
+    },
+    {
+      "id": 57,
+      "prompt": "In a synthetic schema 0.1 vault with no Writing area, explicitly ingest an authored essay. Add only the needed legacy Writing area, index, and root link after the normal backup; preserve schema_version: 0.1 and do not add vertical_contracts or silently migrate.",
+      "expected_output": "Schema 0.1 first use remains backward compatible and does not gain schema 0.2 markers.",
+      "expectations": [
+        "schema_version: 0.1 is preserved.",
+        "No vertical_contracts marker is added.",
+        "Only the required legacy vertical navigation is added."
+      ],
+      "files": []
+    },
+    {
+      "id": 58,
+      "prompt": "A synthetic schema 0.2 vault has an applied Writing contract at version 0 while the repository advertises Writing version 1. Review the documented migration path, determine whether any evidence is affected, and report a successful no-change outcome if none is affected. Do not automatically migrate the contract.",
+      "expected_output": "An older applied contract is valid and reviewable; the update is assessed through documented migrations and can result in no meaningful change.",
+      "expectations": [
+        "Older contract is not treated as structural corruption.",
+        "Documented migrations are reviewed before proposing changes.",
+        "No automatic version bump occurs.",
+        "No affected evidence produces no meaningful change."
+      ],
+      "files": []
+    },
+    {
+      "id": 59,
+      "prompt": "A newer Writing contract is available in the repository, but a synthetic schema 0.2 vault does not explicitly enable it. Run a read-only assessment and do not adopt or create the Writing area merely because the available version exists.",
+      "expected_output": "Availability alone does not enable or adopt a vertical.",
+      "expectations": [
+        "The newer available version is not adopted automatically.",
+        "Read-only assessment creates no area, index, marker, or backup."
+      ],
+      "files": []
+    },
+    {
+      "id": 60,
+      "prompt": "A synthetic schema 0.2 vault has an older applied Career contract. Review the documented migration and find no affected evidence. Report No meaningful Career update, preserve the older contract, and do not rewrite pages, indexes, or contract markers automatically.",
+      "expected_output": "A contract update can be a successful no-change review when documented migrations affect no evidence.",
+      "expectations": [
+        "The older applied contract remains supported and unchanged.",
+        "The documented migration is reviewed rather than guessed.",
+        "No affected evidence produces an explicit No meaningful Career update.",
+        "No automatic contract or page mutation occurs."
+      ],
+      "files": []
     }
   ]
 }

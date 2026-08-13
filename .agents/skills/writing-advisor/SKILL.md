@@ -43,11 +43,11 @@ request, job, beliefs, or a generated draft.
 
 When the request is to ingest or update Writing evidence, SelfContext owns that
 operation. Follow its Writing lifecycle, including source classification,
-comparison, selective updates, backup rules, provenance, and the explicit
-"No meaningful update" outcome. The Advisor must not mutate the profile merely
-because it produced a draft or critique. Writing is an available vertical and
-may be absent from a schema 0.2 vault; read-only work treats it as empty and
-does not create its area.
+comparison, schema-specific activation, selective updates, backup rules,
+provenance, and the explicit "No meaningful update" outcome. The Advisor must
+not mutate the profile merely because it produced a draft or critique. Writing
+is an available vertical and may be absent from a schema 0.2 vault; read-only
+work treats it as empty and does not create its area.
 
 A task context packet may use Writing context only when the communication task
 needs it. Keep the packet smallest, preserve Career or other vertical ownership,

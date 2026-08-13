@@ -106,11 +106,13 @@ vault/
 ```
 
 Schema 0.2 initializes only universal areas. The SelfContext skill may create
-an available vertical area on demand when a triggering mutation or explicit
-adoption enables its recorded contract, but a read-only query treats an absent
-vertical as empty. Any generated index catalog, lexical search result, or deep
-review report is disposable/derived maintenance output and must not become
-canonical evidence.
+only the required vertical area on first mutating use, record its exact
+available contract, and add its root link; unrelated available verticals stay
+disabled. A schema 0.1 first mutation may add the legacy area/index/root link
+without contract markers or migration. A read-only query or assessment treats
+an absent vertical as empty and creates nothing. Any generated index catalog,
+lexical search result, or deep review report is disposable/derived maintenance
+output and must not become canonical evidence.
 
 Canonical content uses Markdown, YAML frontmatter, and standard relative Markdown links. Obsidian may display and edit the same files, but Obsidian syntax is not required.
 
@@ -236,14 +238,29 @@ high-signal evidence, update an existing home when the identity matches, retain
 contradictions and exceptions, and accept “No meaningful update” when a source
 adds no durable personal context.
 
-## Available and enabled vertical contracts
+## Available, enabled, and applied vertical contracts
 
 The repository's compact `verticals.json` catalog defines the available
 verticals, their areas, indexes, procedures, Advisor Packs, ownership, and
 activation rules. Each procedure has a machine-readable header and a Contract
-migrations section. A private vault enables a subset and records the applied
-contract versions in schema 0.2. Catalog paths are resolved relative to the
-SelfContext skill that owns the catalog.
+migrations section. Catalog paths are resolved relative to the SelfContext
+skill that owns the catalog.
+
+The canonical schema-specific activation procedure is
+[Initialization](../.agents/skills/self-context/references/initialization.md):
+schema 0.1 first meaningful use may add only the needed legacy area/index/root
+link, while schema 0.2 first mutating use records the exact available
+`vertical@version` for only the required vertical after the normal backup.
+Read-only queries and assessments create nothing.
+
+In schema 0.2, **available** means present in the repository catalog, **enabled**
+means recorded in `SCHEMA.md` with its area, index, and root link, and **applied**
+means the exact recorded version. Equal applied/available versions are current;
+an older applied version is valid but emits an update-available warning; a newer
+applied version is an error. Unknown IDs, invalid versions, and duplicate
+entries for one ID are errors. The small parser accepts only non-negative
+integer versions such as `writing@1`; semantic-version strings and ranges are
+unsupported. Schema 0.1 has no contract markers and is not silently migrated.
 
 ## Core Operations
 

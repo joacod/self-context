@@ -87,10 +87,10 @@ python3 .agents/skills/self-context/scripts/lint_vault.py --deep --format json v
 ```
 
 Ordinary lint is the fast backward-compatible path. Deep lint is deterministic
-and read-only; JSON output contains schema version, enabled contracts, a
-snapshot ID, compact page metadata, link/index relationships, findings, and
-severity counts, never complete page bodies. Neither path produces a numeric
-vault-health score.
+and read-only; JSON output contains schema version, available contracts,
+enabled verticals, applied contracts, a snapshot ID, compact page metadata,
+link/index relationships, findings, and severity counts, never complete page
+bodies. Neither path produces a numeric vault-health score.
 
 Deep lint has two distinct rule layers. Universal filesystem and decoding safety
 checks apply everywhere in canonical content below the vault root, including
@@ -126,9 +126,12 @@ Deep lint additionally checks canonical-content symlinks, UTF-8 failures,
 root reachability, nearest-index ownership, managed catalog synchronization,
 dead entries, title/alias collisions, duplicate IDs/content, type/assertion/path
 compatibility, lifecycle and supersession links, source cycles, derived source
-chains, enabled contract presence, custom top-level areas, recent log links,
-and exclusion of `.obsidian/` and project-root backups. A weakly connected page
-is a warning, not an automatic error.
+chains, schema-specific vertical contract validity and currency, custom top-level
+areas, recent log links, and exclusion of `.obsidian/` and project-root backups.
+Older applied contracts produce an update-available warning; matching versions
+produce no currency finding; future versions, unknown IDs, invalid versions,
+and duplicate IDs are errors. A weakly connected page is a warning, not an
+automatic error.
 
 The script is intentionally dependency-free and does not replace semantic
 review. It reports errors and warnings, returns a non-zero status for errors,

@@ -12,7 +12,8 @@ When a request requires a vault and `<repository-root>/vault/` does not exist:
 
 1. Create the `vault/` directory and universal schema 0.2 layout described in
    [the schema](vault-schema.md): `core/`, `review/`, `sources/`, and
-   `derived/` plus the three root control files.
+   `derived/` plus the three root control files. Include an explicit empty
+   `vertical_contracts:` section in `SCHEMA.md`.
 2. Create `SCHEMA.md`, `index.md`, `log.md`, and universal index pages from
    the templates below. Use the current ISO date in the initialization log.
 3. Do not create every available vertical. Create and record only a vertical
@@ -24,8 +25,9 @@ When a request requires a vault and `<repository-root>/vault/` does not exist:
    reason to make the user repeat the request.
 
 There is no prior vault state to archive before first-run initialization. After
-the empty structure exists, create a pre-write backup before continuing with
-the requested ingest or other mutation. Subsequent writes follow
+the empty structure exists, create one normal pre-write backup before
+continuing with the requested ingest or other mutation. The same backup covers
+any first-use vertical activation in that operation. Subsequent writes follow
 [the backup procedure](backups.md) before their first change.
 
 The private directory is intentionally not tracked. Never add a `.gitkeep` or
@@ -33,59 +35,46 @@ other vault file to the repository merely to preserve the directory.
 
 ## Existing Vault
 
-For a schema 0.2 vault, parse the `vertical_contracts` section and treat it as
-selective. Do not create missing available verticals during read-only work. A
-missing enabled area or index is a lint/maintenance finding. Use the explicit
-migration helper for a 0.1 to 0.2 upgrade; it backs up before writing, preserves
-pages and custom areas, and reports ambiguous structure.
+First determine the schema state from `SCHEMA.md`:
 
-A schema 0.1 vault remains supported without automatic migration. Ordinary
-operations preserve its schema text and existing indexes.
+- **Schema 0.1:** preserve its text and legacy layout. A first meaningful
+  mutation may create the required vertical area, index, and root link after
+  the normal pre-write backup, but must not add contract markers or silently
+  migrate to 0.2.
+- **Schema 0.2:** parse `vertical_contracts` strictly and treat it as
+  selective. An available vertical is not enabled merely because it exists in
+  the repository catalog. A first meaningful mutation that requires a vertical
+  creates only that vertical's area and index, records the exact available
+  `vertical@version`, adds its root link, and continues the original operation
+  after one normal pre-write backup. It does not enable unrelated available
+  verticals. Missing area/index/root-link companions for an already applied
+  contract are lint/maintenance errors.
+- **Unrecognized or malformed state:** remain conservative and report the
+  ambiguity. Do not guess a migration, infer a contract version, or create a
+  vertical until the schema state is repaired or explicitly resolved.
+
+Read-only queries, lint, assessments, and deep review never enable or create a
+vertical and never create a backup merely because a vertical is absent. Use the
+explicit migration helper for a 0.1-to-0.2 upgrade; it backs up before writing,
+preserves pages and custom areas, and reports ambiguity.
 
 An existing vault may have more files, a different ordering, or a previously
 initialized schema. Preserve its knowledge and orient before changing it.
 
-- If `SCHEMA.md` declares `schema_version: 0.1`, follow it and repair only
-  missing control files or indexes that can be added without overwriting data.
 - If `SCHEMA.md` is absent, treat the vault as unversioned. Read its visible
   indexes, recent log if present, and relevant pages. Do not reorganize or
   rename the existing taxonomy merely to match the default layout. Add a concise
-  schema note only when it accurately describes the observed structure.
+  schema note only when it accurately describes the observed structure, and
+  otherwise remain conservative.
 - If a schema declares a future or unknown major version, remain read-only,
   explain the compatibility issue, and ask before modifying content.
 - If a required control file is missing, create only the missing file after
   checking that no conflicting file or convention exists. Create a pre-write
   backup first, then preserve all existing pages and links.
 
-An existing vault may not have a `writing/` directory or `writing/index.md`. For
-a read-only Writing query, treat the missing area as empty and do not create
-files. For a Writing mutation, orient from the existing schema, index, and log,
-create the pre-write backup, then add only `writing/` and `writing/index.md` and
-add the Writing link to the root index. Do not rewrite `SCHEMA.md`, migrate other
-pages, or reorganize an existing taxonomy merely to add the vertical.
-
-An existing vault may not have a `learning/` directory or `learning/index.md`.
-For a read-only Learning query, treat the missing area as empty and do not
-create files. For a Learning mutation, orient from the existing schema, index,
-and log, create the pre-write backup, then add only `learning/` and
-`learning/index.md` and add the Learning link to the root index. Do not rewrite
-`SCHEMA.md`, migrate other pages, or reorganize an existing taxonomy merely to
-add the vertical.
-
-An existing vault may not have a `relationships/` directory or
-`relationships/index.md`. For a read-only Relationships query, treat the
-missing area as empty and do not create files. For a Relationships mutation,
-orient from the existing schema, index, and log, create the pre-write backup,
-then add only `relationships/` and `relationships/index.md` and add the
-Relationships link to the root index. Do not rewrite `SCHEMA.md`, migrate other
-pages, or create a contact database merely to add the vertical.
-
-An existing vault may not have a `media/` directory or `media/index.md`. For a
-read-only Media / Taste query, treat the missing area as empty and do not create
-files. For a Media / Taste mutation, orient from the existing schema, index,
-and log, create the pre-write backup, then add only `media/` and `media/index.md`
-and add the Media / Taste link to the root index. Do not rewrite `SCHEMA.md`,
-migrate other pages, or create a media catalog merely to add the vertical.
+All available verticals follow the same schema-specific activation rule above.
+The individual vertical procedures define ownership and evidence handling; they
+must not redefine activation, contract markers, or schema migration behavior.
 
 Existing-vault support means the user can continue immediately; it does not
 mean silently migrating or flattening their data.
@@ -130,9 +119,10 @@ Top-level areas:
 - `sources/`: retained source or recollection material.
 - `derived/`: reusable query or advice syntheses.
 
-Vertical areas are optional and are created only when their contract is enabled
-by a triggering mutation or explicit adoption. Available verticals are Career,
-Learning, Writing, Relationships, and Media / Taste.
+Vertical areas are optional and are created only when a triggering mutation
+or explicit adoption requires them, following the schema-specific activation
+rule below. Available verticals are Career, Learning, Writing, Relationships,
+and Media / Taste.
 
 Durable pages use YAML frontmatter described in this file's operational
 documentation. The common fields are:
@@ -160,10 +150,21 @@ syntax.
 
 ### Optional vertical initialization
 
-When a first mutation requires a vertical, create only its area and
-`index.md`, add the matching `vertical_contracts` entry, and add its link to the
-root index after the normal pre-write backup. Never create a vertical for a
-read-only query.
+Follow the schema-specific activation rule above. The `vertical_contracts:`
+line in a new schema 0.2 `SCHEMA.md` is the explicit empty contract list; a
+first vertical activation appends its exact `vertical@version` entry there.
+
+- schema 0.1: after the normal pre-write backup, create only the required area,
+  `index.md`, and root-index link; preserve the schema text and do not add a
+  `vertical_contracts` entry;
+- schema 0.2: after the normal pre-write backup, create only the required area
+  and `index.md`, add the exact available `vertical@version` entry, add its
+  root-index link, and continue the original operation;
+- unrecognized or malformed state: report ambiguity and do not initialize the
+  vertical.
+
+Never create or enable a vertical for a read-only query, assessment, lint, or
+review.
 
 ### Root `index.md`
 

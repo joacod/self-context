@@ -50,7 +50,7 @@ affected files, evidence trigger, recommended action, automation class, risk,
 and status. `safe_structural`, `semantic_proposal`, `human_decision`, and
 `no_change` make the boundary between automation and user authority visible.
 
-### Available versus enabled verticals
+### Available, enabled, and applied vertical contracts
 
 The repository catalog is the source of truth for **available verticals**:
 Career, Learning, Writing, Relationships, and Media / Taste. It records each
@@ -58,13 +58,23 @@ vertical's contract version, area, index, procedure, optional Advisor Pack,
 ownership, exclusions, and activation rule. Procedures contain detailed
 semantic rules and a machine-readable header matching the catalog.
 
-A vault has an **enabled vertical** only when it intentionally contains that
-area/index and, in schema 0.2, records the contract in `SCHEMA.md`. The
-**applied contract version** is the version recorded by the vault. Available
-does not mean enabled. A read-only query about an absent vertical treats it as
-empty and creates nothing. Adoption is explicit and adds only the necessary
-area, index, contract marker, and root link; it does not copy facts or create
+A schema 0.2 vault has an **enabled vertical** only when it records exactly one
+`vertical@version` entry in `SCHEMA.md` and its area, index, and root link are
+present. The **applied contract version** is the version recorded by the vault.
+Availability does not mean enabled. Compare versions explicitly: equal is
+current and valid; older is valid but reports an available update without
+automatic migration; newer is an error because the repository cannot safely
+interpret a future contract. Unknown IDs, invalid versions, and duplicate
+entries keyed by one vertical ID are errors, with values preserved for
+reporting. A read-only query about an absent vertical treats it as empty and
+creates nothing. Adoption is explicit and adds only the necessary area, index,
+exact available contract marker, and root link; it does not copy facts or create
 placeholder personal pages.
+
+Schema 0.1 remains a legacy format without contract markers. Its first
+meaningful mutation may add the needed legacy area, index, and root link, but it
+never silently migrates to schema 0.2. Unrecognized or malformed schema state
+remains conservative and does not guess.
 
 ### Schema compatibility and migration
 
@@ -84,11 +94,15 @@ vertical_contracts:
 
 New schema 0.2 vaults initialize only `core/`, `review/`, `sources/`, and
 `derived/`. A vertical appears only when a triggering mutation or explicit
-adoption requires it. The migration helper backs up before its first write,
-infer enabled verticals conservatively from existing areas, indexes, and
-schema text, preserves every page and taxonomy, adds only control metadata and
-managed blocks, leaves unknown optional metadata empty, and reports ambiguous
-or custom areas instead of deleting or relocating them.
+adoption requires it. The first mutating use creates only the required area and
+index, records its exact available contract, adds the root link, creates one
+normal pre-write backup at the documented point, and continues the operation.
+Read-only queries and assessments create nothing, and unrelated available
+verticals remain disabled. The migration helper backs up before its first
+write, infers enabled verticals conservatively from existing areas, indexes,
+and schema text, preserves every page and taxonomy, adds only control metadata
+and managed blocks, leaves unknown optional metadata empty, and reports
+ambiguous or custom areas instead of deleting or relocating them.
 
 Durable pages may optionally contain an `aliases` YAML list and a relative
 Markdown `superseded_by` link. Empty optional fields are not bulk-added. Exact

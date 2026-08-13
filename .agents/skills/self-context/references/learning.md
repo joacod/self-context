@@ -46,6 +46,10 @@ implemented by this Learning procedure.
 
 ## Storage and page choices
 
+Use the schema-specific activation rule in [Initialization](initialization.md);
+this procedure does not redefine vertical enablement, contract markers, or
+schema migration. The shared contract remains the only storage schema.
+
 - `learning/index.md` is the navigation page for durable Learning concepts.
 - `learning/` contains the smallest useful set of topic or concept pages. Add a
   subdirectory only when a real collection makes navigation clearer.
@@ -176,9 +180,9 @@ material:
    source alone never verifies a Learning claim.
 
 For an existing vault without `learning/`, a read-only request treats the area
-as empty. A requested Learning mutation creates only `learning/index.md` and
-the root link after orientation and backup; it does not rewrite `SCHEMA.md`,
-move pages, or migrate the rest of the vault.
+as empty. A requested Learning mutation follows the schema-specific activation
+rule in [Initialization](initialization.md) and does not move pages or migrate
+the rest of the vault.
 
 ## Gaps, questions, and misconceptions
 
@@ -308,8 +312,10 @@ Learning update” rather than manufacturing a topic or trait.
 
 ## Contract migrations
 
-Version 1 has no prior migrations. Future versions must identify affected
-Learning evidence, safe structural changes, semantic review requirements, and
-forbidden automatic changes. A contract update never invents competence,
-promotes an inference, erases a prior model, or converts a generated
-explanation into evidence.
+Version 1 has no prior migrations. If the repository later advertises a newer
+version, an older applied Learning contract remains readable and reviewable;
+read only the documented migrations before proposing an update. Future versions
+must identify affected Learning evidence, safe structural changes, semantic
+review requirements, and forbidden automatic changes. A contract update never
+invents competence, promotes an inference, erases a prior model, or converts a
+generated explanation into evidence.

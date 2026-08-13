@@ -38,17 +38,31 @@ Synthetic evidence for {title}.
 
 
 class LintVaultTests(unittest.TestCase):
-    def make_vault(self, root: Path, *, schema: str = "0.1", career: bool = False) -> Path:
+    def make_vault(
+        self,
+        root: Path,
+        *,
+        schema: str = "0.1",
+        career: bool = False,
+        contracts: list[str] | None = None,
+        custom_area: bool = False,
+    ) -> Path:
         vault = root / "vault"
         for directory in ("core", "review", "sources", "derived"):
             (vault / directory).mkdir(parents=True)
         if career:
             (vault / "career").mkdir()
-        contracts = ""
-        if schema == "0.2" and career:
-            contracts = "\nvertical_contracts:\n  - career@1\n"
+        if custom_area:
+            (vault / "archive").mkdir()
+        if contracts is None:
+            contracts = ["career@1"] if schema == "0.2" and career else []
+        contract_text = ""
+        if schema == "0.2":
+            contract_text = "\nvertical_contracts:\n" + "".join(
+                f"  - {entry}\n" for entry in contracts
+            )
         (vault / "SCHEMA.md").write_text(
-            f"# Synthetic Schema\n\nschema_version: {schema}\n{contracts}",
+            f"# Synthetic Schema\n\nschema_version: {schema}\n{contract_text}",
             encoding="utf-8",
         )
         links = [
@@ -67,7 +81,16 @@ class LintVaultTests(unittest.TestCase):
             (vault / index / "index.md").write_text(f"# {index.title()}\n", encoding="utf-8")
         if career:
             (vault / "career" / "index.md").write_text("# Career\n", encoding="utf-8")
+        if schema == "0.2":
+            sys.path.insert(0, str(SCRIPTS))
+            import sync_indexes
+
+            sync_indexes.synchronize(vault, write=True)
         return vault
+
+    def contract_findings(self, vault: Path) -> list[dict]:
+        report = json.loads(self.run_lint(vault, "--deep", "--format", "json").stdout)
+        return [item for item in report["findings"] if item["classification"].startswith("vertical-contract")]
 
     def run_lint(self, vault: Path, *args: str) -> subprocess.CompletedProcess:
         return subprocess.run(
@@ -78,20 +101,131 @@ class LintVaultTests(unittest.TestCase):
             timeout=10,
         )
 
+    def test_schema_01_ordinary_use_does_not_add_contract_markers(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.make_vault(Path(temporary), schema="0.1")
+            before = (vault / "SCHEMA.md").read_text()
+            result = self.run_lint(vault)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertEqual(before, (vault / "SCHEMA.md").read_text())
+
+    def test_schema_01_legacy_verticals_are_reported_separately(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.make_vault(Path(temporary), schema="0.1", career=True)
+            report = json.loads(self.run_lint(vault, "--deep", "--format", "json").stdout)
+            self.assertEqual(report["enabled_vertical_contracts"], [])
+            self.assertEqual(report["enabled_verticals"], [])
+            self.assertEqual(report["applied_vertical_contracts"], [])
+            self.assertEqual(report["legacy_inferred_verticals"], ["career"])
+
     def test_schema_01_remains_accepted_without_contract_migration(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             vault = self.make_vault(Path(temporary), schema="0.1")
             result = self.run_lint(vault)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-            self.assertIn("schema_version: 0.1", (vault / "SCHEMA.md").read_text())
+            schema_text = (vault / "SCHEMA.md").read_text()
+            self.assertIn("schema_version: 0.1", schema_text)
+            self.assertNotIn("vertical_contracts:", schema_text)
 
-    def test_schema_02_parses_selective_contracts_and_disabled_vertical_is_not_missing(self) -> None:
+    def test_schema_02_requires_an_explicit_empty_contract_section(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.make_vault(Path(temporary), schema="0.2")
+            schema_path = vault / "SCHEMA.md"
+            schema_path.write_text("# Synthetic Schema\n\nschema_version: 0.2\n", encoding="utf-8")
+            findings = self.contract_findings(vault)
+            self.assertTrue(any("must declare a vertical_contracts section" in item["message"] for item in findings))
+
+    def test_schema_02_without_optional_verticals_remains_valid(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             vault = self.make_vault(Path(temporary), schema="0.2")
             result = self.run_lint(vault, "--deep", "--format", "json")
             report = json.loads(result.stdout)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertEqual(report["enabled_vertical_contracts"], [])
-            self.assertNotIn("missing its area", result.stdout)
+            self.assertEqual(report["available_vertical_contracts"], [
+                "career@1",
+                "learning@1",
+                "writing@1",
+                "relationships@1",
+                "media@1",
+            ])
+            self.assertEqual(report["enabled_verticals"], [])
+            self.assertEqual(report["applied_vertical_contracts"], [])
+            self.assertEqual(report["legacy_inferred_verticals"], [])
+            self.assertFalse(any(item["classification"] == "vertical-contract" for item in report["findings"]))
+
+    def test_available_but_disabled_vertical_is_not_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.make_vault(Path(temporary), schema="0.2")
+            report = json.loads(self.run_lint(vault, "--deep", "--format", "json").stdout)
+            findings = self.contract_findings(vault)
+            self.assertFalse(any("missing" in item["message"] for item in findings))
+            self.assertEqual(report["enabled_verticals"], [])
+
+    def test_enabled_vertical_with_matching_version_is_valid(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.make_vault(Path(temporary), schema="0.2", career=True, contracts=["career@1"])
+            report = json.loads(self.run_lint(vault, "--deep", "--format", "json").stdout)
+            findings = self.contract_findings(vault)
+            self.assertEqual(findings, [])
+            self.assertEqual(report["enabled_verticals"], ["career"])
+            self.assertEqual(report["applied_vertical_contracts"], ["career@1"])
+
+    def test_older_applied_contract_is_valid_but_update_is_available(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.make_vault(Path(temporary), schema="0.2", career=True, contracts=["career@0"])
+            report = json.loads(self.run_lint(vault, "--deep", "--format", "json").stdout)
+            findings = self.contract_findings(vault)
+            self.assertTrue(any(item["classification"] == "vertical-contract-update" for item in findings))
+            self.assertEqual(report["enabled_verticals"], ["career"])
+            self.assertEqual(report["applied_vertical_contracts"], ["career@0"])
+            self.assertFalse(any(item["severity"] == "error" for item in findings))
+
+    def test_future_applied_contract_is_an_error(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.make_vault(Path(temporary), schema="0.2", career=True, contracts=["career@2"])
+            findings = self.contract_findings(vault)
+            self.assertTrue(any(item["severity"] == "error" and "newer than available" in item["message"] for item in findings))
+
+    def test_unknown_vertical_id_is_an_error_and_preserved_in_report(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.make_vault(Path(temporary), schema="0.2", contracts=["archive@1"])
+            findings = self.contract_findings(vault)
+            self.assertTrue(any(item["severity"] == "error" and "archive@1" in item["message"] for item in findings))
+            self.assertIn("archive@1", (vault / "SCHEMA.md").read_text())
+
+    def test_invalid_contract_version_is_an_error_without_coercion(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.make_vault(Path(temporary), schema="0.2", contracts=["career@v1"])
+            findings = self.contract_findings(vault)
+            self.assertTrue(any(item["severity"] == "error" and "invalid contract version" in item["message"] for item in findings))
+            self.assertIn("career@v1", (vault / "SCHEMA.md").read_text())
+
+    def test_duplicate_identical_contract_entry_is_an_error(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.make_vault(Path(temporary), schema="0.2", career=True, contracts=["career@1", "career@1"])
+            findings = self.contract_findings(vault)
+            self.assertTrue(any(item["severity"] == "error" and "duplicate applied vertical contract" in item["message"] for item in findings))
+
+    def test_duplicate_vertical_id_with_different_versions_is_an_error(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.make_vault(Path(temporary), schema="0.2", career=True, contracts=["career@0", "career@1"])
+            findings = self.contract_findings(vault)
+            self.assertTrue(any(item["severity"] == "error" and "duplicate applied vertical contract" in item["message"] for item in findings))
+
+    def test_schema_02_malformed_schema_state_is_reported_conservatively(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.make_vault(Path(temporary), schema="not-a-version")
+            result = self.run_lint(vault, "--deep", "--format", "json")
+            report = json.loads(result.stdout)
+            self.assertTrue(any(item["classification"] == "schema" and "ambiguous" in item["message"] for item in report["findings"]))
+            self.assertFalse(any(item["classification"] == "vertical-contract" for item in report["findings"]))
+
+    def test_enabled_vertical_missing_area_is_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.make_vault(Path(temporary), schema="0.2", contracts=["career@1"])
+            findings = self.contract_findings(vault)
+            self.assertTrue(any("missing its area" in item["message"] for item in findings))
 
     def test_enabled_vertical_missing_index_is_reported(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -101,15 +235,21 @@ class LintVaultTests(unittest.TestCase):
             report = json.loads(result.stdout)
             self.assertTrue(any("missing its index" in item["message"] for item in report["findings"]))
 
-    def test_custom_unknown_area_is_informational(self) -> None:
+    def test_schema_02_known_vertical_area_without_contract_is_reported(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
-            vault = self.make_vault(Path(temporary), schema="0.1")
-            (vault / "custom-notes").mkdir()
+            vault = self.make_vault(Path(temporary), schema="0.2", career=True, contracts=[])
+            findings = self.contract_findings(vault)
+            self.assertTrue(any("present but not versioned" in item["message"] for item in findings))
+
+    def test_custom_unknown_area_is_informational_and_preserved(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.make_vault(Path(temporary), schema="0.1", custom_area=True)
             result = self.run_lint(vault, "--deep", "--format", "json")
             report = json.loads(result.stdout)
             custom = [item for item in report["findings"] if item["classification"] == "custom-area"]
-            self.assertEqual(len(custom), 1)
-            self.assertEqual(custom[0]["severity"], "info")
+            self.assertTrue(custom)
+            self.assertTrue(all(item["severity"] == "info" for item in custom))
+            self.assertTrue((vault / "archive").is_dir())
 
     def test_malformed_utf8_is_a_controlled_finding(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

@@ -111,6 +111,16 @@ SelfContext owns the shared vault contract and lifecycle. Vertical context is
 domain-specific and remains in its owning area. Advisor Packs provide optional
 reasoning for a vertical after this skill retrieves the relevant evidence.
 
+Schema-specific vertical activation is canonical in
+[Initialization](references/initialization.md). In short: schema 0.1 first
+meaningful mutation may add only the needed legacy area/index/root link and
+never adds contract markers; schema 0.2 first meaningful mutation requiring a
+vertical adds only that vertical, records its exact available `vertical@version`,
+and adds the root link after the normal backup. Read-only operations never
+create or enable verticals, and malformed or unknown schema state remains
+conservative. Use [Vault Schema](references/vault-schema.md) for the distinct
+available/enabled/applied states and version comparison rules.
+
 | Area | Scope | Current reasoning owner |
 | --- | --- | --- |
 | `core/` | Cross-domain goals, values, preferences, communication and decision patterns, and recurring constraints | SelfContext |
@@ -230,8 +240,9 @@ When changing the vault, follow the relevant procedure completely: preserve
 source material when useful, update the smallest coherent set of concepts,
 add meaningful links, update affected managed catalogs, and log the operation.
 Never silently rewrite a conflicting claim; preserve the evidence and surface
-the conflict for review. A schema 0.2 vault enables only explicitly adopted
-vertical contracts; a schema 0.1 vault remains untouched by ordinary operations.
+the conflict for review. A schema 0.2 vault records only explicitly activated
+vertical contracts; a schema 0.1 vault remains untouched by ordinary contract
+migration and preserves its legacy schema behavior.
 
 End the response with a concise account of:
 

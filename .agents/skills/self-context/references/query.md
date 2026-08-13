@@ -24,9 +24,10 @@ indexes, and the smallest relevant linked pages. Managed catalog blocks are
 compiled navigation, not evidence; inspect the linked durable page and its
 provenance before relying on an entry. For schema 0.2, an absent
 available vertical is empty; a read-only query must not create its area or
-contract marker. Use local lexical search only when the index is ambiguous or
-the vault is large. Do not scan the entire vault for a narrow question unless
-orientation shows that the relevant path is unclear.
+contract marker. Schema 0.1 is likewise preserved during read-only retrieval.
+Use local lexical search only when the index is ambiguous or the vault is large.
+Do not scan the entire vault for a narrow question unless orientation shows
+that the relevant path is unclear.
 
 Start with `SCHEMA.md`, `index.md`, and recent log entries. Use category indexes,
 frontmatter, filenames, targeted text search, and links to locate relevant

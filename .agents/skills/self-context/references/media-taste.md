@@ -47,6 +47,10 @@ owned context is relevant; do not copy it into Media / Taste.
 
 ## Storage and page choices
 
+Use the schema-specific activation rule in [Initialization](initialization.md);
+this procedure does not redefine vertical enablement, contract markers, or
+schema migration.
+
 - `media/index.md` is the navigation page for durable works and taste
   observations.
 - A meaningful work reaction normally lives in a compact page directly under
@@ -244,8 +248,11 @@ review items, and whether `core/` and `derived/` were intentionally unchanged.
 
 ## Contract migrations
 
-Version 1 has no prior migrations. Future versions must identify affected Media
-/ Taste evidence, safe structural changes, semantic review requirements, and
-forbidden automatic changes. A contract update never infers sensitive identity
-or personality, turns consumption into preference, removes an exception, or
-promotes generated reactions into evidence automatically.
+Version 1 has no prior migrations. If the repository later advertises a newer
+version, an older applied Media / Taste contract remains readable and
+reviewable; read only the documented migrations before proposing an update.
+Future versions must identify affected Media / Taste evidence, safe structural
+changes, semantic review requirements, and forbidden automatic changes. A
+contract update never infers sensitive identity or personality, turns
+consumption into preference, removes an exception, or promotes generated
+reactions into evidence automatically.
