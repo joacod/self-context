@@ -361,7 +361,13 @@ class DeepLintTests(unittest.TestCase):
             (vault / "core" / "malformed.md").write_text(
                 page(
                     title="Malformed Metadata",
-                    extra="tags: synthetic\nsources: ../sources/missing.md\n",
+                    extra=(
+                        "tags: synthetic\n"
+                        "sources: ../sources/missing.md\n"
+                        "type: []\n"
+                        "status: []\n"
+                        "assertion_kind: []\n"
+                    ),
                 ),
                 encoding="utf-8",
             )
@@ -374,6 +380,9 @@ class DeepLintTests(unittest.TestCase):
             ]
             self.assertTrue(any("tags must be a YAML list" in item["message"] for item in findings))
             self.assertTrue(any("sources must be a YAML list" in item["message"] for item in findings))
+            self.assertTrue(any("invalid type" in item["message"] for item in findings))
+            self.assertTrue(any("invalid status" in item["message"] for item in findings))
+            self.assertTrue(any("invalid assertion_kind" in item["message"] for item in findings))
             page_item = next(item for item in report["pages"] if item["path"] == "core/malformed.md")
             self.assertNotIn("tags", page_item)
             self.assertEqual(page_item["source_relationships"], [])

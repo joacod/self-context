@@ -276,7 +276,7 @@ def _ordinary_findings(root: Path, today: date.date) -> List[Dict[str, Any]]:
             findings.append(_finding("error", "metadata", f"invalid assertion_kind: {assertion!r}", relative))
 
         tags = fields.get("tags")
-        if page_type in {"source", "synthesis"} and isinstance(tags, list) and "writing" in tags:
+        if isinstance(page_type, str) and page_type in {"source", "synthesis"} and isinstance(tags, list) and "writing" in tags:
             role_fields = (
                 fields.get("writing_evidence_role"),
                 fields.get("authorship"),
@@ -346,7 +346,7 @@ def _ordinary_findings(root: Path, today: date.date) -> List[Dict[str, Any]]:
 
         if (
             (assertion == "agent_inference" or page_type == "observation")
-            and status not in {"archived", "superseded"}
+            and (not isinstance(status, str) or status not in {"archived", "superseded"})
         ):
             if fields.get("verified") in (None, "", "null"):
                 findings.append(_finding("warning", "review", "observation or inference is unverified", relative))
@@ -603,9 +603,12 @@ def _path_compatibility(record: Dict[str, Any], root: Path) -> List[Dict[str, An
     if parts and parts[0] == "derived" and page_type != "synthesis":
         findings.append(_finding("error", "path-compatibility", "pages under derived/ must have type: synthesis", path))
     if len(parts) >= 2 and parts[0] == "review" and parts[1] == "observations":
-        if page_type != "observation" or assertion not in {"agent_inference", "mixed"}:
+        if page_type != "observation" or not isinstance(assertion, str) or assertion not in {"agent_inference", "mixed"}:
             findings.append(_finding("error", "path-compatibility", "review observations must be observation pages with an inference-compatible assertion kind", path))
-    if assertion == "agent_inference" and fields.get("status") not in {"review", "archived", "superseded"}:
+    if assertion == "agent_inference" and (
+        not isinstance(fields.get("status"), str)
+        or fields.get("status") not in {"review", "archived", "superseded"}
+    ):
         findings.append(_finding("error", "review-lifecycle", "active agent inferences must remain inside the review lifecycle", path))
     return findings
 
