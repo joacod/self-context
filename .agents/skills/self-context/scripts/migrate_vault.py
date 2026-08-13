@@ -1,189 +1,1403 @@
 #!/usr/bin/env python3
-"""Plan or explicitly apply the conservative schema 0.1 -> 0.2 migration."""
+"""Plan and transactionally apply the explicit schema 0.1 -> 0.2 migration."""
 
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
+import os
 import re
+import shutil
 import sys
+import tempfile
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 try:
     import backup_vault
+    import lint_vault
     import sync_indexes
     from vault_utils import (
+        canonical_files,
         catalog_records,
         infer_enabled_contracts,
+        iter_markdown_links,
+        link_target,
         load_vertical_catalog,
         parse_schema,
         relative_label,
+        safe_read_bytes,
         safe_read_text,
+        snapshot_id,
+        validate_vertical_catalog,
     )
-except ImportError:  # pragma: no cover
-    from . import backup_vault, sync_indexes  # type: ignore
+except ImportError:  # pragma: no cover - useful when imported as a package
+    from . import backup_vault, lint_vault, sync_indexes  # type: ignore
     from .vault_utils import (  # type: ignore
+        canonical_files,
         catalog_records,
         infer_enabled_contracts,
+        iter_markdown_links,
+        link_target,
         load_vertical_catalog,
         parse_schema,
         relative_label,
+        safe_read_bytes,
         safe_read_text,
+        snapshot_id,
+        validate_vertical_catalog,
     )
 
 
-SCHEMA_LINE = re.compile(r"^(\s*schema_version:\s*)0\.1(\s*)$", re.MULTILINE)
+SCHEMA_LINE = re.compile(
+    r"^([ \t]*schema_version:[ \t]*)0\.1([ \t]*)$", re.MULTILINE
+)
+SCHEMA_SECTION_LINE = re.compile(
+    r"^[ \t]*vertical_contracts:[^\r\n]*$", re.MULTILINE
+)
+MIGRATION_OPERATION = "migrate_schema_0_1_to_0_2"
+ROOT_CONTROL_FILES = {"SCHEMA.md", "index.md", "log.md"}
+NON_CANONICAL_ROOTS = {".obsidian", "backups", ".DS_Store"}
 
 
-def _contract_strings(contracts: List[Dict[str, Any]]) -> List[str]:
+def _finding(
+    severity: str,
+    path: str,
+    message: str,
+    classification: str = "migration",
+    **extra: Any,
+) -> Dict[str, Any]:
+    result: Dict[str, Any] = {
+        "severity": severity,
+        "classification": classification,
+        "path": path,
+        "message": message,
+    }
+    result.update(extra)
+    return result
+
+
+def _contract_strings(contracts: Iterable[Mapping[str, Any]]) -> List[str]:
     return [f"{item.get('id')}@{item.get('version')}" for item in contracts]
 
 
-def _schema_with_contracts(text: str, contracts: List[Dict[str, Any]]) -> str:
-    match = SCHEMA_LINE.search(text)
-    if not match:
-        raise ValueError("SCHEMA.md does not contain schema_version: 0.1")
-    replacement = f"{match.group(1)}0.2{match.group(2)}"
-    updated = text[: match.start()] + replacement + text[match.end() :]
-    marker_match = re.search(r"^\s*vertical_contracts:\s*(?:\n(?:\s*-\s*[^\n]+\n?)*)?", updated, re.MULTILINE)
-    block = "vertical_contracts:\n" + "".join(
-        f"  - {contract['id']}@{contract['version']}\n" for contract in contracts
+def _newline_style(text: str) -> str:
+    return "\r\n" if "\r\n" in text else "\n"
+
+
+def _schema_with_contracts(text: str, contracts: Sequence[Mapping[str, Any]]) -> str:
+    """Return schema text with only the version and contract section changed."""
+
+    matches = list(SCHEMA_LINE.finditer(text))
+    if len(matches) != 1:
+        raise ValueError("SCHEMA.md must contain exactly one schema_version: 0.1")
+
+    newline = _newline_style(text)
+    updated = SCHEMA_LINE.sub(
+        lambda match: f"{match.group(1)}0.2{match.group(2)}", text, count=1
     )
-    if marker_match:
-        updated = updated[: marker_match.start()] + block + updated[marker_match.end() :]
+    lines = updated.splitlines(keepends=True)
+    section_indices = [
+        index
+        for index, line in enumerate(lines)
+        if SCHEMA_SECTION_LINE.match(line.rstrip("\r\n"))
+    ]
+    if len(section_indices) > 1:
+        raise ValueError("SCHEMA.md contains duplicate vertical_contracts sections")
+
+    block = [f"vertical_contracts:{newline}"]
+    block.extend(
+        f"  - {contract['id']}@{contract['version']}{newline}"
+        for contract in contracts
+    )
+
+    if section_indices:
+        start = section_indices[0]
+        end = start + 1
+        while end < len(lines):
+            stripped = lines[end].strip()
+            if not stripped:
+                end += 1
+                continue
+            if lines[end].startswith((" ", "\t")) and stripped.startswith("-"):
+                end += 1
+                continue
+            break
+        lines[start:end] = block
     else:
-        insertion = "\n" + block
-        updated = updated[: match.start()] + insertion + updated[match.start() :]
-    return updated
+        version_index = next(
+            index
+            for index, line in enumerate(lines)
+            if re.match(r"^[ \t]*schema_version:[ \t]*0\.2", line)
+        )
+        lines[version_index + 1 : version_index + 1] = block
+
+    result = "".join(lines)
+    if not text.endswith(("\n", "\r")) and result.endswith(newline):
+        result = result[: -len(newline)]
+    return result
 
 
-def _ensure_root_links(vault: Path, contracts: List[Dict[str, Any]], catalog: Dict[str, Any]) -> List[str]:
+def _root_has_link(vault: Path, index_path: str, text: Optional[str] = None) -> bool:
     root_index = vault / "index.md"
-    text = root_index.read_text(encoding="utf-8")
-    records = {str(record.get("id")): record for record in catalog_records(catalog)}
-    additions: List[str] = []
-    for contract in contracts:
-        record = records.get(str(contract.get("id")))
-        if not record:
+    if text is None:
+        text, error = safe_read_text(root_index)
+        if error or text is None:
+            return False
+    for destination in iter_markdown_links(text):
+        try:
+            target = link_target(root_index, destination, vault)
+            if target is not None and relative_label(target, vault) == index_path:
+                return True
+        except (OSError, RuntimeError, ValueError):
             continue
-        index_path = record.get("index_path")
-        area = record.get("vault_area")
-        if not isinstance(index_path, str) or not isinstance(area, str):
-            continue
-        if (vault / area).is_dir() and (vault / index_path).is_file() and index_path not in text:
-            additions.append(f"- [{record.get('display_name', area)} context]({index_path})")
-    if additions:
-        separator = "" if text.endswith("\n") else "\n"
-        root_index.write_text(text + separator + "\n".join(additions) + "\n", encoding="utf-8")
-    return additions
+    return False
 
 
-def plan_migration(vault: Path) -> Dict[str, Any]:
-    vault = vault.expanduser()
-    schema = parse_schema(vault)
-    catalog = load_vertical_catalog()
-    contracts, source = infer_enabled_contracts(vault, catalog)
-    findings: List[Dict[str, str]] = []
-    if schema.get("error"):
-        findings.append({"severity": "error", "path": "SCHEMA.md", "message": str(schema["error"])})
-    version = schema.get("version")
-    if version == (0, 2):
-        findings.append({"severity": "info", "path": "SCHEMA.md", "message": "vault already uses schema 0.2; no migration needed"})
-    elif version != (0, 1):
-        findings.append({"severity": "error", "path": "SCHEMA.md", "message": "only schema 0.1 can be migrated explicitly"})
-    for contract in contracts:
-        record = next((item for item in catalog_records(catalog) if item.get("id") == contract.get("id")), None)
-        if record is None:
-            findings.append({"severity": "warning", "path": "SCHEMA.md", "message": f"ambiguous or unavailable vertical preserved: {contract.get('id')}"})
+def _area_has_meaningful_content(vault: Path, area: str) -> bool:
+    area_root = vault / area
+    if not area_root.is_dir():
+        return False
+    for path in canonical_files(vault):
+        try:
+            relative = path.relative_to(vault).as_posix()
+        except ValueError:
             continue
+        if not relative.startswith(f"{area}/") or relative == f"{area}/index.md":
+            continue
+        content, error = safe_read_bytes(path)
+        if error is None and content and content.strip():
+            return True
+    return False
+
+
+def _compact_name(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "", value.casefold())
+
+
+def _looks_like_vertical_area(name: str, record: Mapping[str, Any]) -> bool:
+    compact = _compact_name(name)
+    identifier = _compact_name(str(record.get("id", "")))
+    display = _compact_name(str(record.get("display_name", "")))
+    if not compact or compact in {identifier, display}:
+        return False
+    return bool(
+        identifier
+        and (
+            compact.startswith(identifier)
+            or compact.endswith(identifier)
+            or identifier in compact
+        )
+    )
+
+
+def _vertical_analysis(
+    vault: Path, schema: Mapping[str, Any], catalog: Mapping[str, Any]
+) -> Dict[str, Any]:
+    records = catalog_records(dict(catalog))
+    by_id = {
+        str(record.get("id")): record
+        for record in records
+        if isinstance(record, dict) and record.get("id") is not None
+    }
+    explicit = {str(item) for item in schema.get("legacy_enabled_verticals", [])}
+    try:
+        _, inference_source = infer_enabled_contracts(vault, dict(catalog))
+    except (OSError, ValueError, KeyError):
+        inference_source = "inferred-legacy"
+
+    enabled: List[Dict[str, Any]] = []
+    ambiguous: List[Dict[str, Any]] = []
+    human_decisions: List[str] = []
+    for record in records:
+        if not isinstance(record, dict):
+            continue
+        identifier = str(record.get("id"))
         area = record.get("vault_area")
         index = record.get("index_path")
-        if isinstance(area, str) and not (vault / area).is_dir():
-            findings.append({"severity": "warning", "path": area + "/", "message": "enabled vertical area is absent; migration will not create personal content"})
-        if isinstance(index, str) and (vault / area).is_dir() and not (vault / index).is_file():
-            findings.append({"severity": "info", "path": index, "message": "known vertical index can be added as control metadata"})
-    known = {"core", "review", "sources", "derived"} | {str(item.get("vault_area")) for item in catalog_records(catalog)}
+        if not isinstance(area, str) or not isinstance(index, str):
+            ambiguous.append(
+                _finding(
+                    "warning",
+                    "SCHEMA.md",
+                    f"vertical catalog record for {identifier} has unsafe area or index metadata",
+                    "ambiguous-vertical",
+                )
+            )
+            human_decisions.append(
+                f"Resolve the catalog area/index for {identifier} before migration."
+            )
+            continue
+
+        area_path = vault / area
+        index_path = vault / index
+        signals = {
+            "explicit_legacy_marker": identifier in explicit,
+            "existing_area": area_path.is_dir(),
+            "existing_index": index_path.is_file(),
+            "root_index_link": _root_has_link(vault, index),
+            "meaningful_existing_content": _area_has_meaningful_content(vault, area),
+        }
+        if any(signals.values()):
+            # The exact catalog area is itself legacy structural evidence. An
+            # empty area is still safe to preserve and complete with control
+            # metadata; content is an additional conservative signal, not a
+            # requirement for recognizing the canonical area.
+            enabled.append(
+                {
+                    "id": identifier,
+                    "version": record.get("contract_version"),
+                    "record": record,
+                    "signals": signals,
+                }
+            )
+        elif area_path.exists():
+            ambiguous.append(
+                _finding(
+                    "warning",
+                    f"{area}/",
+                    "known vertical path is not a directory; preserved and not enabled",
+                    "ambiguous-vertical",
+                )
+            )
+            human_decisions.append(
+                f"Resolve the non-directory {area} path before enabling {identifier}."
+            )
+
+    for identifier in sorted(explicit - set(by_id)):
+        ambiguous.append(
+            _finding(
+                "warning",
+                "SCHEMA.md",
+                f"legacy enabled vertical is unavailable in the current catalog: {identifier}; preserved without a contract",
+                "ambiguous-vertical",
+            )
+        )
+        human_decisions.append(
+            f"Resolve unavailable legacy vertical {identifier} before enabling it."
+        )
+
+    known_areas = {
+        str(record.get("vault_area"))
+        for record in records
+        if isinstance(record, dict) and record.get("vault_area")
+    }
+    custom: List[Dict[str, Any]] = []
     if vault.is_dir():
-        for child in sorted(vault.iterdir()):
-            if child.is_dir() and child.name not in known and child.name not in {".obsidian", "backups"}:
-                findings.append({"severity": "info", "path": child.name + "/", "message": "custom area preserved and not relocated"})
+        for child in sorted(vault.iterdir(), key=lambda path: path.name):
+            if not child.is_dir() or child.name in NON_CANONICAL_ROOTS:
+                continue
+            if child.name in {"core", "review", "sources", "derived"}:
+                continue
+            if child.name in known_areas:
+                continue
+            matching = next(
+                (
+                    record
+                    for record in records
+                    if isinstance(record, dict)
+                    and _looks_like_vertical_area(child.name, record)
+                ),
+                None,
+            )
+            if matching is not None:
+                ambiguous.append(
+                    _finding(
+                        "warning",
+                        child.name + "/",
+                        "ambiguous known-looking area preserved and not declared as a known vertical",
+                        "ambiguous-vertical",
+                    )
+                )
+                human_decisions.append(
+                    f"Resolve whether custom area {child.name}/ belongs to {matching.get('id')}; migration will not move it."
+                )
+            else:
+                custom.append(
+                    _finding(
+                        "info",
+                        child.name + "/",
+                        "custom area preserved and excluded from vertical contracts and managed catalogs",
+                        "custom-area",
+                    )
+                )
+
     return {
-        "vault": str(vault.resolve()) if vault.exists() else str(vault),
-        "from_schema": schema.get("version_text"),
-        "to_schema": "0.2" if version == (0, 1) else schema.get("version_text"),
-        "enabled_vertical_contracts": _contract_strings(contracts),
-        "inference": source,
-        "findings": findings,
-        "would_change": ["SCHEMA.md", "index.md", "managed catalog blocks"] if version == (0, 1) else [],
+        "enabled": enabled,
+        "inference_source": inference_source,
+        "ambiguous": ambiguous,
+        "custom": custom,
+        "human_decisions": human_decisions,
     }
 
 
+def _index_template(record: Mapping[str, Any]) -> str:
+    display_name = str(record.get("display_name") or record.get("vault_area"))
+    ownership = str(record.get("ownership") or f"{display_name} context.")
+    start = getattr(sync_indexes, "CATALOG_START", "<!-- selfcontext:catalog:start -->")
+    end = getattr(sync_indexes, "CATALOG_END", "<!-- selfcontext:catalog:end -->")
+    return f"# {display_name} Context\n\n{ownership}\n\n{start}\n{end}\n"
+
+
+def _root_with_links(
+    vault: Path,
+    contracts: Sequence[Mapping[str, Any]],
+    catalog: Mapping[str, Any],
+    text: str,
+) -> Tuple[str, List[str]]:
+    records = {
+        str(record.get("id")): record
+        for record in catalog_records(dict(catalog))
+        if isinstance(record, dict)
+    }
+    additions: List[str] = []
+    for contract in contracts:
+        record = records.get(str(contract.get("id")))
+        if record is None:
+            continue
+        index_path = record.get("index_path")
+        if not isinstance(index_path, str) or _root_has_link(vault, index_path, text):
+            continue
+        additions.append(f"- [{record.get('display_name', record.get('id'))} context]({index_path})")
+    if not additions:
+        return text, []
+    newline = _newline_style(text)
+    separator = "" if text.endswith(("\n", "\r")) else newline
+    return text + separator + newline.join(additions) + newline, [
+        str(records[str(contract.get("id"))].get("index_path"))
+        for contract in contracts
+        if str(contract.get("id")) in records
+        and str(records[str(contract.get("id"))].get("index_path"))
+        in {
+            line.split("](", 1)[1].rstrip(")")
+            for line in additions
+            if "](" in line
+        }
+    ]
+
+
+def _append_log_entry(
+    text: str, changed_paths: Sequence[str]
+) -> Tuple[str, bool]:
+    marker = f"- operation: {MIGRATION_OPERATION}"
+    if marker in text:
+        return text, False
+    newline = _newline_style(text)
+    separator = "" if text.endswith(("\n", "\r")) else newline
+    lines = [
+        f"{separator}{newline}## {dt.date.today().isoformat()} - schema migration{newline}",
+        newline,
+        f"- operation: {MIGRATION_OPERATION}{newline}",
+        f"- summary: Migrated schema 0.1 to 0.2 using control metadata only.{newline}",
+        f"- changed:{newline}",
+    ]
+    for path in sorted(set(changed_paths)):
+        lines.append(f"  - [{path}]({path}){newline}")
+    lines.extend(
+        [
+            f"- preserved: Personal pages and custom areas were preserved.{newline}",
+            f"- follow_up: Review any reported ambiguous areas before assigning ownership.{newline}",
+        ]
+    )
+    return text + "".join(lines), True
+
+
+def _canonical_bytes(root: Path) -> Dict[str, bytes]:
+    result: Dict[str, bytes] = {}
+    for path in canonical_files(root):
+        content, error = safe_read_bytes(path)
+        if content is None:
+            raise OSError(error or f"unable to read {path}")
+        result[relative_label(path, root)] = content
+    return result
+
+
+def _known_areas(catalog: Mapping[str, Any]) -> set[str]:
+    return {
+        "core",
+        "review",
+        "sources",
+        "derived",
+        *{
+            str(record.get("vault_area"))
+            for record in catalog_records(dict(catalog))
+            if isinstance(record, dict) and record.get("vault_area")
+        },
+    }
+
+
+def _is_managed_control(label: str, catalog: Mapping[str, Any]) -> bool:
+    if label in ROOT_CONTROL_FILES:
+        return True
+    parts = Path(label).parts
+    return bool(parts) and parts[-1] == "index.md" and parts[0] in _known_areas(catalog)
+
+
+def _diff_bytes(
+    original: Mapping[str, bytes], proposed: Mapping[str, bytes]
+) -> Tuple[List[str], List[str], List[str]]:
+    created = sorted(set(proposed) - set(original))
+    deleted = sorted(set(original) - set(proposed))
+    modified = sorted(
+        label
+        for label in set(original).intersection(proposed)
+        if original[label] != proposed[label]
+    )
+    return created, modified, deleted
+
+
+def _custom_area_names(root: Path, catalog: Mapping[str, Any]) -> List[str]:
+    known = _known_areas(catalog)
+    if not root.is_dir():
+        return []
+    return sorted(
+        child.name
+        for child in root.iterdir()
+        if child.is_dir()
+        and child.name not in known
+        and child.name not in NON_CANONICAL_ROOTS
+    )
+
+
+def _preservation_report(
+    source: Mapping[str, bytes],
+    current: Mapping[str, bytes],
+    catalog: Mapping[str, Any],
+    source_root: Path,
+    current_root: Path,
+) -> Dict[str, Any]:
+    labels = sorted(set(source).union(current))
+    personal_changed = [
+        label
+        for label in labels
+        if not _is_managed_control(label, catalog) and source.get(label) != current.get(label)
+    ]
+    source_custom = _custom_area_names(source_root, catalog)
+    current_custom = _custom_area_names(current_root, catalog)
+    return {
+        "ok": not personal_changed and source_custom == current_custom,
+        "personal_files_changed": personal_changed,
+        "custom_areas_before": source_custom,
+        "custom_areas_after": current_custom,
+        "custom_areas_preserved": source_custom == current_custom,
+    }
+
+
+def _schema_contract_validation(root: Path) -> Dict[str, Any]:
+    errors: List[Dict[str, str]] = []
+    try:
+        schema = parse_schema(root)
+        catalog = load_vertical_catalog()
+    except (OSError, ValueError, KeyError) as error:
+        return {
+            "ok": False,
+            "errors": [{"path": "SCHEMA.md", "message": str(error)}],
+            "contracts": [],
+        }
+
+    for problem in validate_vertical_catalog():
+        errors.append({"path": "references/verticals.json", "message": problem})
+    if schema.get("error"):
+        errors.append({"path": "SCHEMA.md", "message": str(schema["error"])})
+    if schema.get("version") != (0, 2):
+        errors.append({"path": "SCHEMA.md", "message": "resulting schema is not 0.2"})
+    if not schema.get("contract_section_present"):
+        errors.append({"path": "SCHEMA.md", "message": "schema 0.2 must declare vertical_contracts"})
+    for problem in schema.get("contract_errors", []):
+        errors.append({"path": "SCHEMA.md", "message": str(problem)})
+
+    records = {
+        str(record.get("id")): record
+        for record in catalog_records(catalog)
+        if isinstance(record, dict) and record.get("id") is not None
+    }
+    seen: set[str] = set()
+    root_text, root_error = safe_read_text(root / "index.md")
+    if root_error or root_text is None:
+        errors.append({"path": "index.md", "message": root_error or "missing root index"})
+        root_text = ""
+
+    entries = schema.get("contract_entries", [])
+    for entry in entries:
+        identifier = entry.get("id")
+        version = entry.get("version")
+        raw = str(entry.get("raw") or f"{identifier}@{version}")
+        if not isinstance(identifier, str) or not isinstance(version, int):
+            continue
+        if identifier in seen:
+            errors.append({"path": "SCHEMA.md", "message": f"duplicate applied vertical contract: {raw}"})
+        seen.add(identifier)
+        record = records.get(identifier)
+        if record is None:
+            errors.append({"path": "SCHEMA.md", "message": f"applied vertical is not available: {raw}"})
+            continue
+        available = record.get("contract_version")
+        if version != available:
+            errors.append(
+                {
+                    "path": "SCHEMA.md",
+                    "message": f"migration contract must use exact available version: {raw} (available {identifier}@{available})",
+                }
+            )
+        area = record.get("vault_area")
+        index = record.get("index_path")
+        if not isinstance(area, str) or not (root / area).is_dir():
+            errors.append({"path": f"{area or identifier}/", "message": "enabled vertical is missing its area"})
+        if not isinstance(index, str) or not (root / index).is_file():
+            errors.append({"path": str(index or identifier), "message": "enabled vertical is missing its index"})
+        elif not _root_has_link(root, index, root_text):
+            errors.append({"path": "index.md", "message": f"enabled vertical is missing its root index link: {index}"})
+
+    for record in records.values():
+        area = record.get("vault_area")
+        if isinstance(area, str) and (root / area).is_dir() and str(record.get("id")) not in seen:
+            errors.append(
+                {
+                    "path": "SCHEMA.md",
+                    "message": f"known vertical area is present but not versioned: {area}/",
+                }
+            )
+
+    return {
+        "ok": not errors,
+        "errors": errors,
+        "contracts": _contract_strings(entries),
+        "enabled_verticals": sorted(seen),
+    }
+
+
+def _validation_summary(root: Path) -> Dict[str, Any]:
+    errors: List[Dict[str, str]] = []
+    try:
+        ordinary_errors, ordinary_warnings = lint_vault.lint_vault(root, dt.date.today())
+        ordinary = {
+            "ok": not ordinary_errors,
+            "errors": list(ordinary_errors),
+            "warnings": list(ordinary_warnings),
+        }
+    except Exception as error:  # pragma: no cover - defensive safety boundary
+        ordinary = {"ok": False, "errors": [str(error)], "warnings": []}
+
+    try:
+        deep_report = lint_vault.deep_lint_vault(root, dt.date.today())
+        deep_errors = [
+            {
+                "path": str(item.get("path", "")),
+                "message": str(item.get("message", "")),
+                "classification": str(item.get("classification", "deep-lint")),
+            }
+            for item in deep_report.get("findings", [])
+            if item.get("severity") == "error"
+        ]
+        deep = {
+            "ok": not deep_errors,
+            "schema_version": deep_report.get("schema_version"),
+            "snapshot_id": deep_report.get("snapshot_id"),
+            "severity_counts": deep_report.get("severity_counts", {}),
+            "errors": deep_errors,
+        }
+    except Exception as error:  # pragma: no cover - defensive safety boundary
+        deep = {"ok": False, "errors": [{"path": "", "message": str(error)}]}
+
+    try:
+        sync = sync_indexes.synchronize(root, write=False)
+        sync_errors = [
+            {
+                "path": str(item.get("path", "")),
+                "message": str(item.get("message", "")),
+                "classification": str(item.get("classification", "catalog")),
+            }
+            for item in sync.get("findings", [])
+            if item.get("severity") == "error"
+        ]
+        catalog = {
+            "ok": not sync_errors,
+            "status": sync.get("status"),
+            "changed": sync.get("changed", []),
+            "errors": sync_errors,
+        }
+    except Exception as error:  # pragma: no cover - defensive safety boundary
+        catalog = {"ok": False, "errors": [{"path": "", "message": str(error)}]}
+
+    try:
+        schema = _schema_contract_validation(root)
+    except Exception as error:  # pragma: no cover - defensive safety boundary
+        schema = {"ok": False, "errors": [{"path": "SCHEMA.md", "message": str(error)}]}
+    errors.extend(
+        {"path": "", "message": message}
+        for message in ordinary.get("errors", [])
+    )
+    for section in (deep, catalog, schema):
+        errors.extend(section.get("errors", []))
+    return {
+        "ok": bool(ordinary.get("ok"))
+        and bool(deep.get("ok"))
+        and bool(catalog.get("ok"))
+        and bool(schema.get("ok")),
+        "errors": errors,
+        "ordinary": ordinary,
+        "deep": deep,
+        "catalog_sync": catalog,
+        "schema_contract": schema,
+    }
+
+
+def _validate_proposed_state(root: Path) -> Dict[str, Any]:
+    """Validate the staged bytes before the active vault can be touched."""
+
+    return _validation_summary(root)
+
+
+def _validate_active_state(root: Path, plan: Mapping[str, Any]) -> Dict[str, Any]:
+    result = _validation_summary(root)
+    source = plan.get("_source_bytes", {})
+    try:
+        current = _canonical_bytes(root)
+        catalog = load_vertical_catalog()
+        preservation = _preservation_report(
+            source,
+            current,
+            catalog,
+            Path(str(plan.get("_vault_path", root))),
+            root,
+        )
+    except Exception as error:  # pragma: no cover - defensive safety boundary
+        preservation = {
+            "ok": False,
+            "personal_files_changed": [],
+            "custom_areas_preserved": False,
+            "error": str(error),
+        }
+    result["preservation"] = preservation
+    result["ok"] = bool(result.get("ok")) and bool(preservation.get("ok"))
+    if not preservation.get("ok"):
+        result.setdefault("errors", []).append(
+            {
+                "path": "",
+                "message": "personal or custom content changed during migration",
+            }
+        )
+    return result
+
+
+def _stage_write(stage: Path, label: str, content: bytes) -> None:
+    path = stage / label
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(content)
+
+
+def _plan_migration(vault: Path) -> Dict[str, Any]:
+    supplied = vault.expanduser()
+    resolved_label = str(supplied.resolve()) if supplied.exists() else str(supplied)
+    plan: Dict[str, Any] = {
+        "vault": resolved_label,
+        "_vault_path": str(supplied),
+        "from_schema": None,
+        "to_schema": None,
+        "source_schema_version": None,
+        "target_schema_version": "0.2",
+        "source_schema": None,
+        "target_schema": "0.2",
+        "source_snapshot_id": "",
+        "source_snapshot": "",
+        "snapshot_id": "",
+        "inference": None,
+        "inferred_enabled_verticals": [],
+        "inferred_verticals": [],
+        "enabled_vertical_contracts": [],
+        "ambiguous_vertical_findings": [],
+        "ambiguous_findings": [],
+        "custom_area_findings": [],
+        "custom_findings": [],
+        "schema_changes": [],
+        "missing_vertical_indexes": [],
+        "missing_indexes_to_create": [],
+        "root_index_links_to_add": [],
+        "root_links_to_add": [],
+        "catalog_blocks_to_add_or_synchronize": [],
+        "catalog_blocks": [],
+        "catalog_block_changes": [],
+        "files_to_modify": [],
+        "files_modified": [],
+        "files_to_create": [],
+        "files_created": [],
+        "files_intentionally_preserved": [],
+        "files_preserved": [],
+        "personal_pages_preserved": [],
+        "custom_areas_preserved": [],
+        "warnings": [],
+        "human_decisions": [],
+        "findings": [],
+        "would_change": [],
+        "modified": [],
+        "created": [],
+        "status": "blocked",
+        "write_ready": False,
+    }
+
+    if supplied.is_symlink():
+        plan["findings"].append(
+            _finding("error", str(supplied), "vault path must not be a symlink", "vault")
+        )
+        return plan
+    if not supplied.exists() or not supplied.is_dir():
+        plan["findings"].append(
+            _finding("error", str(supplied), "vault path must be an existing directory", "vault")
+        )
+        return plan
+
+    try:
+        source_snapshot = snapshot_id(supplied)
+        source_bytes = _canonical_bytes(supplied)
+    except (OSError, ValueError, RuntimeError) as error:
+        plan["findings"].append(
+            _finding("error", "", f"unable to snapshot source vault: {error}", "snapshot")
+        )
+        return plan
+    plan["source_snapshot_id"] = source_snapshot
+    plan["source_snapshot"] = source_snapshot
+    plan["snapshot_id"] = source_snapshot
+    plan["_source_bytes"] = source_bytes
+
+    schema = parse_schema(supplied)
+    plan["from_schema"] = schema.get("version_text")
+    plan["source_schema_version"] = schema.get("version_text")
+    plan["source_schema"] = schema.get("version_text")
+    plan["to_schema"] = "0.2" if schema.get("version") == (0, 1) else schema.get("version_text")
+    if schema.get("error"):
+        plan["findings"].append(
+            _finding("error", "SCHEMA.md", str(schema["error"]), "schema")
+        )
+    if schema.get("version") == (0, 2):
+        plan["status"] = "already-migrated"
+        plan["findings"].append(
+            _finding(
+                "info",
+                "SCHEMA.md",
+                "vault already uses schema 0.2; migration is a no-op",
+                "already-migrated",
+            )
+        )
+        return plan
+    if schema.get("version") != (0, 1):
+        plan["findings"].append(
+            _finding(
+                "error",
+                "SCHEMA.md",
+                "only schema 0.1 can be migrated explicitly",
+                "schema",
+            )
+        )
+        return plan
+
+    try:
+        catalog = load_vertical_catalog()
+    except (OSError, ValueError, json.JSONDecodeError) as error:
+        plan["findings"].append(
+            _finding("error", "references/verticals.json", f"unable to load vertical catalog: {error}", "vertical-catalog")
+        )
+        return plan
+
+    catalog_problems = validate_vertical_catalog()
+    for problem in catalog_problems:
+        plan["findings"].append(
+            _finding("error", "references/verticals.json", problem, "vertical-catalog")
+        )
+
+    analysis = _vertical_analysis(supplied, schema, catalog)
+    enabled = analysis["enabled"]
+    plan["inference"] = analysis["inference_source"]
+    plan["inferred_enabled_verticals"] = [item["id"] for item in enabled]
+    plan["inferred_verticals"] = [
+        {
+            "id": item["id"],
+            "version": item["version"],
+            "signals": item["signals"],
+        }
+        for item in enabled
+    ]
+    plan["enabled_vertical_contracts"] = _contract_strings(enabled)
+    plan["ambiguous_vertical_findings"] = analysis["ambiguous"]
+    plan["ambiguous_findings"] = analysis["ambiguous"]
+    plan["custom_area_findings"] = analysis["custom"]
+    plan["custom_findings"] = analysis["custom"]
+    plan["human_decisions"] = analysis["human_decisions"]
+    plan["findings"].extend(analysis["ambiguous"])
+    plan["findings"].extend(analysis["custom"])
+
+    # Ambiguous known-looking or unavailable areas are never silently assigned
+    # a contract. They remain untouched and require an explicit human decision.
+    if analysis["ambiguous"]:
+        for item in analysis["ambiguous"]:
+            if item.get("classification") == "ambiguous-vertical":
+                plan["findings"].append(
+                    _finding(
+                        "error",
+                        str(item.get("path", "")),
+                        "migration requires a human decision for this ambiguous area",
+                        "migration-ambiguity",
+                    )
+                )
+
+    root_text, root_error = safe_read_text(supplied / "index.md")
+    schema_text, schema_error = safe_read_text(supplied / "SCHEMA.md")
+    if root_error or root_text is None:
+        plan["findings"].append(_finding("error", "index.md", root_error or "missing root index", "control-file"))
+    if schema_error or schema_text is None:
+        plan["findings"].append(_finding("error", "SCHEMA.md", schema_error or "missing schema", "control-file"))
+    if not (supplied / "log.md").is_file():
+        plan["findings"].append(_finding("error", "log.md", "missing required operation log", "control-file"))
+    if any(item.get("severity") == "error" for item in plan["findings"]):
+        plan["warnings"] = [item for item in plan["findings"] if item.get("severity") != "error"]
+        return plan
+
+    contracts = [
+        {"id": item["id"], "version": int(item["version"])}
+        for item in enabled
+    ]
+    try:
+        schema_candidate = _schema_with_contracts(str(schema_text), contracts)
+    except ValueError as error:
+        plan["findings"].append(_finding("error", "SCHEMA.md", str(error), "schema"))
+        return plan
+
+    plan["schema_changes"] = [
+        {
+            "path": "SCHEMA.md",
+            "from": "schema_version: 0.1 and legacy contract state",
+            "to": "schema_version: 0.2 with exact enabled vertical@version entries",
+            "contracts": _contract_strings(contracts),
+        }
+    ]
+
+    with tempfile.TemporaryDirectory(prefix="selfcontext-migration-") as temporary:
+        stage = Path(temporary) / "vault"
+        try:
+            shutil.copytree(supplied, stage, symlinks=True)
+            _stage_write(stage, "SCHEMA.md", schema_candidate.encode("utf-8"))
+
+            records = {
+                str(record.get("id")): record
+                for record in catalog_records(catalog)
+                if isinstance(record, dict)
+            }
+            missing_indexes: List[str] = []
+            for contract in contracts:
+                record = records.get(str(contract["id"]))
+                if record is None:
+                    continue
+                area = str(record.get("vault_area"))
+                index = str(record.get("index_path"))
+                area_path = stage / area
+                index_path = stage / index
+                if area_path.exists() and not area_path.is_dir():
+                    plan["findings"].append(_finding("error", area + "/", "vertical area is not a directory", "vertical-contract"))
+                    continue
+                if index_path.exists() and not index_path.is_file():
+                    plan["findings"].append(_finding("error", index, "vertical index path is not a file", "vertical-contract"))
+                    continue
+                if not index_path.is_file():
+                    area_path.mkdir(parents=True, exist_ok=True)
+                    _stage_write(stage, index, _index_template(record).encode("utf-8"))
+                    missing_indexes.append(index)
+            plan["missing_vertical_indexes"] = sorted(missing_indexes)
+            plan["missing_indexes_to_create"] = list(plan["missing_vertical_indexes"])
+
+            root_candidate, root_additions = _root_with_links(
+                stage, contracts, catalog, str(root_text)
+            )
+            if root_candidate != root_text:
+                _stage_write(stage, "index.md", root_candidate.encode("utf-8"))
+            plan["root_index_links_to_add"] = sorted(root_additions)
+            plan["root_links_to_add"] = list(plan["root_index_links_to_add"])
+
+            sync_before = sync_indexes.synchronize(stage, write=False)
+            sync_write = sync_indexes.synchronize(stage, write=True)
+            sync_after = sync_indexes.synchronize(stage, write=False)
+            plan["catalog_block_changes"] = [
+                {
+                    "path": str(item.get("path")),
+                    "action": "add" if item.get("status") == "missing-catalog-block" else "synchronize",
+                }
+                for item in sync_write.get("index_states", [])
+                if item.get("changed")
+            ]
+            plan["catalog_blocks_to_add_or_synchronize"] = [
+                item["path"] for item in plan["catalog_block_changes"]
+            ]
+            plan["catalog_blocks"] = list(plan["catalog_blocks_to_add_or_synchronize"])
+
+            before_log = _canonical_bytes(stage)
+            log_text, log_error = safe_read_text(stage / "log.md")
+            if log_error or log_text is None:
+                plan["findings"].append(_finding("error", "log.md", log_error or "unable to read operation log", "control-file"))
+            else:
+                changed_for_log = [
+                    label
+                    for label in sorted(set(source_bytes).union(before_log))
+                    if source_bytes.get(label) != before_log.get(label)
+                ]
+                log_candidate, log_added = _append_log_entry(log_text, changed_for_log)
+                if log_added:
+                    _stage_write(stage, "log.md", log_candidate.encode("utf-8"))
+                    plan["log_entry"] = "planned"
+                else:
+                    plan["log_entry"] = "existing-preserved"
+
+            proposed_bytes = _canonical_bytes(stage)
+            created, modified, deleted = _diff_bytes(source_bytes, proposed_bytes)
+            plan["created"] = created
+            plan["modified"] = modified
+            plan["files_to_create"] = created
+            plan["files_created"] = list(created)
+            plan["files_to_modify"] = modified
+            plan["files_modified"] = list(modified)
+            plan["would_change"] = sorted(set(created + modified))
+
+            for label in deleted:
+                plan["findings"].append(_finding("error", label, "migration would delete an existing file", "preservation"))
+            for label in sorted(set(created + modified)):
+                if not _is_managed_control(label, catalog):
+                    plan["findings"].append(_finding("error", label, "migration would modify personal or custom content", "preservation"))
+
+            preservation = _preservation_report(
+                source_bytes, proposed_bytes, catalog, supplied, stage
+            )
+            if not preservation["ok"]:
+                plan["findings"].append(_finding("error", "", "proposed migration does not preserve personal or custom content", "preservation"))
+
+            validation = _validate_proposed_state(stage)
+            plan["proposed_validation"] = validation
+            plan["proposed_snapshot_id"] = str(
+                validation.get("deep", {}).get("snapshot_id", "")
+            )
+            if not validation.get("ok"):
+                for item in validation.get("errors", []):
+                    plan["findings"].append(
+                        _finding(
+                            "error",
+                            str(item.get("path", "")),
+                            str(item.get("message", "proposed-state validation failed")),
+                            "proposed-validation",
+                        )
+                    )
+
+            # A plan is only predictive if the source remained unchanged while
+            # the staging state was constructed.
+            current_snapshot = snapshot_id(supplied)
+            if current_snapshot != source_snapshot:
+                plan["findings"].append(
+                    _finding(
+                        "error",
+                        "",
+                        "source vault changed while migration plan was being built; re-plan required",
+                        "snapshot-drift",
+                        planned_snapshot=source_snapshot,
+                        current_snapshot=current_snapshot,
+                    )
+                )
+
+            plan["_planned_updates"] = {
+                label: proposed_bytes[label] for label in sorted(set(created + modified))
+            }
+            plan["_proposed_bytes"] = proposed_bytes
+            plan["_stage_sync"] = {
+                "before": sync_before,
+                "write": sync_write,
+                "after": sync_after,
+            }
+        except Exception as error:  # pragma: no cover - active writes remain blocked
+            plan["findings"].append(
+                _finding("error", "", f"could not construct proposed migration state: {error}", "proposed-state")
+            )
+
+    plan["files_intentionally_preserved"] = sorted(
+        label
+        for label in source_bytes
+        if label not in set(plan.get("modified", []))
+        and label not in set(plan.get("created", []))
+    )
+    plan["files_preserved"] = list(plan["files_intentionally_preserved"])
+    plan["personal_pages_preserved"] = [
+        label
+        for label in plan["files_intentionally_preserved"]
+        if not _is_managed_control(label, catalog)
+    ]
+    plan["custom_areas_preserved"] = _custom_area_names(supplied, catalog)
+    plan["warnings"] = [
+        item for item in plan["findings"] if item.get("severity") in {"warning", "info"}
+    ]
+    errors = [item for item in plan["findings"] if item.get("severity") == "error"]
+    plan["write_ready"] = not errors and bool(plan.get("proposed_validation", {}).get("ok"))
+    plan["status"] = "planned" if plan["write_ready"] else "blocked"
+    return plan
+
+
+def plan_migration(vault: Path) -> Dict[str, Any]:
+    """Build a complete read-only migration plan."""
+
+    return _plan_migration(vault.expanduser())
+
+
+def _write_temp_sibling(path: Path, content: bytes, suffix: str = "") -> Path:
+    descriptor, name = tempfile.mkstemp(
+        prefix=f".{path.name}.migrate-",
+        suffix=suffix,
+        dir=str(path.parent),
+    )
+    temporary = Path(name)
+    try:
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(content)
+            handle.flush()
+            os.fsync(handle.fileno())
+        try:
+            mode = path.stat().st_mode & 0o777
+            os.chmod(temporary, mode)
+        except (OSError, NotImplementedError):
+            pass
+    except BaseException:
+        try:
+            os.close(descriptor)
+        except OSError:
+            pass
+        try:
+            temporary.unlink()
+        except OSError:
+            pass
+        raise
+    return temporary
+
+
+def _cleanup_temporary(paths: Iterable[Path]) -> List[str]:
+    failures: List[str] = []
+    for path in paths:
+        try:
+            path.unlink(missing_ok=True)
+        except OSError as error:
+            failures.append(f"{path}: {error}")
+    return failures
+
+
+def _ensure_parent(path: Path, vault: Path, created: List[Path]) -> None:
+    missing: List[Path] = []
+    current = path.parent
+    while current != vault and not current.exists():
+        missing.append(current)
+        current = current.parent
+    if current != vault and (current.is_symlink() or not current.is_dir()):
+        raise OSError(f"migration parent is not a real directory: {current}")
+    for directory in reversed(missing):
+        directory.mkdir()
+        created.append(directory)
+
+
+def _verify_rollback(transaction: Mapping[str, Any]) -> List[str]:
+    failures: List[str] = []
+    originals: Mapping[Path, Optional[bytes]] = transaction.get("originals", {})
+    for path, original in originals.items():
+        try:
+            if original is None:
+                if path.exists() or path.is_symlink():
+                    failures.append(f"{path}: newly created file remains")
+            elif not path.is_file() or path.read_bytes() != original:
+                failures.append(f"{path}: original bytes were not restored")
+        except OSError as error:
+            failures.append(f"{path}: unable to verify rollback: {error}")
+    for directory in transaction.get("created_dirs", []):
+        if directory.exists():
+            failures.append(f"{directory}: newly created directory remains")
+    return failures
+
+
+def _rollback_transaction(transaction: Mapping[str, Any]) -> Dict[str, Any]:
+    replaced = list(transaction.get("replaced", []))
+    originals: Mapping[Path, Optional[bytes]] = transaction.get("originals", {})
+    temporary: List[Path] = []
+    failures: List[str] = []
+    for path in reversed(replaced):
+        original = originals.get(path)
+        try:
+            if original is None:
+                path.unlink(missing_ok=True)
+            else:
+                rollback = _write_temp_sibling(path, original, suffix="-rollback")
+                temporary.append(rollback)
+                os.replace(rollback, path)
+                temporary.remove(rollback)
+        except Exception as error:
+            failures.append(f"{path}: {error}")
+    failures.extend(_cleanup_temporary(temporary))
+
+    for directory in sorted(transaction.get("created_dirs", []), key=lambda item: len(item.parts), reverse=True):
+        try:
+            directory.rmdir()
+        except FileNotFoundError:
+            pass
+        except OSError as error:
+            failures.append(f"{directory}: {error}")
+    failures.extend(_verify_rollback(transaction))
+    return {
+        "status": "rolled-back" if not failures else "rollback-failed",
+        "ok": not failures,
+        "failures": failures,
+    }
+
+
+def _replace_planned_files(vault: Path, updates: Mapping[str, bytes]) -> Dict[str, Any]:
+    originals: Dict[Path, Optional[bytes]] = {}
+    temporary: List[Path] = []
+    temporary_by_path: Dict[Path, Path] = {}
+    replaced: List[Path] = []
+    created_dirs: List[Path] = []
+    try:
+        paths = {vault / label: content for label, content in updates.items()}
+        ordered_paths = sorted(paths, key=lambda item: item.as_posix())
+        for path in ordered_paths:
+            if path.is_symlink() or (path.exists() and not path.is_file()):
+                raise OSError(f"migration target is not a regular file: {path}")
+            originals[path] = path.read_bytes() if path.exists() else None
+            _ensure_parent(path, vault, created_dirs)
+        for path in ordered_paths:
+            temporary_path = _write_temp_sibling(path, paths[path])
+            temporary.append(temporary_path)
+            temporary_by_path[path] = temporary_path
+        for path in ordered_paths:
+            temporary_path = temporary_by_path[path]
+            os.replace(temporary_path, path)
+            temporary.remove(temporary_path)
+            replaced.append(path)
+        return {
+            "ok": True,
+            "replaced": replaced,
+            "originals": originals,
+            "created_dirs": created_dirs,
+            "temporary": temporary,
+        }
+    except Exception as error:
+        cleanup_failures = _cleanup_temporary(temporary)
+        transaction = {
+            "replaced": replaced,
+            "originals": originals,
+            "created_dirs": created_dirs,
+        }
+        rollback = _rollback_transaction(transaction)
+        failures = [str(error)] + cleanup_failures + rollback.get("failures", [])
+        return {
+            "ok": False,
+            "error": str(error),
+            "replaced": replaced,
+            "originals": originals,
+            "created_dirs": created_dirs,
+            "temporary": [],
+            "rollback": rollback,
+            "failures": failures,
+        }
+
+
+def _public_value(value: Any) -> Any:
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, dict):
+        return {
+            str(key): _public_value(item)
+            for key, item in value.items()
+            if not str(key).startswith("_")
+        }
+    if isinstance(value, (list, tuple)):
+        return [_public_value(item) for item in value]
+    return value
+
+
+def _error_findings(result: Mapping[str, Any]) -> List[Mapping[str, Any]]:
+    return [
+        item
+        for item in result.get("findings", [])
+        if isinstance(item, Mapping) and item.get("severity") == "error"
+    ]
+
+
 def apply_migration(vault: Path) -> Dict[str, Any]:
+    """Validate, back up, atomically apply, and validate a migration."""
+
     plan = plan_migration(vault)
     if plan.get("from_schema") != "0.1":
         return plan
-    if any(item.get("severity") == "error" for item in plan.get("findings", [])):
+    if not plan.get("write_ready"):
         return plan
-    vault = vault.expanduser()
+
+    supplied = Path(str(plan.get("_vault_path", vault))).expanduser()
+    expected_snapshot = str(plan.get("source_snapshot_id", ""))
     try:
-        backup_path, removed = backup_vault.create_backup(vault)
-    except backup_vault.BackupError as error:
-        plan["findings"].append({"severity": "error", "path": "backups/", "message": f"pre-write backup failed: {error}"})
+        current_snapshot = snapshot_id(supplied)
+    except (OSError, ValueError, RuntimeError) as error:
+        plan["findings"].append(_finding("error", "", f"unable to verify source snapshot: {error}", "snapshot-drift"))
+        plan["status"] = "blocked"
+        plan["write_ready"] = False
+        return plan
+    plan["current_snapshot_before_backup"] = current_snapshot
+    if current_snapshot != expected_snapshot:
+        plan["findings"].append(
+            _finding(
+                "error",
+                "",
+                "source vault changed after planning; migration stopped and must be re-planned",
+                "snapshot-drift",
+                planned_snapshot=expected_snapshot,
+                current_snapshot=current_snapshot,
+            )
+        )
+        plan["status"] = "stale-plan"
+        plan["write_ready"] = False
         return plan
 
-    schema_path = vault / "SCHEMA.md"
-    schema_text = schema_path.read_text(encoding="utf-8")
-    contracts = [
-        {"id": item.split("@", 1)[0], "version": int(item.split("@", 1)[1])}
-        for item in plan["enabled_vertical_contracts"]
-    ]
-    changed: List[str] = []
-    schema_path.write_text(_schema_with_contracts(schema_text, contracts), encoding="utf-8")
-    changed.append("SCHEMA.md")
-    catalog = load_vertical_catalog()
-    additions = _ensure_root_links(vault, contracts, catalog)
-    if additions:
-        changed.append("index.md")
+    try:
+        backup_path, removed = backup_vault.create_backup(supplied)
+        backup_path = Path(backup_path)
+        if not backup_path.is_file():
+            raise backup_vault.BackupError(
+                f"backup helper returned a path that does not exist: {backup_path}"
+            )
+    except Exception as error:
+        plan["findings"].append(
+            _finding("error", "backups/", f"pre-write backup failed: {error}", "backup")
+        )
+        plan["status"] = "blocked"
+        plan["write_ready"] = False
+        return plan
 
-    sync_result = sync_indexes.synchronize(vault, write=True)
-    changed.extend(item for item in sync_result.get("changed", []) if item not in changed)
-    plan.update(
-        {
-            "backup": str(backup_path),
-            "removed_backups": [str(path) for path in removed],
-            "changed": changed,
-            "sync": sync_result,
+    plan["backup"] = str(backup_path)
+    plan["removed_backups"] = [str(path) for path in removed]
+    try:
+        after_backup_snapshot = snapshot_id(supplied)
+    except (OSError, ValueError, RuntimeError) as error:
+        after_backup_snapshot = ""
+        plan["findings"].append(_finding("error", "", f"unable to verify snapshot after backup: {error}", "snapshot-drift"))
+    if after_backup_snapshot != expected_snapshot:
+        plan["findings"].append(
+            _finding(
+                "error",
+                "",
+                "source vault changed before the first active write; backup preserved and migration stopped",
+                "snapshot-drift",
+                planned_snapshot=expected_snapshot,
+                current_snapshot=after_backup_snapshot,
+            )
+        )
+        plan["status"] = "stale-plan"
+        plan["write_ready"] = False
+        plan["rollback"] = {"status": "not-needed", "ok": True}
+        return plan
+
+    updates = plan.get("_planned_updates", {})
+    if not isinstance(updates, dict):
+        plan["findings"].append(_finding("error", "", "migration plan has no complete planned byte set", "plan"))
+        plan["status"] = "failed"
+        plan["write_ready"] = False
+        return plan
+
+    transaction = _replace_planned_files(supplied, updates)
+    if not transaction.get("ok"):
+        plan["findings"].append(
+            _finding(
+                "error",
+                "",
+                f"active-vault replacement failed: {transaction.get('error', 'unknown error')}",
+                "migration-write",
+            )
+        )
+        plan["rollback"] = transaction.get("rollback", {"status": "unknown", "ok": False})
+        plan["status"] = "failed"
+        plan["write_ready"] = False
+        plan["changed"] = []
+        return plan
+
+    try:
+        post_validation = _validate_active_state(supplied, plan)
+    except Exception as error:  # pragma: no cover - rollback safety boundary
+        post_validation = {
+            "ok": False,
+            "errors": [{"path": "", "message": str(error)}],
         }
+    expected_final_snapshot = str(plan.get("proposed_snapshot_id", ""))
+    actual_final_snapshot = str(
+        post_validation.get("deep", {}).get("snapshot_id", "")
     )
-    if any(item.get("severity") == "error" for item in sync_result.get("findings", [])):
-        plan["findings"].append({"severity": "error", "path": "", "message": "post-migration catalog synchronization failed"})
+    if expected_final_snapshot and actual_final_snapshot != expected_final_snapshot:
+        post_validation["ok"] = False
+        post_validation.setdefault("errors", []).append(
+            {
+                "path": "",
+                "message": "active vault bytes differ from the validated proposed state",
+            }
+        )
+    plan["post_write_validation"] = post_validation
+    if not post_validation.get("ok"):
+        rollback = _rollback_transaction(transaction)
+        plan["rollback"] = rollback
+        plan["findings"].append(
+            _finding(
+                "error",
+                "",
+                "post-write validation failed; active-vault changes were rolled back",
+                "post-write-validation",
+            )
+        )
+        for item in post_validation.get("errors", []):
+            plan["findings"].append(
+                _finding(
+                    "error",
+                    str(item.get("path", "")),
+                    str(item.get("message", "post-write validation failed")),
+                    "post-write-validation",
+                )
+            )
+        if not rollback.get("ok"):
+            plan["findings"].append(
+                _finding("error", "", "rollback did not complete; restore from the reported backup", "rollback")
+            )
+        plan["status"] = "failed"
+        plan["write_ready"] = False
+        plan["changed"] = []
+        return plan
+
+    plan["rollback"] = {"status": "not-needed", "ok": True}
+    plan["changed"] = sorted(updates)
+    plan["applied_changed"] = sorted(updates)
+    plan["status"] = "success"
+    plan["write_ready"] = False
     return plan
 
 
 def main(argv: Optional[List[str]] = None) -> int:
-    parser = argparse.ArgumentParser(description="Plan or explicitly migrate a SelfContext vault to schema 0.2")
+    parser = argparse.ArgumentParser(
+        description="Plan or explicitly migrate a SelfContext vault to schema 0.2"
+    )
     parser.add_argument("vault", nargs="?", default="vault")
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--check", action="store_true", help="read-only migration plan")
-    mode.add_argument("--write", action="store_true", help="create a backup and apply the migration")
+    mode.add_argument("--write", action="store_true", help="create one backup and apply the migration")
     parser.add_argument("--format", choices=("text", "json"), default="text")
     args = parser.parse_args(argv)
     result = apply_migration(Path(args.vault)) if args.write else plan_migration(Path(args.vault))
+    public = _public_value(result)
     if args.format == "json":
-        print(json.dumps(result, indent=2, sort_keys=True))
+        print(json.dumps(public, indent=2, sort_keys=True))
     else:
-        for item in result.get("findings", []):
+        for item in public.get("findings", []):
             prefix = str(item.get("severity", "info")).upper()
             location = f"{item.get('path')}: " if item.get("path") else ""
             print(f"{prefix}: {location}{item.get('message', '')}")
-        if result.get("backup"):
-            print(f"Backup: {result['backup']}")
-        if result.get("changed"):
-            print("Changed: " + ", ".join(result["changed"]))
-        elif not result.get("findings"):
-            print("No migration changes needed")
-    return 1 if any(item.get("severity") == "error" for item in result.get("findings", [])) else 0
+        if public.get("backup"):
+            print(f"Backup: {public['backup']}")
+        if public.get("changed"):
+            print("Changed: " + ", ".join(public["changed"]))
+        elif public.get("status") == "already-migrated":
+            print("No migration changes needed; vault already uses schema 0.2")
+        elif public.get("status") == "planned":
+            print("Migration plan is valid; no active-vault writes performed")
+    return 1 if _error_findings(public) else 0
 
 
 if __name__ == "__main__":

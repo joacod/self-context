@@ -248,7 +248,11 @@ def _ordinary_findings(root: Path, today: date.date) -> List[Dict[str, Any]]:
                     _finding("error", "links", f"broken link: {destination}", relative)
                 )
 
-        if is_control_page(path, root):
+        if is_control_page(path, root) or _is_custom_top_level(path, root):
+            # Custom top-level areas retain their own portable taxonomy. Keep
+            # universal link safety above, but do not require SelfContext page
+            # frontmatter or managed metadata for content the migration must
+            # preserve rather than reinterpret.
             continue
         fields, frontmatter_errors, _ = parse_frontmatter_text(text)
         for problem in frontmatter_errors:
