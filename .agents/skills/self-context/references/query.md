@@ -15,6 +15,24 @@ Search is only a retrieval aid: inspect provenance, freshness, status, and
 source links before answering. A vertical filter and explicit source,
 archived, and superseded inclusion flags are available.
 
+## Deep-lint inventory versus search output
+
+Deep-lint JSON is a deterministic maintenance inventory, not a second evidence
+store. Use its compact page metadata to batch pages, compare ownership, select
+provenance and stale-source candidates, and triage index/link relationships
+before opening full files. Its `tags` and aliases are selection aids only; they
+do not establish a personal claim. `outbound_links` and `inbound_links` are
+ordinary internal navigation, while `source_relationships` is reserved for
+frontmatter `sources` and remains a provenance pointer without authority or
+truth scoring. A newer linked timestamp is a review candidate, not an automatic
+rewrite instruction.
+
+Search output may include a strictly bounded snippet to help answer a targeted
+query. Do not copy those snippets, complete bodies, source transcripts, or task
+packets into deep-lint JSON or a retained deep-review report. The inventory
+points to evidence files; it does not replace reading the relevant page when
+content is needed.
+
 Use this procedure for retrieval, comparison, synthesis, or evidence gathering.
 
 ## Targeted Retrieval
