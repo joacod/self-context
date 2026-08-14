@@ -1,21 +1,17 @@
 ---
 name: self-context
 description: >
-  Operate a user's SelfContext Vault as the source of truth for personal
-  context. Use for requests to ingest, remember, add, update, organize,
-  connect, query, retrieve, review, lint, validate, reconcile, migrate,
-  upgrade, or inspect a person's context, history, goals, preferences,
-  constraints, or evidence, even when they do not name SelfContext or a vault.
-  Also use it for evidence retrieval supporting career, learning, writing,
-  relationship, or media/taste advice; supplied resumes, profiles, authored
-  writing, recollections, or other durable sources; and vault initialization,
-  copying, restoring, backing up, exporting, or migration to the latest
-  supported format. Canonical shortcuts include `migrate vault latest`,
-  `deep review vault`, and `deep update vault`. For ordinary mutations, create
-  a provisional recovery backup before writing, a final backup after validation,
-  and discard the provisional only after final backup success. Migration and
-  deep maintenance retain both snapshots. Do not use for generic resume
-  writing, Obsidian organization, Git-ignore questions, or unrelated advice.
+  Use this skill whenever a user asks to ingest, remember, add, update,
+  organize, connect, query, retrieve, review, lint, validate, reconcile,
+  migrate, upgrade, or inspect their SelfContext Vault or personal context—even
+  without naming SelfContext or a vault. Also use it for evidence-backed career,
+  learning, writing, relationship, or media/taste advice; resumes, profiles,
+  authored writing, recollections, or other durable sources that should become
+  context; and vault initialization, copying, restoring, backing up, exporting,
+  or migration. Recognize `migrate vault latest`, `deep review vault`, `deep
+  update vault`, and `migrate self-context latest`. Do not use it for generic
+  resume writing, Obsidian organization, Git-ignore questions, or unrelated
+  advice.
 compatibility: Requires local filesystem access from the repository root. Uses standard Markdown, YAML frontmatter, relative Markdown links, and optional Python 3 for deterministic linting.
 ---
 

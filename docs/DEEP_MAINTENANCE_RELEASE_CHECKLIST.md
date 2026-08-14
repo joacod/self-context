@@ -7,7 +7,7 @@ not use the ignored real `vault/` as a mutation target.
 ## Repository gates
 
 - [ ] Run the canonical dependency-free validation:
-  `python3 scripts/validate_repo.py`.
+  `python3 scripts/validate_repo.py` (including Agent Skill metadata budgets).
 - [ ] Run direct unittest discovery:
   `python3 -m unittest discover -s tests -p 'test_*.py'`.
 - [ ] Parse every tracked JSON file:
