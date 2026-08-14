@@ -386,5 +386,9 @@
   {
     "query": "Bring this fictional documentation repository up to date without using personal context.",
     "should_trigger": false
+  },
+  {
+    "query": "migrate self-context latest",
+    "should_trigger": true
   }
 ]

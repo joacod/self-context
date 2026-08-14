@@ -11,8 +11,9 @@ description: >
   specialized reasoning. Also use it for resume text, recollections, profiles,
   authored writing, or other sources that should become durable personal
   context, and for initializing, copying, restoring, backing up, exporting, or
-  bringing a Context Vault up to the latest supported format. Before any
-  ordinary vault write, create the local retained backup described below; schema
+  bringing a Context Vault up to the latest supported format, including the
+  shorthand `migrate self-context latest`. Before any ordinary vault write,
+  create the local retained backup described below; schema
   migration is the exception because its helper owns exactly one pre-write
   backup. Do not use it for generic resume writing, generic Obsidian
   organization, Git ignore questions, or advice unrelated to the user's vault.
@@ -100,8 +101,9 @@ Infer the operation from natural language:
 - **Migrate vault:** assess or apply deterministic schema migrations through the
   canonical [migration procedure](references/migration.md). Recognize intent
   such as “migrate my vault,” “upgrade my old vault,” “bring my vault up to
-  date,” “use the latest SelfContext format,” or “apply all supported vault
-  migrations,” even when the user does not say “schema.”
+  date,” “use the latest SelfContext format,” “apply all supported vault
+  migrations,” or the shorthand `migrate self-context latest`, even when the
+  user does not say “schema.”
 - **Deep review:** perform the explicit, read-only full-vault maintenance
   protocol; it needs no backup, never applies migration, and creates no report
   unless retention is asked.

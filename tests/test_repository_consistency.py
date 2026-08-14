@@ -189,6 +189,7 @@ class RepositoryConsistencyTests(unittest.TestCase):
         procedure = procedure_path.read_text(encoding="utf-8")
         self.assertTrue(procedure_path.is_file())
         self.assertIn("Migrate vault", skill)
+        self.assertIn("migrate self-context latest", skill.casefold())
         self.assertIn("references/migration.md", skill)
         self.assertIn("migration is the exception", skill.casefold())
         self.assertIn("--check", procedure)
@@ -215,6 +216,7 @@ class RepositoryConsistencyTests(unittest.TestCase):
             "Deep lint my vault.",
             "Deep update my old vault.",
             "Update my Writing vertical contract using only its documented migration.",
+            "migrate self-context latest",
         }
         self.assertTrue(required.issubset(prompts))
 

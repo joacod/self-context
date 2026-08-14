@@ -987,6 +987,18 @@
         "Custom and ambiguous areas are preserved and reported rather than reclassified silently."
       ],
       "files": []
+    },
+    {
+      "id": 89,
+      "prompt": "migrate self-context latest",
+      "expected_output": "The short natural-language form triggers the SelfContext migration workflow and resolves latest through the repository registry.",
+      "expectations": [
+        "The SelfContext skill triggers from the lowercase shorthand.",
+        "latest resolves to the repository's latest supported schema rather than a hard-coded version.",
+        "The authorized flow plans first, lets the helper own exactly one backup, and validates the final state.",
+        "A blocked or ambiguous plan stops before active-vault writes."
+      ],
+      "files": []
     }
   ]
 }

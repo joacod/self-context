@@ -25,6 +25,7 @@ what does my context say about [a skill or experience]?
 review my context for stale or conflicting information
 based on my context, how should I position myself for [a role]?
 Migrate my SelfContext vault to the latest supported schema.
+migrate self-context latest
 ```
 
 For migration, SelfContext plans first, stops safely when the plan is blocked,
