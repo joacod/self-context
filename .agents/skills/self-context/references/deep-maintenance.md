@@ -38,6 +38,19 @@ vertical,” “assess whether my vault should adopt Media / Taste,” or “upd
 Writing vertical contract” selects the matching procedure. Ordinary targeted
 review remains targeted.
 
+The canonical short forms are:
+
+- `deep review vault`: run the full read-only maintenance review and return its
+  bounded plan without a backup or active-vault mutation.
+- `deep update vault`: authorize the bounded update after a review plan has been
+  examined and approved. Apply safe structural changes and only semantic
+  proposals explicitly approved by the user; if no approved plan is available,
+  stop and request a reviewed, approved plan before mutating.
+
+Run `deep review vault` before `deep update vault`. The update shorthand is an
+authorization for the existing deep-update procedure, not permission to invent
+facts, approve semantic proposals implicitly, or rerun schema migration.
+
 Never treat model confidence as verification. Deep maintenance never resolves
 contradictions, changes goals or preferences, promotes inferences, deletes or
 redacts context, infers sensitive third-party information, or enables a

@@ -25,7 +25,7 @@ what does my context say about [a skill or experience]?
 review my context for stale or conflicting information
 based on my context, how should I position myself for [a role]?
 Migrate my SelfContext vault to the latest supported schema.
-migrate self-context latest
+migrate vault latest
 ```
 
 For migration, SelfContext plans first, stops safely when the plan is blocked,
@@ -33,6 +33,19 @@ creates one backup before writing, applies the supported migration chain, and
 validates and rolls back when necessary. The user does not need to know schema
 versions, migration paths, backup commands, index synchronization, or lint
 commands.
+
+After a schema or maintenance improvement, use these three copy-paste shortcuts
+in order:
+
+```text
+migrate vault latest
+deep review vault
+deep update vault
+```
+
+`deep review vault` is read-only and returns a bounded plan. After reviewing and
+approving that plan, `deep update vault` applies the canonical deep-update
+procedure. These are natural-language shortcuts; no custom CLI is required.
 
 The skills infer whether the request is for ingest, query, targeted review,
 ordinary lint, deep lint, migration assessment or application, read-only deep
