@@ -141,5 +141,6 @@ are deterministic, disposable aids rather than canonical storage.
 - [Architecture](docs/ARCHITECTURE.md): boundaries and lifecycle details.
 - [Roadmap](docs/ROADMAP.md): current scope and future experiments.
 - [Deep Maintenance Protocol](.agents/skills/self-context/references/deep-maintenance.md): explicit maintenance modes.
+- [Deep Maintenance Release Checklist](docs/DEEP_MAINTENANCE_RELEASE_CHECKLIST.md): repeatable stabilization validation.
 - [Build record](docs/BUILD_PLAN.md): historical bootstrap phases and validation
   history.

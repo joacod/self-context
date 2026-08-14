@@ -9,19 +9,21 @@ collision that reduced execution from 43 discovered cases to 35.
 
 from __future__ import annotations
 
-import json
-import os
-import subprocess
 import sys
 import unittest
 from pathlib import Path
 from typing import Iterable, List, Tuple
 
+try:
+    from validate_json import validate_tracked_json as _validate_tracked_json
+except ImportError:  # pragma: no cover - package-style import fallback
+    from .validate_json import validate_tracked_json as _validate_tracked_json  # type: ignore
+
 
 ROOT = Path(__file__).resolve().parents[1]
 TESTS_DIR = ROOT / "tests"
 TEST_PATTERN = "test_*.py"
-CURRENT_EXPECTED_TESTS = 88
+CURRENT_EXPECTED_TESTS = 113
 MIN_EXPECTED_TESTS = 40
 EXPECTED_DEEP_LINT_TESTS = 15
 
@@ -55,48 +57,24 @@ def discover_tests() -> Tuple[unittest.TestSuite, List[unittest.case.TestCase]]:
     return suite, list(iter_test_cases(suite))
 
 
-def tracked_json_paths() -> List[Path]:
-    result = subprocess.run(
-        ["git", "ls-files", "-z", "--", "*.json"],
-        cwd=ROOT,
-        capture_output=True,
-        check=False,
-    )
-    if result.returncode != 0:
-        detail = result.stderr.decode(errors="replace").strip()
-        raise RuntimeError(detail or "git ls-files failed")
-    return [
-        ROOT / Path(os.fsdecode(raw_path))
-        for raw_path in result.stdout.split(b"\0")
-        if raw_path
-    ]
-
-
-def reject_non_json_constant(value: str) -> None:
-    raise ValueError(f"invalid JSON constant: {value}")
-
-
 def validate_tracked_json() -> List[str]:
-    paths = tracked_json_paths()
-    problems: List[str] = []
-    for path in paths:
-        label = path.relative_to(ROOT).as_posix()
-        try:
-            with path.open(encoding="utf-8") as handle:
-                json.load(handle, parse_constant=reject_non_json_constant)
-        except json.JSONDecodeError as error:
-            problems.append(
-                f"{label}: line {error.lineno}, column {error.colno}: {error.msg}"
-            )
-        except (OSError, UnicodeError, ValueError) as error:
-            problems.append(f"{label}: {error}")
-
+    problems = _validate_tracked_json(ROOT)
     if problems:
         for problem in problems:
             print(f"[FAIL] tracked JSON: {problem}")
     else:
-        print(f"[PASS] tracked JSON: {len(paths)} files parsed")
+        # Keep the canonical validator's existing output stable while the
+        # standalone JSON gate is also usable by CI.
+        print(f"[PASS] tracked JSON: {len(_tracked_json_paths())} files parsed")
     return problems
+
+
+def _tracked_json_paths() -> List[Path]:
+    """Return the same tracked set for the canonical summary line."""
+
+    import validate_json
+
+    return validate_json.tracked_json_paths(ROOT)
 
 
 def main() -> int:
