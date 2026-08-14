@@ -68,12 +68,12 @@ class BackupVaultTests(unittest.TestCase):
             vault = root / "vault"
             vault.mkdir()
             page = vault / "page.md"
-            page.write_text("before\n", encoding="utf-8")
+            page.write_bytes(b"before\n")
 
             provisional_result = self.run_backup(vault)
             self.assertEqual(provisional_result.returncode, 0, provisional_result.stderr)
             provisional = next((root / "backups").glob("vault-*.zip"))
-            page.write_text("after\n", encoding="utf-8")
+            page.write_bytes(b"after\n")
             final_result = self.run_backup(vault)
             self.assertEqual(final_result.returncode, 0, final_result.stderr)
             final = next(path for path in (root / "backups").glob("vault-*.zip") if path != provisional)
