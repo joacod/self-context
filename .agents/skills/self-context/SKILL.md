@@ -1,20 +1,17 @@
 ---
 name: self-context
 description: >
-  Operate a user's SelfContext Vault as the source of truth for personal
-  context. Use to ingest, remember, add, update, organize, connect, query,
-  retrieve, review, lint, validate, reconcile, migrate, upgrade, or inspect
-  context, history, goals, preferences, constraints, or evidence, even without
-  naming SelfContext or a vault. Also use for career, learning, writing,
-  relationship, or media/taste evidence retrieval; resumes, profiles, writing,
-  recollections, and other durable sources; and vault initialization, copying,
-  restoring, backing up, exporting, or latest-format migration. Shortcuts
-  include `migrate vault latest`, `deep review vault`, `deep update vault`, and
-  `migrate self-context latest`. For ordinary mutations, create a provisional
-  recovery backup before writing and a final backup after validation; discard
-  the provisional only after success. Migration and deep maintenance retain
-  both snapshots. Not for generic resume writing, Obsidian organization,
-  Git-ignore questions, or unrelated advice.
+  Use this skill whenever a user asks to ingest, remember, add, update,
+  organize, connect, query, retrieve, review, lint, validate, reconcile,
+  migrate, upgrade, or inspect their SelfContext Vault or personal context—even
+  without naming SelfContext or a vault. Also use it for evidence-backed career,
+  learning, writing, relationship, or media/taste advice; resumes, profiles,
+  authored writing, recollections, or other durable sources that should become
+  context; and vault initialization, copying, restoring, backing up, exporting,
+  or migration. Recognize `migrate vault latest`, `deep review vault`, `deep
+  update vault`, and `migrate self-context latest`. Do not use it for generic
+  resume writing, Obsidian organization, Git-ignore questions, or unrelated
+  advice.
 compatibility: Requires local filesystem access from the repository root. Uses standard Markdown, YAML frontmatter, relative Markdown links, and optional Python 3 for deterministic linting.
 ---
 
