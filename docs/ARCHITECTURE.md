@@ -275,7 +275,7 @@ The SelfContext skill recognizes natural-language intent and applies a lifecycle
 2. **Query** through orientation, indexes, targeted file search, metadata, and link traversal. A trivial retrieval returns an answer without creating a page; a substantial reusable synthesis or explicitly retained future-use guidance may be stored under derived material after a duplicate, ownership, contradiction, and freshness check. Review status and freshness before using context as current.
 3. **Review** unresolved inferences, stale context, contradictions, ambiguous claims, missing provenance, and important changes needing attention.
 4. **Lint** structural and epistemic integrity, including frontmatter, links, indexes, duplicates, metadata consistency, freshness, and schema drift. Lint and deep lint never migrate.
-5. **Migrate** through the canonical migration procedure when the user requests an assessment or explicitly authorizes an upgrade. The natural-language workflow plans first and delegates the single backup and transaction to the migration helper.
+5. **Migrate** through the canonical migration procedure when the user requests an assessment or explicitly authorizes an upgrade. The natural-language workflow plans first and delegates the recovery/final backup lifecycle and transaction to the migration helper.
 6. **Advise** through an Advisor Pack that retrieves evidence from the core skill and applies a domain-specific reasoning framework.
 7. **Maintain** through ordinary lint, deterministic deep lint, read-only deep review, and explicitly authorized deep update. Deep review uses snapshots and bounded semantic passes but never writes by default. Deep update does not silently migrate an old schema.
 
