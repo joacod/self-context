@@ -254,8 +254,15 @@ def create_backup(
         for old_backup in removed:
             old_backup.unlink()
     except OSError as error:
+        try:
+            destination.unlink(missing_ok=True)
+        except OSError as cleanup_error:
+            raise BackupError(
+                f"created {destination}, but could not enforce {RETENTION_LIMIT}-backup retention "
+                f"or remove the new archive: {cleanup_error}"
+            ) from error
         raise BackupError(
-            f"created {destination}, but could not enforce {RETENTION_LIMIT}-backup retention"
+            f"could not enforce {RETENTION_LIMIT}-backup retention; removed new archive {destination}"
         ) from error
 
     return destination, removed

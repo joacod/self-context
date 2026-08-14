@@ -1,3 +1,4 @@
+import importlib.util
 import os
 import stat
 import subprocess
@@ -5,6 +6,7 @@ import sys
 import tempfile
 import unittest
 import zipfile
+from unittest import mock
 from pathlib import Path
 
 
@@ -14,6 +16,14 @@ LINT_SCRIPT = REPOSITORY_ROOT / ".agents/skills/self-context/scripts/lint_vault.
 
 
 class BackupVaultTests(unittest.TestCase):
+    def backup_module(self):
+        spec = importlib.util.spec_from_file_location("backup_vault_under_test", BACKUP_SCRIPT)
+        self.assertIsNotNone(spec)
+        self.assertIsNotNone(spec.loader)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
     def run_backup(self, vault: Path, *arguments: str) -> subprocess.CompletedProcess:
         return subprocess.run(
             [sys.executable, str(BACKUP_SCRIPT), str(vault), *arguments],
@@ -109,6 +119,32 @@ class BackupVaultTests(unittest.TestCase):
             self.assertTrue((backup_dir / "vault-20000102T000000Z.zip").exists())
             self.assertTrue((backup_dir / "vault-20000110T000000Z.zip").exists())
             self.assertTrue(unrelated_file.is_file())
+
+    def test_retention_failure_removes_new_archive(self) -> None:
+        module = self.backup_module()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            vault = root / "vault"
+            vault.mkdir()
+            (vault / "page.md").write_text("synthetic\n", encoding="utf-8")
+            backup_dir = root / "backups"
+            backup_dir.mkdir()
+            old = backup_dir / "vault-20000101T000000Z.zip"
+            old.write_bytes(b"old")
+            for number in range(2, 11):
+                (backup_dir / f"vault-200001{number:02d}T000000Z.zip").write_bytes(b"old")
+            class FailingBackup:
+                def unlink(self):
+                    raise OSError("injected retention failure")
+
+            managed = [FailingBackup(), *([old] * 10)]
+            with mock.patch.object(module, "_managed_backups", return_value=managed):
+                with self.assertRaises(module.BackupError):
+                    module.create_backup(vault)
+
+            self.assertFalse(any(path.name.startswith(".vault-backup-") for path in backup_dir.iterdir()))
+            self.assertEqual(len(list(backup_dir.glob("vault-*.zip"))), 10)
+            self.assertFalse(any(path.name.endswith("-01.zip") for path in backup_dir.glob("vault-*.zip")))
 
     def test_discard_removes_only_a_managed_backup(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
