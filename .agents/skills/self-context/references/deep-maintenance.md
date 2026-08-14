@@ -251,3 +251,11 @@ it exists. A packet is not evidence and does not change the owning vertical.
 For retained packets, use `type: synthesis`,
 `assertion_kind: derived_synthesis`, provenance links, and a clear derived
 label.
+
+## Stabilization validation handoff
+
+The repeatable repository-level evidence for these boundaries is maintained in
+[the Deep Maintenance Release Checklist](../../../../docs/DEEP_MAINTENANCE_RELEASE_CHECKLIST.md).
+It uses fictional temporary vaults and copied mutation targets; it is a release
+validation aid, not a new deep-maintenance runtime or a substitute for the
+authorization rules above.
