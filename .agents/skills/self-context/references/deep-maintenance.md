@@ -45,7 +45,7 @@ The canonical short forms are:
 - `deep update vault`: authorize the bounded update after a review plan has been
   examined and approved. Apply safe structural changes and only semantic
   proposals explicitly approved by the user; if no approved plan is available,
-  obtain or produce that review boundary before mutating.
+  stop and request a reviewed, approved plan before mutating.
 
 Run `deep review vault` before `deep update vault`. The update shorthand is an
 authorization for the existing deep-update procedure, not permission to invent
