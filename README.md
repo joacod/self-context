@@ -168,5 +168,6 @@ are deterministic, disposable aids rather than canonical storage.
 - [Deep Maintenance Protocol](.agents/skills/self-context/references/deep-maintenance.md): explicit maintenance modes.
 - [Vault Migration](.agents/skills/self-context/references/migration.md): first-class natural-language schema migration.
 - [Deep Maintenance Release Checklist](docs/DEEP_MAINTENANCE_RELEASE_CHECKLIST.md): repeatable stabilization validation.
+- [SelfContext Skill Maintenance](docs/SELF_CONTEXT_SKILL_MAINTENANCE.md): progressive disclosure, metadata budgets, and extension guidance.
 - [Build record](docs/BUILD_PLAN.md): historical bootstrap phases and validation
   history.
