@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Plan and transactionally apply the explicit schema 0.1 -> 0.2 migration."""
+"""Plan and transactionally apply supported SelfContext schema migrations."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ import shutil
 import sys
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 try:
     import backup_vault
@@ -57,8 +57,227 @@ SCHEMA_SECTION_LINE = re.compile(
     r"^[ \t]*vertical_contracts:[^\r\n]*$", re.MULTILINE
 )
 MIGRATION_OPERATION = "migrate_schema_0_1_to_0_2"
+LATEST_SUPPORTED_SCHEMA = "0.2"
 ROOT_CONTROL_FILES = {"SCHEMA.md", "index.md", "log.md"}
 NON_CANONICAL_ROOTS = {".obsidian", "backups", ".DS_Store"}
+SCHEMA_VERSION_LINE = re.compile(
+    r"^[ \t]*schema_version:[ \t]*([^\s#]+)[ \t]*(?:#.*)?$", re.MULTILINE
+)
+
+
+class MigrationRegistryError(ValueError):
+    """A migration registry cannot safely resolve the requested path."""
+
+    def __init__(self, code: str, message: str) -> None:
+        super().__init__(message)
+        self.code = code
+        self.message = message
+
+
+class MigrationEdge:
+    """One deterministic schema transition in a migration graph.
+
+    ``planner`` is read-only and must return a staged proposed state using the
+    same private byte-set keys as the built-in planner.  The optional validators
+    let unit tests model future, not-yet-supported edges without declaring a
+    production schema version or weakening the production validator.
+    """
+
+    def __init__(
+        self,
+        source: Any,
+        target: Any,
+        planner: Callable[[Path], Dict[str, Any]],
+        *,
+        validator: Optional[Callable[[Path], Dict[str, Any]]] = None,
+        active_validator: Optional[Callable[[Path, Mapping[str, Any]], Dict[str, Any]]] = None,
+        name: Optional[str] = None,
+    ) -> None:
+        self.source = _schema_label(source)
+        self.target = _schema_label(target)
+        self.planner = planner
+        self.validator = validator
+        self.active_validator = active_validator
+        self.name = name or f"{self.source}->{self.target}"
+
+    @property
+    def label(self) -> str:
+        return f"{self.source}->{self.target}"
+
+
+def _schema_label(value: Any) -> str:
+    if isinstance(value, tuple) and len(value) == 2:
+        return f"{int(value[0])}.{int(value[1])}"
+    if isinstance(value, str) and value.strip():
+        return value.strip()
+    raise ValueError(f"invalid schema label: {value!r}")
+
+
+def _numeric_schema_label(value: str) -> Optional[Tuple[int, int]]:
+    match = re.fullmatch(r"(\d+)\.(\d+)", value)
+    if not match:
+        return None
+    return int(match.group(1)), int(match.group(2))
+
+
+def _is_future_schema(value: str, latest: str) -> bool:
+    current_number = _numeric_schema_label(value)
+    latest_number = _numeric_schema_label(latest)
+    return bool(current_number and latest_number and current_number > latest_number)
+
+
+class MigrationRegistry:
+    """Dependency-free directed graph for supported schema migrations."""
+
+    def __init__(self, latest: Any, edges: Iterable[MigrationEdge]) -> None:
+        self.latest = _schema_label(latest)
+        self.edges = tuple(edges)
+
+    @property
+    def latest_supported_schema(self) -> str:
+        return self.latest
+
+    @property
+    def supported_versions(self) -> List[str]:
+        return sorted(
+            {self.latest, *(edge.source for edge in self.edges), *(edge.target for edge in self.edges)},
+            key=lambda value: (_numeric_schema_label(value) is None, _numeric_schema_label(value) or (0, 0), value),
+        )
+
+    def validation_findings(self) -> List[Dict[str, Any]]:
+        findings: List[Dict[str, Any]] = []
+        seen: Dict[Tuple[str, str], str] = {}
+        adjacency: Dict[str, List[MigrationEdge]] = {}
+        nodes = {self.latest}
+        for edge in self.edges:
+            nodes.update((edge.source, edge.target))
+            key = (edge.source, edge.target)
+            if key in seen:
+                findings.append(
+                    _finding(
+                        "error",
+                        "",
+                        f"duplicate migration edge {edge.label} ({seen[key]} and {edge.name})",
+                        "migration-registry",
+                        code="duplicate-edge",
+                    )
+                )
+            else:
+                seen[key] = edge.name
+            if edge.source == edge.target:
+                findings.append(
+                    _finding(
+                        "error",
+                        "",
+                        f"migration edge cannot point to itself: {edge.label}",
+                        "migration-registry",
+                        code="cycle",
+                    )
+                )
+            adjacency.setdefault(edge.source, []).append(edge)
+
+        for source in adjacency:
+            adjacency[source].sort(key=lambda edge: (edge.target, edge.name))
+
+        visit_state: Dict[str, int] = {}
+        cycle_keys: set[Tuple[str, str]] = set()
+
+        def visit(node: str) -> None:
+            visit_state[node] = 1
+            for edge in adjacency.get(node, []):
+                state = visit_state.get(edge.target, 0)
+                if state == 1:
+                    cycle = (node, edge.target)
+                    if cycle not in cycle_keys:
+                        cycle_keys.add(cycle)
+                        findings.append(
+                            _finding(
+                                "error",
+                                "",
+                                f"cyclic migration graph includes {edge.label}",
+                                "migration-registry",
+                                code="cycle",
+                            )
+                        )
+                elif state == 0:
+                    visit(edge.target)
+            visit_state[node] = 2
+
+        for node in sorted(nodes):
+            if visit_state.get(node, 0) == 0:
+                visit(node)
+
+        if self.latest not in nodes:
+            findings.append(
+                _finding(
+                    "error",
+                    "",
+                    f"latest supported schema is not represented: {self.latest}",
+                    "migration-registry",
+                    code="missing-latest",
+                )
+            )
+        return findings
+
+    def validate(self) -> List[str]:
+        """Return deterministic human-readable registry validation errors."""
+
+        return [str(item["message"]) for item in self.validation_findings()]
+
+    def resolve_path(self, source: Any, target: Any) -> List[MigrationEdge]:
+        source_label = _schema_label(source)
+        target_label = self.latest if _schema_label(target) == "latest" else _schema_label(target)
+        findings = self.validation_findings()
+        if findings:
+            raise MigrationRegistryError("invalid-registry", "; ".join(self.validate()))
+        if target_label not in self.supported_versions:
+            raise MigrationRegistryError(
+                "unsupported-target",
+                f"unsupported migration target schema: {target_label}",
+            )
+        if _is_future_schema(source_label, self.latest):
+            raise MigrationRegistryError(
+                "future-schema",
+                f"vault declares future unsupported schema: {source_label}",
+            )
+        if source_label not in self.supported_versions:
+            raise MigrationRegistryError(
+                "missing-path",
+                f"no migration path starts at schema {source_label}",
+            )
+        if source_label == target_label:
+            return []
+
+        adjacency: Dict[str, List[MigrationEdge]] = {}
+        for edge in self.edges:
+            adjacency.setdefault(edge.source, []).append(edge)
+        for source_edges in adjacency.values():
+            source_edges.sort(key=lambda edge: (edge.target, edge.name))
+
+        queue: List[Tuple[str, List[MigrationEdge]]] = [(source_label, [])]
+        visited = {source_label}
+        while queue:
+            node, path = queue.pop(0)
+            for edge in adjacency.get(node, []):
+                candidate = path + [edge]
+                if edge.target == target_label:
+                    return candidate
+                if edge.target not in visited:
+                    visited.add(edge.target)
+                    queue.append((edge.target, candidate))
+        raise MigrationRegistryError(
+            "missing-path",
+            f"no complete migration path from schema {source_label} to {target_label}",
+        )
+
+
+def default_migration_registry() -> MigrationRegistry:
+    """Return the production registry; test-only registries stay injectable."""
+
+    return MigrationRegistry(
+        LATEST_SUPPORTED_SCHEMA,
+        (MigrationEdge("0.1", "0.2", _plan_0_1_to_0_2, name="schema-0.1-to-0.2"),),
+    )
 
 
 def _finding(
@@ -687,7 +906,7 @@ def _stage_write(stage: Path, label: str, content: bytes) -> None:
     path.write_bytes(content)
 
 
-def _plan_migration(vault: Path) -> Dict[str, Any]:
+def _plan_0_1_to_0_2(vault: Path) -> Dict[str, Any]:
     supplied = vault.expanduser()
     resolved_label = str(supplied.resolve()) if supplied.exists() else str(supplied)
     plan: Dict[str, Any] = {
@@ -1034,10 +1253,489 @@ def _plan_migration(vault: Path) -> Dict[str, Any]:
     return plan
 
 
-def plan_migration(vault: Path) -> Dict[str, Any]:
-    """Build a complete read-only migration plan."""
+def _empty_registry_plan(
+    vault: Path, target: Any, registry: MigrationRegistry
+) -> Dict[str, Any]:
+    supplied = vault.expanduser()
+    target_text = str(target if target is not None else "latest")
+    return {
+        "vault": str(supplied.resolve()) if supplied.exists() else str(supplied),
+        "_vault_path": str(supplied),
+        "from_schema": None,
+        "to_schema": None,
+        "current_schema": None,
+        "source_schema_version": None,
+        "source_schema": None,
+        "target_schema_version": target_text,
+        "target_schema": target_text,
+        "requested_target": target_text,
+        "latest_supported_schema": registry.latest_supported_schema,
+        "supported_target_schemas": registry.supported_versions,
+        "migration_path": [],
+        "migration_edges": [],
+        "source_snapshot_id": "",
+        "source_snapshot": "",
+        "snapshot_id": "",
+        "proposed_snapshot_id": "",
+        "proposed_final_snapshot_id": "",
+        "proposed_final_snapshot": "",
+        "inference": None,
+        "inferred_enabled_verticals": [],
+        "inferred_verticals": [],
+        "enabled_vertical_contracts": [],
+        "ambiguous_vertical_findings": [],
+        "ambiguous_findings": [],
+        "custom_area_findings": [],
+        "custom_findings": [],
+        "schema_changes": [],
+        "missing_vertical_indexes": [],
+        "missing_indexes_to_create": [],
+        "root_index_links_to_add": [],
+        "root_links_to_add": [],
+        "catalog_blocks_to_add_or_synchronize": [],
+        "catalog_blocks": [],
+        "catalog_block_changes": [],
+        "files_to_modify": [],
+        "files_modified": [],
+        "files_to_create": [],
+        "files_created": [],
+        "files_intentionally_preserved": [],
+        "files_preserved": [],
+        "personal_pages_preserved": [],
+        "custom_areas_preserved": [],
+        "warnings": [],
+        "human_decisions": [],
+        "findings": [],
+        "blocking_findings": [],
+        "would_change": [],
+        "modified": [],
+        "created": [],
+        "migration_needed": False,
+        "already_current": False,
+        "registry_valid": False,
+        "plan_valid": False,
+        "status": "blocked",
+        "write_ready": False,
+    }
 
-    return _plan_migration(vault.expanduser())
+
+def _blocking_findings(result: Mapping[str, Any]) -> List[Mapping[str, Any]]:
+    return [
+        item
+        for item in result.get("findings", [])
+        if isinstance(item, Mapping) and item.get("severity") == "error"
+    ]
+
+
+def _set_plan_summary(
+    plan: Dict[str, Any],
+    source: str,
+    target: str,
+    path: Sequence[MigrationEdge],
+    registry: MigrationRegistry,
+) -> Dict[str, Any]:
+    path_labels = [source]
+    path_labels.extend(edge.target for edge in path)
+    plan["current_schema"] = source
+    plan["from_schema"] = source
+    plan["to_schema"] = target
+    plan["source_schema_version"] = source
+    plan["source_schema"] = source
+    plan["target_schema"] = target
+    plan["target_schema_version"] = target
+    plan["migration_path"] = path_labels
+    plan["migration_edges"] = [
+        {"source": edge.source, "target": edge.target, "label": edge.label, "name": edge.name}
+        for edge in path
+    ]
+    plan["latest_supported_schema"] = registry.latest_supported_schema
+    plan["supported_target_schemas"] = registry.supported_versions
+    plan["migration_needed"] = bool(path)
+    plan["already_current"] = not path
+    plan["blocking_findings"] = list(_blocking_findings(plan))
+    plan["plan_valid"] = not plan["blocking_findings"] and (
+        not path or bool(plan.get("proposed_validation", {}).get("ok"))
+    )
+    return plan
+
+
+def _mark_blocked(plan: Dict[str, Any]) -> Dict[str, Any]:
+    plan["blocking_findings"] = list(_blocking_findings(plan))
+    plan["warnings"] = [
+        item for item in plan.get("findings", [])
+        if isinstance(item, Mapping) and item.get("severity") in {"warning", "info"}
+    ]
+    plan["write_ready"] = False
+    plan["plan_valid"] = False
+    plan["status"] = "blocked"
+    return plan
+
+
+def _no_op_plan(
+    plan: Dict[str, Any],
+    source: str,
+    target: str,
+    registry: MigrationRegistry,
+    source_bytes: Mapping[str, bytes],
+    vault: Path,
+) -> Dict[str, Any]:
+    _set_plan_summary(plan, source, target, [], registry)
+    plan["already_current"] = True
+    plan["migration_needed"] = False
+    plan["plan_valid"] = True
+    plan["status"] = "already-migrated"
+    plan["write_ready"] = False
+    plan["findings"].append(
+        _finding(
+            "info",
+            "SCHEMA.md",
+            f"vault already uses schema {target}; migration is a no-op",
+            "already-current",
+        )
+    )
+    plan["files_intentionally_preserved"] = sorted(source_bytes)
+    plan["files_preserved"] = list(plan["files_intentionally_preserved"])
+    try:
+        catalog = load_vertical_catalog()
+        plan["custom_areas_preserved"] = _custom_area_names(vault, catalog)
+        plan["personal_pages_preserved"] = [
+            label for label in source_bytes if not _is_managed_control(label, catalog)
+        ]
+    except Exception:
+        # No-op reporting must not turn a valid read-only assessment into a
+        # write or a second failure when the optional catalog is unavailable.
+        pass
+    plan["blocking_findings"] = []
+    plan["warnings"] = list(plan["findings"])
+    return plan
+
+
+def _stage_apply_proposed_bytes(stage: Path, proposed: Mapping[str, bytes]) -> None:
+    current = _canonical_bytes(stage)
+    created, modified, deleted = _diff_bytes(current, proposed)
+    if deleted:
+        raise ValueError("migration edge would delete staged files: " + ", ".join(deleted))
+    for label in sorted(set(created + modified)):
+        path = stage / label
+        if path.is_symlink() or (path.exists() and not path.is_file()):
+            raise OSError(f"staged migration target is not a regular file: {path}")
+        _stage_write(stage, label, proposed[label])
+
+
+def _edge_proposed_bytes(stage: Path, result: Mapping[str, Any]) -> Dict[str, bytes]:
+    proposed = result.get("_proposed_bytes")
+    if isinstance(proposed, Mapping):
+        return {str(label): bytes(content) for label, content in proposed.items()}
+    updates = result.get("_planned_updates")
+    if not isinstance(updates, Mapping):
+        raise ValueError("migration edge did not return a complete proposed byte set")
+    proposed_bytes = _canonical_bytes(stage)
+    for label, content in updates.items():
+        proposed_bytes[str(label)] = bytes(content)
+    return proposed_bytes
+
+
+def _chain_plan(
+    vault: Path,
+    plan: Dict[str, Any],
+    source: str,
+    target: str,
+    path: Sequence[MigrationEdge],
+    source_bytes: Mapping[str, bytes],
+    registry: MigrationRegistry,
+) -> Dict[str, Any]:
+    edge_summaries: List[Dict[str, Any]] = []
+    plan["_source_bytes"] = dict(source_bytes)
+    plan["_vault_path"] = str(vault)
+    findings: List[Dict[str, Any]] = list(plan.get("findings", []))
+    final_validator: Optional[Callable[[Path], Dict[str, Any]]] = None
+    active_validator: Optional[Callable[[Path, Mapping[str, Any]], Dict[str, Any]]] = None
+
+    with tempfile.TemporaryDirectory(prefix="selfcontext-migration-chain-") as temporary:
+        stage = Path(temporary) / "vault"
+        try:
+            shutil.copytree(vault, stage, symlinks=True)
+            for edge in path:
+                step = edge.planner(stage)
+                if not isinstance(step, Mapping):
+                    raise ValueError(f"migration edge {edge.label} returned no plan")
+                step_findings = [
+                    dict(item)
+                    for item in step.get("findings", [])
+                    if isinstance(item, Mapping)
+                ]
+                findings.extend(step_findings)
+                edge_summaries.append(
+                    {
+                        "source": edge.source,
+                        "target": edge.target,
+                        "label": edge.label,
+                        "name": edge.name,
+                        "status": step.get("status"),
+                        "write_ready": bool(step.get("write_ready")),
+                        "files_to_create": list(step.get("files_to_create", [])),
+                        "files_to_modify": list(step.get("files_to_modify", [])),
+                    }
+                )
+                if _blocking_findings(step) or not step.get("write_ready"):
+                    if not _blocking_findings(step):
+                        findings.append(
+                            _finding(
+                                "error",
+                                "",
+                                f"migration edge {edge.label} is not write-ready",
+                                "migration-edge",
+                            )
+                        )
+                    plan["findings"] = findings
+                    plan["edge_plans"] = edge_summaries
+                    return _mark_blocked(plan)
+                _stage_apply_proposed_bytes(stage, _edge_proposed_bytes(stage, step))
+                final_validator = edge.validator
+                active_validator = edge.active_validator
+
+            proposed_bytes = _canonical_bytes(stage)
+            created, modified, deleted = _diff_bytes(source_bytes, proposed_bytes)
+            for label in deleted:
+                findings.append(
+                    _finding("error", label, "migration would delete an existing file", "preservation")
+                )
+
+            catalog = load_vertical_catalog()
+            for label in sorted(set(created + modified)):
+                if not _is_managed_control(label, catalog):
+                    findings.append(
+                        _finding(
+                            "error",
+                            label,
+                            "migration would modify personal or custom content",
+                            "preservation",
+                        )
+                    )
+            preservation = _preservation_report(
+                source_bytes, proposed_bytes, catalog, vault, stage
+            )
+            if not preservation["ok"]:
+                findings.append(
+                    _finding(
+                        "error",
+                        "",
+                        "proposed migration does not preserve personal or custom content",
+                        "preservation",
+                    )
+                )
+
+            validator = final_validator or _validate_proposed_state
+            validation = validator(stage)
+            plan["proposed_validation"] = validation
+            if not validation.get("ok"):
+                for item in validation.get("errors", []):
+                    findings.append(
+                        _finding(
+                            "error",
+                            str(item.get("path", "")),
+                            str(item.get("message", "proposed-state validation failed")),
+                            "proposed-validation",
+                        )
+                    )
+
+            if snapshot_id(vault) != plan.get("source_snapshot_id"):
+                findings.append(
+                    _finding(
+                        "error",
+                        "",
+                        "source vault changed while migration plan was being built; re-plan required",
+                        "snapshot-drift",
+                        planned_snapshot=plan.get("source_snapshot_id"),
+                        current_snapshot=snapshot_id(vault),
+                    )
+                )
+
+            final_snapshot = snapshot_id(stage)
+            plan["proposed_snapshot_id"] = final_snapshot
+            plan["proposed_final_snapshot_id"] = final_snapshot
+            plan["proposed_final_snapshot"] = final_snapshot
+            plan["_planned_updates"] = {
+                label: proposed_bytes[label] for label in sorted(set(created + modified))
+            }
+            plan["_proposed_bytes"] = proposed_bytes
+            plan["preservation"] = preservation
+            plan["created"] = created
+            plan["modified"] = modified
+            plan["files_to_create"] = created
+            plan["files_created"] = list(created)
+            plan["files_to_modify"] = modified
+            plan["files_modified"] = list(modified)
+            plan["would_change"] = sorted(set(created + modified))
+            plan["files_intentionally_preserved"] = sorted(
+                label for label in source_bytes if label not in set(created + modified)
+            )
+            plan["files_preserved"] = list(plan["files_intentionally_preserved"])
+            plan["personal_pages_preserved"] = [
+                label
+                for label in plan["files_intentionally_preserved"]
+                if not _is_managed_control(label, catalog)
+            ]
+            plan["custom_areas_preserved"] = _custom_area_names(vault, catalog)
+        except Exception as error:
+            findings.append(
+                _finding(
+                    "error",
+                    "",
+                    f"could not construct proposed migration state: {error}",
+                    "proposed-state",
+                )
+            )
+
+    plan["findings"] = findings
+    plan["edge_plans"] = edge_summaries
+    plan["_active_validator"] = active_validator or _validate_active_state
+    plan["warnings"] = [
+        item for item in findings if item.get("severity") in {"warning", "info"}
+    ]
+    errors = [item for item in findings if item.get("severity") == "error"]
+    plan["write_ready"] = not errors and bool(plan.get("proposed_validation", {}).get("ok"))
+    plan["status"] = "planned" if plan["write_ready"] else "blocked"
+    plan["plan_valid"] = plan["write_ready"]
+    plan["blocking_findings"] = list(_blocking_findings(plan))
+    _set_plan_summary(plan, source, target, path, registry)
+    plan["plan_valid"] = plan["write_ready"]
+    return plan
+
+
+def plan_migration(
+    vault: Path,
+    target: Any = "latest",
+    registry: Optional[MigrationRegistry] = None,
+) -> Dict[str, Any]:
+    """Build a complete read-only plan from the detected schema to ``target``."""
+
+    supplied = vault.expanduser()
+    migration_registry = registry or default_migration_registry()
+    plan = _empty_registry_plan(supplied, target, migration_registry)
+    registry_findings = migration_registry.validation_findings()
+    plan["registry_validation"] = registry_findings
+    plan["registry_valid"] = not registry_findings
+    plan["findings"].extend(registry_findings)
+    if registry_findings:
+        return _mark_blocked(plan)
+
+    if supplied.is_symlink():
+        plan["findings"].append(
+            _finding("error", str(supplied), "vault path must not be a symlink", "vault")
+        )
+        return _mark_blocked(plan)
+    if not supplied.exists() or not supplied.is_dir():
+        plan["findings"].append(
+            _finding("error", str(supplied), "vault path must be an existing directory", "vault")
+        )
+        return _mark_blocked(plan)
+
+    try:
+        source_snapshot = snapshot_id(supplied)
+        source_bytes = _canonical_bytes(supplied)
+    except (OSError, ValueError, RuntimeError) as error:
+        plan["findings"].append(
+            _finding("error", "", f"unable to snapshot source vault: {error}", "snapshot")
+        )
+        return _mark_blocked(plan)
+    plan["source_snapshot_id"] = source_snapshot
+    plan["source_snapshot"] = source_snapshot
+    plan["snapshot_id"] = source_snapshot
+    plan["_source_bytes"] = source_bytes
+
+    schema = parse_schema(supplied)
+    plan["from_schema"] = schema.get("version_text")
+    plan["current_schema"] = schema.get("version_text")
+    plan["source_schema_version"] = schema.get("version_text")
+    plan["source_schema"] = schema.get("version_text")
+    schema_lines = list(SCHEMA_VERSION_LINE.finditer(str(schema.get("text", ""))))
+    if schema.get("error"):
+        plan["findings"].append(_finding("error", "SCHEMA.md", str(schema["error"]), "schema"))
+    if len(schema_lines) != 1:
+        plan["findings"].append(
+            _finding(
+                "error",
+                "SCHEMA.md",
+                "SCHEMA.md must contain exactly one schema_version declaration",
+                "schema",
+            )
+        )
+    if schema.get("version") is None:
+        plan["findings"].append(
+            _finding("error", "SCHEMA.md", "unable to identify a supported schema version", "schema")
+        )
+    for error in schema.get("contract_errors", []):
+        plan["findings"].append(_finding("error", "SCHEMA.md", str(error), "schema"))
+    if schema.get("version") == (0, 2) and not schema.get("contract_section_present"):
+        plan["findings"].append(
+            _finding(
+                "error",
+                "SCHEMA.md",
+                "schema 0.2 must declare vertical_contracts",
+                "schema",
+            )
+        )
+    if _blocking_findings(plan):
+        return _mark_blocked(plan)
+
+    current = str(schema.get("version_text"))
+    requested_target = str(target if target is not None else "latest").strip()
+    target_label = migration_registry.latest_supported_schema if requested_target == "latest" else requested_target
+    plan["requested_target"] = requested_target
+    plan["target_schema"] = target_label
+    plan["target_schema_version"] = target_label
+    if _is_future_schema(current, migration_registry.latest_supported_schema):
+        plan["findings"].append(
+            _finding(
+                "error",
+                "SCHEMA.md",
+                f"vault declares future unsupported schema: {current}",
+                "future-schema",
+                code="future-schema",
+            )
+        )
+        return _mark_blocked(plan)
+    try:
+        path = migration_registry.resolve_path(current, target_label)
+    except MigrationRegistryError as error:
+        plan["findings"].append(
+            _finding("error", "SCHEMA.md", error.message, error.code, code=error.code)
+        )
+        return _mark_blocked(plan)
+
+    if not path:
+        return _no_op_plan(plan, current, target_label, migration_registry, source_bytes, supplied)
+
+    _set_plan_summary(plan, current, target_label, path, migration_registry)
+    if len(path) == 1 and path[0].planner is _plan_0_1_to_0_2:
+        result = path[0].planner(supplied)
+        result["_source_bytes"] = source_bytes
+        result["_vault_path"] = str(supplied)
+        result["_active_validator"] = path[0].active_validator or _validate_active_state
+        result["registry_validation"] = registry_findings
+        result["registry_valid"] = True
+        _set_plan_summary(result, current, target_label, path, migration_registry)
+        result["proposed_final_snapshot_id"] = str(
+            result.get("proposed_snapshot_id", "")
+        )
+        result["proposed_final_snapshot"] = result["proposed_final_snapshot_id"]
+        result["migration_needed"] = True
+        result["already_current"] = False
+        result["blocking_findings"] = list(_blocking_findings(result))
+        result["plan_valid"] = not result["blocking_findings"] and bool(
+            result.get("proposed_validation", {}).get("ok")
+        )
+        return result
+    return _chain_plan(
+        supplied,
+        plan,
+        current,
+        target_label,
+        path,
+        source_bytes,
+        migration_registry,
+    )
 
 
 def _write_temp_sibling(path: Path, content: bytes, suffix: str = "") -> Path:
@@ -1218,11 +1916,15 @@ def _error_findings(result: Mapping[str, Any]) -> List[Mapping[str, Any]]:
     ]
 
 
-def apply_migration(vault: Path) -> Dict[str, Any]:
-    """Validate, back up, atomically apply, and validate a migration."""
+def apply_migration(
+    vault: Path,
+    target: Any = "latest",
+    registry: Optional[MigrationRegistry] = None,
+) -> Dict[str, Any]:
+    """Validate, back up once, atomically apply, and validate a migration."""
 
-    plan = plan_migration(vault)
-    if plan.get("from_schema") != "0.1":
+    plan = plan_migration(vault, target=target, registry=registry)
+    if not plan.get("migration_needed", plan.get("from_schema") == "0.1"):
         return plan
     if not plan.get("write_ready"):
         return plan
@@ -1291,7 +1993,7 @@ def apply_migration(vault: Path) -> Dict[str, Any]:
         return plan
 
     updates = plan.get("_planned_updates", {})
-    if not isinstance(updates, dict):
+    if not isinstance(updates, Mapping):
         plan["findings"].append(_finding("error", "", "migration plan has no complete planned byte set", "plan"))
         plan["status"] = "failed"
         plan["write_ready"] = False
@@ -1314,15 +2016,25 @@ def apply_migration(vault: Path) -> Dict[str, Any]:
         return plan
 
     try:
-        post_validation = _validate_active_state(supplied, plan)
+        active_validator = plan.get("_active_validator")
+        if callable(active_validator):
+            post_validation = active_validator(supplied, plan)
+        else:
+            post_validation = _validate_active_state(supplied, plan)
     except Exception as error:  # pragma: no cover - rollback safety boundary
         post_validation = {
             "ok": False,
             "errors": [{"path": "", "message": str(error)}],
         }
-    expected_final_snapshot = str(plan.get("proposed_snapshot_id", ""))
+    expected_final_snapshot = str(
+        plan.get("proposed_final_snapshot_id")
+        or plan.get("proposed_snapshot_id")
+        or ""
+    )
     actual_final_snapshot = str(
-        post_validation.get("deep", {}).get("snapshot_id", "")
+        post_validation.get("deep", {}).get("snapshot_id")
+        or post_validation.get("snapshot_id")
+        or snapshot_id(supplied)
     )
     if expected_final_snapshot and actual_final_snapshot != expected_final_snapshot:
         post_validation["ok"] = False
@@ -1365,22 +2077,34 @@ def apply_migration(vault: Path) -> Dict[str, Any]:
     plan["rollback"] = {"status": "not-needed", "ok": True}
     plan["changed"] = sorted(updates)
     plan["applied_changed"] = sorted(updates)
+    plan["migration_path_applied"] = list(plan.get("migration_path", []))
+    plan["migration_completed"] = True
     plan["status"] = "success"
     plan["write_ready"] = False
+    plan["blocking_findings"] = list(_blocking_findings(plan))
     return plan
 
 
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Plan or explicitly migrate a SelfContext vault to schema 0.2"
+        description="Plan or explicitly migrate a SelfContext vault to a supported target schema"
     )
     parser.add_argument("vault", nargs="?", default="vault")
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--check", action="store_true", help="read-only migration plan")
     mode.add_argument("--write", action="store_true", help="create one backup and apply the migration")
+    parser.add_argument(
+        "--target",
+        default="latest",
+        help="supported target schema label, or latest (default: latest)",
+    )
     parser.add_argument("--format", choices=("text", "json"), default="text")
     args = parser.parse_args(argv)
-    result = apply_migration(Path(args.vault)) if args.write else plan_migration(Path(args.vault))
+    result = (
+        apply_migration(Path(args.vault), target=args.target)
+        if args.write
+        else plan_migration(Path(args.vault), target=args.target)
+    )
     public = _public_value(result)
     if args.format == "json":
         print(json.dumps(public, indent=2, sort_keys=True))
@@ -1394,7 +2118,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         if public.get("changed"):
             print("Changed: " + ", ".join(public["changed"]))
         elif public.get("status") == "already-migrated":
-            print("No migration changes needed; vault already uses schema 0.2")
+            print(
+                "No migration changes needed; vault already uses "
+                + str(public.get("target_schema", "the requested schema"))
+            )
         elif public.get("status") == "planned":
             print("Migration plan is valid; no active-vault writes performed")
     return 1 if _error_findings(public) else 0

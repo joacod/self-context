@@ -5,6 +5,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Mapping
 from unittest import mock
 
 
@@ -90,9 +91,18 @@ class MigrateVaultTests(unittest.TestCase):
             )
         return vault
 
-    def run_migration(self, vault: Path, mode: str) -> subprocess.CompletedProcess:
+    def run_migration(
+        self,
+        vault: Path,
+        mode: str,
+        target: str | None = None,
+    ) -> subprocess.CompletedProcess:
+        command = [sys.executable, str(SCRIPT), mode, "--format", "json"]
+        if target is not None:
+            command.extend(["--target", target])
+        command.append(str(vault))
         return subprocess.run(
-            [sys.executable, str(SCRIPT), mode, "--format", "json", str(vault)],
+            command,
             capture_output=True,
             text=True,
             check=False,
@@ -124,6 +134,57 @@ class MigrateVaultTests(unittest.TestCase):
 
     def backup_files(self, root: Path) -> list[Path]:
         return sorted((root / "backups").glob("vault-*.zip")) if (root / "backups").exists() else []
+
+    def make_current(self, root: Path) -> Path:
+        vault = self.make_legacy(root)
+        (vault / "SCHEMA.md").write_text(
+            "# Synthetic Current Schema\n\nschema_version: 0.2\n"
+            "vertical_contracts:\n  - career@1\n",
+            encoding="utf-8",
+        )
+        return vault
+
+    def make_multi_step_registry(self, module):
+        def test_only_planner(stage: Path) -> dict:
+            before = module._canonical_bytes(stage)
+            updated = before["SCHEMA.md"].replace(
+                b"schema_version: 0.2", b"schema_version: test-only-0.3"
+            )
+            proposed = dict(before)
+            proposed["SCHEMA.md"] = updated
+            return {
+                "status": "planned",
+                "write_ready": True,
+                "findings": [],
+                "_planned_updates": {"SCHEMA.md": updated},
+                "_proposed_bytes": proposed,
+            }
+
+        def validate(stage: Path) -> dict:
+            ok = b"schema_version: test-only-0.3" in (stage / "SCHEMA.md").read_bytes()
+            return {
+                "ok": ok,
+                "snapshot_id": module.snapshot_id(stage),
+                "errors": [] if ok else [{"path": "SCHEMA.md", "message": "test schema missing"}],
+            }
+
+        def active_validate(stage: Path, plan: dict) -> dict:
+            return validate(stage)
+
+        registry = module.MigrationRegistry(
+            "test-only-0.3",
+            (
+                module.MigrationEdge("0.1", "0.2", module._plan_0_1_to_0_2),
+                module.MigrationEdge(
+                    "0.2",
+                    "test-only-0.3",
+                    test_only_planner,
+                    validator=validate,
+                    active_validator=active_validate,
+                ),
+            ),
+        )
+        return registry
 
     def test_check_is_read_only_reports_plan_and_custom_area(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -366,6 +427,247 @@ class MigrateVaultTests(unittest.TestCase):
                 (vault / "log.md").read_text().count("- operation: migrate_schema_0_1_to_0_2"),
                 1,
             )
+
+    def test_explicit_target_0_2_and_omitted_target_default_to_latest(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            vault = self.make_legacy(root)
+            explicit = self.run_migration(vault, "--check", target="0.2")
+            self.assertEqual(explicit.returncode, 0, explicit.stdout + explicit.stderr)
+            explicit_report = json.loads(explicit.stdout)
+            self.assertEqual(explicit_report["current_schema"], "0.1")
+            self.assertEqual(explicit_report["target_schema"], "0.2")
+            self.assertEqual(explicit_report["migration_path"], ["0.1", "0.2"])
+            self.assertEqual(explicit_report["migration_edges"][0]["label"], "0.1->0.2")
+            self.assertEqual(explicit_report["latest_supported_schema"], "0.2")
+
+            omitted = self.run_migration(vault, "--check")
+            self.assertEqual(omitted.returncode, 0, omitted.stdout + omitted.stderr)
+            omitted_report = json.loads(omitted.stdout)
+            self.assertEqual(omitted_report["target_schema"], "0.2")
+            self.assertEqual(omitted_report["migration_path"], ["0.1", "0.2"])
+            self.assertEqual(self.backup_files(root), [])
+
+    def test_already_latest_is_a_no_op_without_backup_or_file_changes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            vault = self.make_current(root)
+            before = self.file_bytes(vault)
+            result = self.run_migration(vault, "--write", target="latest")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            report = json.loads(result.stdout)
+            self.assertEqual(report["status"], "already-migrated")
+            self.assertFalse(report["migration_needed"])
+            self.assertTrue(report["already_current"])
+            self.assertEqual(report["migration_path"], ["0.2"])
+            self.assertEqual(before, self.file_bytes(vault))
+            self.assertEqual(self.backup_files(root), [])
+
+    def test_migration_helper_owns_exactly_one_backup(self) -> None:
+        module = self.migration_module()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            vault = self.make_legacy(root)
+            with mock.patch.object(
+                module.backup_vault,
+                "create_backup",
+                wraps=module.backup_vault.create_backup,
+            ) as create_backup:
+                result = module.apply_migration(vault, target="latest")
+            self.assertEqual(result["status"], "success")
+            self.assertEqual(create_backup.call_count, 1)
+            self.assertEqual(len(self.backup_files(root)), 1)
+
+    def test_malformed_schema_blocks_before_backup_or_writes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            vault = self.make_legacy(root)
+            (vault / "SCHEMA.md").write_text(
+                "# Broken\n\nschema_version: 0.1\nschema_version: 0.1\n",
+                encoding="utf-8",
+            )
+            before = self.file_bytes(vault)
+            result = self.run_migration(vault, "--write")
+            self.assertNotEqual(result.returncode, 0)
+            report = json.loads(result.stdout)
+            self.assertEqual(report["status"], "blocked")
+            self.assertFalse(report["write_ready"])
+            self.assertTrue(any(item["classification"] == "schema" for item in report["findings"]))
+            self.assertEqual(before, self.file_bytes(vault))
+            self.assertEqual(self.backup_files(root), [])
+
+    def test_future_schema_blocks_before_backup_or_writes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            vault = self.make_legacy(root)
+            (vault / "SCHEMA.md").write_text(
+                "# Future\n\nschema_version: 0.3\n", encoding="utf-8"
+            )
+            before = self.file_bytes(vault)
+            result = self.run_migration(vault, "--write")
+            self.assertNotEqual(result.returncode, 0)
+            report = json.loads(result.stdout)
+            self.assertTrue(any(item["classification"] == "future-schema" for item in report["findings"]))
+            self.assertEqual(before, self.file_bytes(vault))
+            self.assertEqual(self.backup_files(root), [])
+
+    def test_unsupported_target_blocks_before_backup_or_writes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            vault = self.make_legacy(root)
+            before = self.file_bytes(vault)
+            result = self.run_migration(vault, "--write", target="0.3")
+            self.assertNotEqual(result.returncode, 0)
+            report = json.loads(result.stdout)
+            self.assertTrue(any(item["classification"] == "unsupported-target" for item in report["findings"]))
+            self.assertEqual(before, self.file_bytes(vault))
+            self.assertEqual(self.backup_files(root), [])
+
+    def test_missing_path_blocks_with_an_injected_registry(self) -> None:
+        module = self.migration_module()
+        noop = lambda stage: {"status": "planned", "write_ready": True, "findings": [], "_proposed_bytes": module._canonical_bytes(stage)}
+        registry = module.MigrationRegistry(
+            "test-only-0.3",
+            (module.MigrationEdge("0.2", "test-only-0.3", noop),),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            vault = self.make_legacy(root)
+            before = self.file_bytes(vault)
+            result = module.apply_migration(vault, target="test-only-0.3", registry=registry)
+            self.assertEqual(result["status"], "blocked")
+            self.assertTrue(any(item["classification"] == "missing-path" for item in result["findings"]))
+            self.assertEqual(before, self.file_bytes(vault))
+            self.assertEqual(self.backup_files(root), [])
+
+    def test_duplicate_edge_fails_registry_validation(self) -> None:
+        module = self.migration_module()
+        noop = lambda stage: {}
+        registry = module.MigrationRegistry(
+            "0.2",
+            (
+                module.MigrationEdge("0.1", "0.2", noop, name="first"),
+                module.MigrationEdge("0.1", "0.2", noop, name="duplicate"),
+            ),
+        )
+        findings = registry.validation_findings()
+        self.assertTrue(any(item.get("code") == "duplicate-edge" for item in findings))
+        self.assertTrue(registry.validate())
+
+    def test_cyclic_edge_graph_fails_registry_validation(self) -> None:
+        module = self.migration_module()
+        noop = lambda stage: {}
+        registry = module.MigrationRegistry(
+            "0.2",
+            (
+                module.MigrationEdge("0.1", "0.2", noop),
+                module.MigrationEdge("0.2", "0.1", noop),
+            ),
+        )
+        findings = registry.validation_findings()
+        self.assertTrue(any(item.get("code") == "cycle" for item in findings))
+        with self.assertRaises(module.MigrationRegistryError) as error:
+            registry.resolve_path("0.1", "0.2")
+        self.assertEqual(error.exception.code, "invalid-registry")
+
+    def test_registry_path_selection_is_deterministic(self) -> None:
+        module = self.migration_module()
+        noop = lambda stage: {}
+        edges = (
+            module.MigrationEdge("0.1", "0.4", noop),
+            module.MigrationEdge("0.4", "test-only-0.3", noop),
+            module.MigrationEdge("0.1", "0.3", noop),
+            module.MigrationEdge("0.3", "test-only-0.3", noop),
+        )
+        first = module.MigrationRegistry("test-only-0.3", edges)
+        second = module.MigrationRegistry("test-only-0.3", tuple(reversed(edges)))
+        first_path = [edge.label for edge in first.resolve_path("0.1", "latest")]
+        second_path = [edge.label for edge in second.resolve_path("0.1", "test-only-0.3")]
+        self.assertEqual(first_path, ["0.1->0.3", "0.3->test-only-0.3"])
+        self.assertEqual(first_path, second_path)
+
+    def test_multi_step_registry_plans_final_state_and_uses_one_transaction(self) -> None:
+        module = self.migration_module()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            vault = self.make_legacy(root, career_page=True)
+            before_page = (vault / "career" / "evidence.md").read_bytes()
+            before_custom = (vault / "custom-archive" / "historical.md").read_bytes()
+            registry = self.make_multi_step_registry(module)
+            original_replace = module._replace_planned_files
+
+            def assert_final_transaction(path: Path, updates: Mapping[str, bytes]) -> dict:
+                self.assertEqual(
+                    (path / "SCHEMA.md").read_text(encoding="utf-8").splitlines()[2],
+                    "schema_version: 0.1",
+                )
+                self.assertNotIn(b"test-only-0.3", (path / "SCHEMA.md").read_bytes())
+                return original_replace(path, updates)
+
+            with mock.patch.object(module, "_replace_planned_files", side_effect=assert_final_transaction) as replace:
+                result = module.apply_migration(
+                    vault, target="test-only-0.3", registry=registry
+                )
+            self.assertEqual(result["status"], "success")
+            self.assertEqual(result["migration_path"], ["0.1", "0.2", "test-only-0.3"])
+            self.assertEqual(result["migration_path_applied"], result["migration_path"])
+            self.assertEqual(replace.call_count, 1)
+            self.assertEqual(len(self.backup_files(root)), 1)
+            self.assertIn(b"schema_version: test-only-0.3", (vault / "SCHEMA.md").read_bytes())
+            self.assertEqual(before_page, (vault / "career" / "evidence.md").read_bytes())
+            self.assertEqual(before_custom, (vault / "custom-archive" / "historical.md").read_bytes())
+
+    def test_multi_step_staged_final_validation_failure_writes_nothing(self) -> None:
+        module = self.migration_module()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            vault = self.make_legacy(root)
+            before = self.file_bytes(vault)
+            registry = self.make_multi_step_registry(module)
+            registry.edges[-1].validator = lambda stage: {
+                "ok": False,
+                "errors": [{"path": "SCHEMA.md", "message": "injected final-state failure"}],
+            }
+            result = module.apply_migration(
+                vault, target="test-only-0.3", registry=registry
+            )
+            self.assertEqual(result["status"], "blocked")
+            self.assertEqual(before, self.file_bytes(vault))
+            self.assertEqual(self.backup_files(root), [])
+
+    def test_multi_step_replacement_failure_rolls_back_complete_chain(self) -> None:
+        module = self.migration_module()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            vault = self.make_legacy(root, career_page=True)
+            before = self.file_bytes(vault)
+            registry = self.make_multi_step_registry(module)
+            original_replace = module.os.replace
+            calls = {"count": 0}
+
+            def fail_second(source: str | Path, destination: str | Path) -> None:
+                calls["count"] += 1
+                if calls["count"] == 2:
+                    raise OSError("injected multi-step replacement failure")
+                original_replace(source, destination)
+
+            original_replace_planned = module._replace_planned_files
+
+            def with_injected_failure(path: Path, updates: Mapping[str, bytes]) -> dict:
+                with mock.patch.object(module.os, "replace", side_effect=fail_second):
+                    return original_replace_planned(path, updates)
+
+            with mock.patch.object(
+                module, "_replace_planned_files", side_effect=with_injected_failure
+            ):
+                result = module.apply_migration(
+                    vault, target="test-only-0.3", registry=registry
+                )
+            self.assertEqual(result["status"], "failed")
+            self.assertEqual(result["rollback"]["status"], "rolled-back")
+            self.assertEqual(before, self.file_bytes(vault))
+            self.assertEqual(len(self.backup_files(root)), 1)
+            self.assertFalse(any("migrate-" in path.name for path in vault.rglob(".*")))
 
 
 if __name__ == "__main__":
