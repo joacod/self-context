@@ -22,8 +22,8 @@ Learning owns:
 - qualitative knowledge states and the scope in which they apply;
 - meaningful gaps, unresolved questions, misconceptions, corrections, mental
   models, prerequisites, and personal concept relationships;
-- exercises, explanations, projects, and learning experiences when they are
-  evidence about understanding; and
+- exercises, explanations, project experiences, and learning experiences when
+  they are evidence about understanding; and
 - dated evidence that shows progression, uncertainty, or a changed model.
 
 Learning does not own:
@@ -33,15 +33,17 @@ Learning does not own:
 - generic facts or AI-generated explanations that do not say something about
   the person’s knowledge;
 - broad goals, habits, values, or cross-domain preferences owned by `core/`;
-- employment history, professional outcomes, or project ownership owned by
-  `career/`; or
+- employment history, professional outcomes, or initiative ownership owned by
+  `career/` or Ventures / Projects; or
 - authored communication behavior owned by `writing/`.
 
-A Career or Writing page can be evidence for a Learning claim. Link to that
-page instead of copying its record. Media / Taste owns a reaction to a book,
-film, podcast, or other work; Learning owns only what the person's reaction or
-work demonstrates about their understanding. Relationships owns the shared
-relationship context around a learning interaction. Neither vertical is
+A Career, Ventures, or Writing page can be evidence for a Learning claim. Link
+to that page instead of copying its record. Career owns professional outcomes;
+Ventures owns initiative lifecycle and project decisions; Writing owns
+communication behavior. Media / Taste owns a reaction to a book, film, podcast,
+or other work; Learning owns only what the person's reaction or work
+demonstrates about their understanding. Relationships owns the shared
+relationship context around a learning interaction. None of those verticals is
 implemented by this Learning procedure.
 
 ## Storage and page choices
@@ -265,9 +267,10 @@ scope differences.
 Stable cross-domain learning preferences may eventually belong in `core/` only
 when explicitly broad and deliberately promoted. A concept-level knowledge
 state, gap, or misconception remains in `learning/`. Career owns professional
-history and outcomes; Writing owns communication patterns; Learning may link
-both as evidence without duplicating them. Media / Taste and Relationships are
-future boundaries, not part of this implementation.
+history and outcomes; Ventures owns initiative lifecycle; Writing owns
+communication patterns; Learning may link all three as evidence without
+duplicating them. Media / Taste and Relationships retain their own distinct
+boundaries and are not implemented by this Learning procedure.
 
 Ordinary answers, explanations, and prerequisite suggestions remain ephemeral.
 A substantial reusable explanation or an explicitly retained recommendation may

@@ -402,5 +402,69 @@
   {
     "query": "migrate self-context latest",
     "should_trigger": true
+  },
+  {
+    "query": "I am building a small tool, changed its scope after a test, and want to preserve the project decision.",
+    "should_trigger": true
+  },
+  {
+    "query": "What initiatives are active in my context, and which ones are still just ideas or proposals?",
+    "should_trigger": true
+  },
+  {
+    "query": "A company proposed collaborating on my experiment. Capture the proposal without assuming an engagement.",
+    "should_trigger": true
+  },
+  {
+    "query": "Where did this project leave off, what did we decide, and which commitments are still open?",
+    "should_trigger": true
+  },
+  {
+    "query": "Compare these two opportunities using my time constraints and existing commitments.",
+    "should_trigger": true
+  },
+  {
+    "query": "I am dogfooding this prototype and one person tried it. What does that establish about adoption?",
+    "should_trigger": true
+  },
+  {
+    "query": "Keep my abandoned experiment as useful history rather than deleting it.",
+    "should_trigger": true
+  },
+  {
+    "query": "Review whether the current project status is stale and distinguish unknowns from false claims.",
+    "should_trigger": true
+  },
+  {
+    "query": "Prioritize which initiative deserves attention next using my documented constraints.",
+    "should_trigger": true
+  },
+  {
+    "query": "Create a derived task packet for deciding whether to continue a project, combining only relevant vertical evidence.",
+    "should_trigger": true
+  },
+  {
+    "query": "Create a generic Jira replacement with tasks, sprints, and burndown charts.",
+    "should_trigger": false
+  },
+  {
+    "query": "Turn my project contacts into a CRM and rank the strongest leads.",
+    "should_trigger": false
+  },
+  {
+    "query": "What did this project demonstrate professionally? Use my Career context only.",
+    "should_trigger": false
+  },
+  {
+    "query": "What do I actually understand about the technology I used? Use Learning context.",
+    "should_trigger": false
+  },
+  {
+    "query": "How do I know the collaborator on this project? Use Relationships context.",
+    "should_trigger": false
+  },
+  {
+    "query": "Give me generic startup strategy for an invented business without using my context.",
+    "should_trigger": false
   }
 ]

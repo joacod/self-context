@@ -60,9 +60,10 @@ vertical solely because it is available.
 ## Available, enabled, and applied contracts
 
 The repository catalog lists **available verticals**: verticals implemented by
-this repository and their current contract versions. A private vault has an
-**enabled vertical** in schema 0.2 only when `SCHEMA.md` records one applied
-`vertical@version` entry and its area, index, and root link are present. The
+this repository and their current contract versions, including Ventures /
+Projects. A private vault has an **enabled vertical** in schema 0.2 only when
+`SCHEMA.md` records one applied `vertical@version` entry and its area, index,
+and root link are present. The
 **applied contract version** is the exact version recorded by that vault.
 Schema 0.1 has no contract markers; existing vertical areas are legacy
 structure, not silently converted contracts. Availability never implies
@@ -84,10 +85,10 @@ available but disabled vertical is not a missing-contract finding.
 
 The catalog is `.agents/skills/self-context/references/verticals.json`; its
 paths are canonical relative to the installed project skill. It currently
-lists Career, Learning, Writing, Relationships, and Media / Taste. Detailed
-rules stay in each procedure, whose small contract header must match its
-catalog record. An available but absent vertical is empty for read-only
-retrieval and does not cause file creation.
+lists Career, Learning, Writing, Relationships, Media / Taste, and Ventures /
+Projects. Detailed rules stay in each procedure, whose small contract header
+must match its catalog record. An available but absent vertical is empty for
+read-only retrieval and does not cause file creation.
 
 ## Deep review phases
 

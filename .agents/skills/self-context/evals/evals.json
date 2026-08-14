@@ -1035,6 +1035,127 @@
         "Ordinary lint, deep lint, catalog validation, and changed/unchanged reporting are performed, and schema migration is not rerun implicitly."
       ],
       "files": []
+    },
+    {
+      "id": 93,
+      "prompt": "Ingest this synthetic initiative update: John Doe is building a small Harbor CLI, changed its scope after a test, and wants to remember the decision. Store meaningful Ventures context without creating a page for every coding task or copying the professional result into Career.",
+      "expected_output": "Natural-language initiative context is routed to Ventures, preserved with lifecycle and provenance boundaries, and kept separate from Career.",
+      "expectations": [
+        "The initiative's purpose, scope change, or decision is represented in a flexible Ventures record.",
+        "Routine repository or coding activity is not automatically stored as a project page.",
+        "Career and other vertical ownership is preserved through links rather than copied facts."
+      ],
+      "files": []
+    },
+    {
+      "id": 94,
+      "prompt": "In a synthetic vault, what projects are active, and which items are still only ideas or proposals? Retrieve Ventures context and keep candidate, proposed, and active initiatives separate.",
+      "expected_output": "Natural-language retrieval routes to Ventures and reports initiative lifecycle states without guessing status.",
+      "expectations": [
+        "Active work is separated from ideas, candidates, and proposals.",
+        "The answer checks the initiative record's status, freshness, and evidence.",
+        "Incidental repository mentions are not treated as active projects."
+      ],
+      "files": []
+    },
+    {
+      "id": 95,
+      "prompt": "What did the synthetic Harbor project demonstrate professionally, and what did John actually learn while building it? Route the first question to Career and the second to Learning while allowing Ventures to supply initiative links.",
+      "expected_output": "Cross-vertical routing separates professional relevance from knowledge state and initiative lifecycle.",
+      "expectations": [
+        "Career owns what project participation demonstrates professionally.",
+        "Learning owns what the evidence supports about understanding and scope.",
+        "Ventures is linked as initiative context rather than receiving duplicate Career or Learning facts."
+      ],
+      "files": []
+    },
+    {
+      "id": 96,
+      "prompt": "In a synthetic schema 0.2 vault with no Ventures area, answer a read-only question about projects and opportunities. Do not create ventures/index.md, a root link, a ventures@1 marker, a placeholder page, or a backup.",
+      "expected_output": "An absent available Ventures vertical remains empty and disabled during read-only retrieval.",
+      "expectations": [
+        "Read-only retrieval does not create or enable Ventures.",
+        "The schema and existing taxonomy remain unchanged.",
+        "Other available verticals are not enabled as a side effect."
+      ],
+      "files": []
+    },
+    {
+      "id": 97,
+      "prompt": "In a synthetic schema 0.2 vault with no optional verticals, explicitly ingest a meaningful project proposal that requires Ventures. Activate only Ventures at the exact catalog contract version, create only its area and index plus root link, and follow the provisional/final backup lifecycle.",
+      "expected_output": "The first meaningful Ventures mutation selectively enables exactly ventures@1 and continues the original ingest.",
+      "expectations": [
+        "The applied marker is exactly ventures@1.",
+        "Only the Ventures area, index, marker, and root navigation are added for activation; unrelated verticals remain disabled.",
+        "The operation does not create placeholder project pages or migrate the schema."
+      ],
+      "files": []
+    },
+    {
+      "id": 98,
+      "prompt": "In a synthetic schema 0.1 vault, explicitly ingest meaningful Ventures context. Preserve schema_version: 0.1, add only the needed legacy ventures area, index, and root link, and do not add vertical_contracts or silently migrate the vault.",
+      "expected_output": "Schema 0.1 keeps legacy first-use behavior while allowing Ventures to participate without a contract marker.",
+      "expectations": [
+        "schema_version: 0.1 remains unchanged.",
+        "No vertical_contracts section or ventures@1 marker is added by ordinary use.",
+        "Only the required legacy Ventures navigation is created."
+      ],
+      "files": []
+    },
+    {
+      "id": 99,
+      "prompt": "Ingest a fictional source saying a collaborator proposed a Harbor prototype. Preserve the source record and provenance, label it as a proposal or reported statement, and do not treat it as an agreement, partner relationship, employment, or contractual authority.",
+      "expected_output": "Ventures ingest preserves provenance and keeps proposal, collaborator, and authority claims epistemically bounded.",
+      "expectations": [
+        "The source remains available as provenance for the normalized initiative context.",
+        "Proposal, discussion, agreement, and commitment are not conflated.",
+        "Employment, compensation, equity, ownership, authority, and partner status remain unknown unless explicitly evidenced."
+      ],
+      "files": []
+    },
+    {
+      "id": 100,
+      "prompt": "A synthetic current project status page is past its stale_after date, while another initiative has no freshness deadline and its current state is unknown. Answer what can be said without declaring the stale project false or treating null freshness as proof of currentness.",
+      "expected_output": "Ventures retrieval exposes stale and unknown state separately and asks for bounded confirmation when needed.",
+      "expectations": [
+        "A stale claim is labeled as needing freshness confirmation, not false.",
+        "stale_after: null is treated as unknown freshness for a decisive dynamic claim.",
+        "Historical evidence remains available and no freshness metadata is silently renewed."
+      ],
+      "files": []
+    },
+    {
+      "id": 101,
+      "prompt": "A new synthetic note repeats an existing Ventures project record and adds no new lifecycle event, decision, provenance, outcome, or future value. Report a successful no-op instead of creating a duplicate project page.",
+      "expected_output": "The ingest finds the existing initiative and avoids duplicate Ventures context.",
+      "expectations": [
+        "No duplicate venture/project record is created.",
+        "Existing lifecycle, assertion, freshness, and provenance metadata remain stable.",
+        "No unrelated Career, Learning, Relationships, Core, or Derived page is changed."
+      ],
+      "files": []
+    },
+    {
+      "id": 102,
+      "prompt": "Reject a request to store fictional API keys, credentials, private Slack exports, and sensitive collaborator speculation as Ventures context. Explain the privacy boundary and offer a compact project decision or source reference instead.",
+      "expected_output": "Sensitive secrets, wholesale private dumps, and unsupported third-party inferences are rejected without mutating the vault.",
+      "expectations": [
+        "Credentials, tokens, secrets, API keys, and authentication data are not stored.",
+        "Complete private workspace or message histories are not archived as project evidence.",
+        "Sensitive characteristics, motives, reliability, and intent about collaborators are not inferred."
+      ],
+      "files": []
+    },
+    {
+      "id": 103,
+      "prompt": "Compare two synthetic opportunities and recommend Harbor CLI as the better next step. I explicitly ask you to retain the comparison for future reuse, but do not turn the recommendation into a project decision, goal, commitment, or factual Ventures claim.",
+      "expected_output": "The result may persist only as a linked derived synthesis and leaves initiative facts and user decisions unchanged.",
+      "expectations": [
+        "The explicit retention request is distinguished from a factual confirmation or decision.",
+        "A retained result is marked derived_synthesis and links the Ventures/Core evidence it uses.",
+        "The recommendation does not update lifecycle, goals, preferences, commitments, or verification automatically."
+      ],
+      "files": []
     }
   ]
 }

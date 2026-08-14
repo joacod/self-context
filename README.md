@@ -10,7 +10,7 @@ SelfContext is not a hosted app or a separate AI runtime. It provides
 project-local skills for an existing AI tool that supports Agent Skills; the
 local `vault/` remains the source of truth.
 
-The core vault lifecycle and five optional areas are implemented and available.
+The core vault lifecycle and six optional areas are implemented and available.
 Future work is tracked as experiments in the [Roadmap](docs/ROADMAP.md), not
 promises.
 
@@ -68,7 +68,7 @@ Local Context Vault
   validation.
 - **Trustworthy context:** provenance, freshness, unresolved items,
   contradictions, and explicit confirmation for important inferences.
-- **Optional areas:** Career, Learning, Writing, Relationships, and Media / Taste.
+- **Optional areas:** Career, Learning, Writing, Relationships, Media / Taste, and Ventures / Projects.
   Each can be enabled independently and follows the shared vault rules.
 
 ### Available Verticals
@@ -83,6 +83,7 @@ needs.
 | Writing | `writing/` | Evidence-backed communication and writing context |
 | Relationships | `relationships/` | Shared history, commitments, and open loops |
 | Media / Taste | `media/` | Reactions to cultural works and evolving taste |
+| Ventures / Projects | `ventures/` | Initiative lifecycle, decisions, commitments, evidence, and outcomes |
 
 - **Maintenance:** deterministic validation and explicit, backed-up vault
   migrations. Advanced maintenance prompts include `migrate vault latest`,

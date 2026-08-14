@@ -317,9 +317,10 @@ user's voice.
 
 ## Cross-Vertical Retrieval
 
-Writing work may retrieve relevant core, career, Learning, project, belief, or
-knowledge context. It should link to that context rather than copy it into
-`writing/`.
+Writing work may retrieve relevant core, career, Ventures, Learning, project,
+belief, or knowledge context. It should link to that context rather than copy
+it into `writing/`. Ventures owns initiative lifecycle and project-specific
+state; Career owns the professional view of participation.
 
 - A career achievement remains in `career/`.
 - A Learning knowledge state, gap, or prerequisite remains in `learning/`.
@@ -328,8 +329,9 @@ knowledge context. It should link to that context rather than copy it into
 - A Writing page can explain how the user communicates an idea without asserting
   that the idea is true or that the user believes it.
 
-Likewise, a Career or other Advisor Pack may use Writing context for an artifact's
-communication fit, but Writing observations do not become career evidence.
+Likewise, a Career, Ventures, or other Advisor Pack may use Writing context for
+an artifact's communication fit, but Writing observations do not become career
+or project evidence.
 
 ## Persistence and Safety
 

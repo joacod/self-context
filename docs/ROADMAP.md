@@ -15,8 +15,8 @@ The current system provides:
 - shared provenance, lifecycle, freshness, review, and epistemic boundaries;
 - local provisional/final ZIP backups with retention of the latest ten archives;
 - Obsidian compatibility and multi-session continuity; and
-- separate Career, Learning, Writing, Relationships, and Media / Taste
-  verticals with replaceable Advisor Packs.
+- separate Career, Learning, Writing, Relationships, Media / Taste, and
+  Ventures / Projects verticals with replaceable Advisor Packs.
 
 The verticals add no competing memory format, custom runtime, universal
 confidence taxonomy, numeric profile model, or automatic promotion of generated
@@ -37,6 +37,7 @@ SelfContext lifecycle:
 | Writing | Evidence-aware source comparison, selective profile updates, and writing reasoning | Use different authored modes and check whether the profile becomes more accurate without merely becoming larger |
 | Relationships | Sparse user-centered relationship pages, meaningful shared history, commitments, open loops, privacy-aware provenance, and dated evolution | Exercise retention, redaction, reported statements, stale commitments, and pre-interaction retrieval with synthetic data |
 | Media / Taste | Individual work reactions, conservative taste patterns, exceptions, cross-media evidence, and dated evolution | Exercise recommendation explanations, abandoned or revisited works, contradictory reactions, and no-update outcomes |
+| Ventures / Projects | Initiative records for project and opportunity lifecycle, decisions, commitments, milestones, evidence, outcomes, dogfooding, adoption, and evolution | Exercise selective activation, stale opportunity state, proposal versus commitment, adoption evidence, abandoned history, and cross-vertical ownership |
 
 ## Shared constraints for implemented verticals
 
@@ -189,8 +190,9 @@ The implemented maintenance path is deliberately explicit:
 - deep review is read-only by default and targeted review remains ordinary;
 - deep update is explicitly authorized, snapshot-checked, backed up once, and
   bounded to safe structural changes plus approved semantic proposals;
-- available Career, Learning, Writing, Relationships, and Media / Taste
-  verticals are selectively enabled in schema 0.2, with schema-specific first
+- available Career, Learning, Writing, Relationships, Media / Taste, and
+  Ventures / Projects verticals are selectively enabled in schema 0.2, with
+  schema-specific first
   use and explicit contract comparison; and
 - managed catalogs and local lexical search are disposable navigation aids, not
   evidence or a second store.

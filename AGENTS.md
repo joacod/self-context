@@ -18,6 +18,7 @@ Current vertical routing:
 | Writing | Evidence-backed communication and writing context | Writing Advisor |
 | Relationships | Intentional relationship context, shared history, commitments, and open loops | Relationships Advisor |
 | Media / Taste | Evidence-backed reactions to cultural works and evolving taste patterns | Media Advisor |
+| Ventures / Projects | Initiative lifecycle, project decisions, commitments, milestones, evidence, outcomes, and evolution | Ventures Advisor |
 
 - A future vertical must define its scope and storage area before its procedure
   or Advisor Pack is added. The canonical available-vertical catalog is

@@ -130,8 +130,8 @@ Top-level areas:
 
 Vertical areas are optional and are created only when a triggering mutation
 or explicit adoption requires them, following the schema-specific activation
-rule below. Available verticals are Career, Learning, Writing, Relationships,
-and Media / Taste.
+rule below. Available verticals are Career, Learning, Writing, Relationships, Media / Taste,
+and Ventures / Projects.
 
 Durable pages use YAML frontmatter described in this file's operational
 documentation. The common fields are:
@@ -231,8 +231,9 @@ professional goals.
 <!-- selfcontext:catalog:end -->
 ```
 
-The same shape applies to Learning, Writing, Relationships, and Media / Taste;
-do not create optional areas merely because they are available.
+The same shape applies to Learning, Writing, Relationships, Media / Taste,
+and Ventures / Projects; do not create optional areas merely because they are
+available.
 
 ### Managed catalog rules
 

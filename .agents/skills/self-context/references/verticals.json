@@ -65,6 +65,19 @@
       "ownership": "Evidence-backed reactions to cultural works, explainable taste patterns, exceptions, and taste evolution.",
       "exclusions": "Media catalogs, ratings or watchlists without reflection, copied reviews, and sensitive identity inferences from consumption.",
       "activation_rule": "Enable when a meaningful personal reaction or taste question requires durable context, or the user explicitly adopts Media / Taste."
+    },
+    {
+      "id": "ventures",
+      "display_name": "Ventures / Projects",
+      "contract_version": 1,
+      "vault_area": "ventures",
+      "index_path": "ventures/index.md",
+      "procedure_path": "references/ventures.md",
+      "advisor_pack": "ventures-advisor",
+      "advisor_skill": "ventures-advisor",
+      "ownership": "Initiative lifecycle and project-specific context: purpose, origin, current state, role, decisions, commitments, milestones, evidence, outcomes, dogfooding, adoption, unknowns, and evolution.",
+      "exclusions": "Task management, CRM, repository inventory, source-code catalog, generic product management, unsupported business or collaborator claims, secrets, and wholesale private workspace or message archives.",
+      "activation_rule": "Enable when meaningful initiative context requires durable continuity or the user explicitly adopts Ventures / Projects; read-only access never creates it."
     }
   ]
 }

@@ -50,7 +50,9 @@ case. Writing is a separate vertical for evidence-backed communication and
 writing context, and Learning records what the person understands and how that
 understanding evolves. Relationships preserves intentional shared context with
 other people, while Media / Taste preserves reactions to cultural works and the
-evidence behind evolving preferences. The core should remain useful across
+evidence behind evolving preferences. Ventures / Projects preserves the
+lifecycle of meaningful initiatives, opportunities, experiments, and
+collaborations without becoming a task manager or CRM. The core should remain useful across
 domains without defining domain schemas itself. Every vertical and Advisor Pack
 should consume the same portable context rather than create competing memory
 systems.

@@ -28,10 +28,10 @@ CATALOG_END = "<!-- selfcontext:catalog:end -->"
 SENSITIVE_BODY_MARKER = "SYNTHETIC_PRIVATE_BODY_MARKER_7f3b1"
 
 # Relationships is deliberately enabled so packet tests can prove that an
-# unrelated enabled vertical is excluded.  Media remains available but
-# disabled until the explicit-adoption test enables it.
+# unrelated enabled vertical is excluded.  Media and Ventures remain available
+# but disabled until an explicit-adoption test enables one of them.
 ENABLED_VERTICALS = ("career", "learning", "writing", "relationships")
-DISABLED_VERTICALS = ("media",)
+DISABLED_VERTICALS = ("media", "ventures")
 
 VERTICAL_DESCRIPTIONS = {
     "career": "Fictional career evidence and delivery examples.",
@@ -39,6 +39,7 @@ VERTICAL_DESCRIPTIONS = {
     "writing": "Fictional communication and revision context.",
     "relationships": "Fictional intentional relationship continuity.",
     "media": "Fictional reactions and taste context.",
+    "ventures": "Fictional initiative lifecycle and project evidence.",
 }
 
 
