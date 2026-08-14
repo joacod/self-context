@@ -66,15 +66,17 @@ self-context/
 
 Git ignore is a commit-safety boundary, not a promise that a provider cannot see data supplied to it by the user. The vault should also be independently copyable without the repository.
 
-## Post-Write Backups
+## Backup Lifecycles
 
-Any operation that mutates an existing vault creates one timestamped ZIP after
-its writes and relevant validation. The dependency-free helper stores the
-archive under the project-root `backups/` directory beside `vault/`, outside the
-portable vault. It retains only the three newest managed ZIPs. A failed backup
-leaves a generic mutation incomplete and blocks further writes; transactional
-helpers roll back when they can. Read-only retrieval and validation do not create
-a backup unless they also persist a log entry or other change.
+Ordinary mutations create one provisional recovery ZIP before their first
+active write, then one final-state ZIP after writes and relevant validation. The
+provisional is discarded only after final backup success; failures retain it and
+block further writes. Deep maintenance and migration create the recovery ZIP,
+apply and validate their bounded changes, then create and retain a final-state
+ZIP alongside it. The dependency-free helper stores archives under the
+project-root `backups/` directory beside `vault/`, outside the portable vault,
+and retains the ten newest managed ZIPs. Read-only retrieval and validation do
+not create a backup unless they also persist a log entry or other change.
 
 The root `backups/` directory is private operational state rather than
 canonical context and is ignored by Git. Because it is outside `vault/`, the
@@ -252,8 +254,8 @@ The canonical schema-specific activation procedure is
 schema 0.1 first meaningful use may add only the needed legacy area/index/root
 link, while schema 0.2 first mutating use records the exact available
 `vertical@version` for only the required vertical, completes the operation,
-and then creates the normal post-write backup. Read-only queries and
-assessments create nothing.
+and follows the ordinary provisional/final backup lifecycle. Read-only queries
+and assessments create nothing.
 
 In schema 0.2, **available** means present in the repository catalog, **enabled**
 means recorded in `SCHEMA.md` with its area, index, and root link, and **applied**
@@ -263,7 +265,7 @@ applied version is an error. Unknown IDs, invalid versions, and duplicate
 entries for one ID are errors. The small parser accepts only non-negative
 integer versions such as `writing@1`; semantic-version strings and ranges are
 unsupported. Schema 0.1 has no contract markers and is not silently migrated. An explicit
-migration follows the canonical [Vault Migration procedure](../.agents/skills/self-context/references/migration.md): the helper detects the current and latest supported schema, resolves a validated registry path, stages the complete final state, applies and validates one bounded transaction, creates one post-write backup, and rolls back when final validation or backup creation fails. It never rewrites personal evidence.
+migration follows the canonical [Vault Migration procedure](../.agents/skills/self-context/references/migration.md): the helper detects the current and latest supported schema, resolves a validated registry path, creates a recovery backup, stages the complete final state, applies and validates one bounded transaction, creates a final-state backup, and rolls back when final validation or backup creation fails. It never rewrites personal evidence.
 
 ## Core Operations
 
@@ -305,4 +307,4 @@ remains subordinate to the Markdown vault and does not replace semantic review.
 
 These exclusions keep the durable asset portable, local, inspectable, and replaceable. Future disposable search indexes or user-controlled off-device copies can be considered only without changing the vault's canonical role.
 
-See the [architectural decisions](decisions/) for the reasoning behind these boundaries, including the [user-mode and project-maintenance separation](decisions/0007-user-mode-project-maintenance.md), the [selective confirmation and freshness policy](decisions/0008-selective-confirmation-and-freshness.md), the [post-write backup policy](decisions/0016-post-write-vault-backups.md), the [Writing vertical decision](decisions/0010-writing-vertical.md), the [query persistence triage decision](decisions/0011-query-persistence-triage.md), the [Learning vertical decision](decisions/0012-learning-vertical.md), the [Relationships vertical decision](decisions/0013-relationships-vertical.md), the [Media / Taste vertical decision](decisions/0014-media-taste-vertical.md), and the [Deep Maintenance and versioned vertical contracts decision](decisions/0015-deep-maintenance-and-versioned-vertical-contracts.md).
+See the [architectural decisions](decisions/) for the reasoning behind these boundaries, including the [user-mode and project-maintenance separation](decisions/0007-user-mode-project-maintenance.md), the [selective confirmation and freshness policy](decisions/0008-selective-confirmation-and-freshness.md), the [backup lifecycle policy](decisions/0017-vault-backup-lifecycles.md), the [Writing vertical decision](decisions/0010-writing-vertical.md), the [query persistence triage decision](decisions/0011-query-persistence-triage.md), the [Learning vertical decision](decisions/0012-learning-vertical.md), the [Relationships vertical decision](decisions/0013-relationships-vertical.md), the [Media / Taste vertical decision](decisions/0014-media-taste-vertical.md), and the [Deep Maintenance and versioned vertical contracts decision](decisions/0015-deep-maintenance-and-versioned-vertical-contracts.md).

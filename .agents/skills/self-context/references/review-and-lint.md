@@ -8,9 +8,10 @@ explicit “deep review” selects the full, read-only maintenance protocol in
 current role” must not trigger a full-vault scan.
 
 If review will resolve a page or append a review/lint operation to `log.md`,
-complete the authorized writes and relevant validation, then create the
-post-write backup described in [Vault Backups](backups.md). A read-only review
-or lint run needs no backup.
+create the provisional recovery backup first. Complete the authorized writes and
+relevant validation, create the final backup, and discard the provisional only
+after final backup success as described in [Vault Backups](backups.md). A
+read-only review or lint run needs no backup.
 
 ## Review
 

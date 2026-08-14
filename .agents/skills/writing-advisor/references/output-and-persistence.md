@@ -83,9 +83,11 @@ Ordinary responses remain ephemeral:
   `derived_synthesis` page; it remains advice and does not become Writing
   evidence or update the Writing profile automatically.
 
-After any vault mutation and its validation, SelfContext creates the local
-post-write backup. A derived page is not a source for a new Writing observation
-and cannot silently change a goal, belief, career fact, or preference.
+Before any vault mutation, SelfContext creates the local provisional recovery
+backup. After the mutation and validation, it creates the final backup and
+discards the provisional only after final backup success. A derived page is not a
+source for a new Writing observation and cannot silently change a goal, belief,
+career fact, or preference.
 
 ## Compact Response Shape
 

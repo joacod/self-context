@@ -39,10 +39,11 @@ Keep five distinct operations:
   does not mutate files, append a log entry, create a report, or create an
   operations backlog unless the user asks to retain the report.
 - **Deep update** is explicitly mutating. It reruns deep lint, compares the
-  current snapshot with the reviewed snapshot, applies safe structural changes
-  and explicitly approved semantic proposals, leaves human decisions unresolved,
-  synchronizes catalogs, validates the final state, creates one post-write
-  backup, and records one concise update entry.
+  current snapshot with the reviewed snapshot, creates one pre-write recovery
+  backup, applies safe structural changes and explicitly approved semantic
+  proposals, leaves human decisions unresolved, synchronizes catalogs, validates
+  the final state, creates one post-write backup, and retains both before
+  recording one concise update entry.
 
 Deep review uses bounded page-local, vertical, cross-vertical, contract/adoption,
 and retrieval-readiness passes. Its findings identify severity, classification,
@@ -98,9 +99,9 @@ New schema 0.2 vaults initialize only `core/`, `review/`, `sources/`, and
 `derived/`. A vertical appears only when a triggering mutation or explicit
 adoption requires it. The first mutating use creates only the required area and
 index, records its exact available contract, adds the root link, completes the
-operation, and creates one normal post-write backup at the documented point.
+operation, and follows the ordinary provisional/final backup lifecycle.
 Read-only queries and assessments create nothing, and unrelated available
-verticals remain disabled. The canonical [Vault Migration procedure](../../.agents/skills/self-context/references/migration.md) defines the natural-language assessment and authorized sequence. The migration helper applies and validates its transaction, then backs up the final state, infers enabled verticals conservatively from existing areas, indexes, and schema text, preserves every page and taxonomy, adds only control metadata and managed blocks, leaves unknown optional metadata empty, and reports ambiguous or custom areas instead of deleting or relocating them. The helper owns exactly one migration backup; agent orchestration does not create another.
+verticals remain disabled. The canonical [Vault Migration procedure](../../.agents/skills/self-context/references/migration.md) defines the natural-language assessment and authorized sequence. The migration helper creates a recovery backup, applies and validates its transaction, then backs up the final state while retaining both, infers enabled verticals conservatively from existing areas, indexes, and schema text, preserves every page and taxonomy, adds only control metadata and managed blocks, leaves unknown optional metadata empty, and reports ambiguous or custom areas instead of deleting or relocating them. The helper owns both migration snapshots; agent orchestration does not create separate ones.
 
 The helper uses a dependency-free migration registry whose production latest is
 schema 0.2 and whose supported edge is `0.1 -> 0.2`. The registry validates
@@ -142,12 +143,13 @@ links. Query remains index-first.
 
 Before deep update mutation, the snapshot is compared with the reviewed
 snapshot. A changed snapshot causes affected findings to be re-evaluated rather
-than applying a stale plan. One post-write ZIP backup is created after the final
-validated write. The hardened helper rejects symlink vault paths and canonical
-content, verifies archive paths remain below the root, validates a temporary
-ZIP before atomic replacement, retains the three newest managed archives, and
-uses restrictive permissions where portable. ZIPs contain private content and
-are not encrypted; no encryption dependency is added.
+than applying a stale plan. One pre-write recovery ZIP and one post-write final
+ZIP are retained after the final validated write. The hardened helper rejects
+symlink vault paths and canonical content, verifies archive paths remain below
+the root, validates a temporary ZIP before atomic replacement, retains the ten
+newest managed archives, and uses restrictive permissions where portable. ZIPs
+contain private content and are not encrypted; no encryption dependency is
+added.
 
 Safe structural changes include managed index refreshes, unambiguous catalog
 entries/dead generated entries, explicitly authorized schema-control migration,

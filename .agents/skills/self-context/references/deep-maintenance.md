@@ -21,12 +21,13 @@ deterministic helpers.
   no backup and does not mutate the vault, append to `log.md`, create a report,
   or create an operations backlog unless the user explicitly asks to retain
   the report.
-- **Deep update** is explicitly mutating. It may apply safe structural changes
-  and explicitly approved semantic proposals only after snapshot validation and
-  bounded post-write validation, followed by one post-write backup of the final
-  state. It does not silently migrate an old schema; an explicitly requested
-  schema migration delegates to the canonical [Migration procedure](migration.md),
-  whose helper owns the single migration backup.
+- **Deep update** is explicitly mutating. It creates a pre-write recovery
+  backup, may apply safe structural changes and explicitly approved semantic
+  proposals after snapshot validation, validates the final state, and creates a
+  second post-write backup while retaining both. It does not silently migrate an
+  old schema; an explicitly requested schema migration delegates to the
+  canonical [Migration procedure](migration.md), whose helper owns both
+  migration snapshots.
 - **Schema migration** is a separate deterministic format/control-file
   operation. Its read-only assessment and authorized write sequence are defined
   entirely in [Migration](migration.md); it never replaces deep review or
@@ -211,18 +212,19 @@ backlog.
 
 1. Rerun deep lint and compare the current snapshot with the reviewed snapshot.
    If it changed, re-evaluate affected findings instead of applying a stale plan.
-2. Apply safe structural changes first, then explicitly approved semantic
+2. Create one pre-write recovery backup and report/retain its path.
+3. Apply safe structural changes first, then explicitly approved semantic
    proposals. Leave human decisions unresolved. Use a default maximum of 25
    personal durable pages per batch unless the user explicitly requests a full
    deterministic migration; control files do not count.
-3. Synchronize managed indexes, append one concise deep-update entry to
+4. Synchronize managed indexes, append one concise deep-update entry to
    `log.md`, update the retained report, and rerun ordinary lint, deep lint, and
    affected retrieval probes. Stop further mutation on failed post-write
    validation.
-4. After the final state validates, create one post-write backup and
-   report/retain its path. If backup creation fails, stop further writes and
-   report the mutation as incomplete.
-5. State changed, intentionally unchanged, and deferred files.
+5. After the final state validates, create one post-write backup, retain it
+   alongside the recovery backup, and report both paths. If final backup
+   creation fails, stop further writes and keep the recovery archive.
+6. State changed, intentionally unchanged, and deferred files.
 
 Safe structural changes include managed index refreshes, unambiguous catalog
 entries/dead generated entries, explicitly authorized schema-control migration,
@@ -239,7 +241,8 @@ the deep-update snapshot/backup rules. Adoption adds only the requested area,
 index, exact available contract marker, and root link. For schema 0.2 first use,
 ordinary mutation follows the same rule: create only the required vertical,
 record its exact available contract, add the root link, and continue the
-original operation before one normal post-write backup. For schema 0.1 first use,
+original operation after one normal recovery backup and before its final
+backup. For schema 0.1 first use,
 create only the legacy area/index/root link and preserve schema text without a
 contract marker or implicit migration. Unrecognized or malformed schema state
 stays conservative and does not guess.

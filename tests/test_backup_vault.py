@@ -14,9 +14,9 @@ LINT_SCRIPT = REPOSITORY_ROOT / ".agents/skills/self-context/scripts/lint_vault.
 
 
 class BackupVaultTests(unittest.TestCase):
-    def run_backup(self, vault: Path) -> subprocess.CompletedProcess:
+    def run_backup(self, vault: Path, *arguments: str) -> subprocess.CompletedProcess:
         return subprocess.run(
-            [sys.executable, str(BACKUP_SCRIPT), str(vault)],
+            [sys.executable, str(BACKUP_SCRIPT), str(vault), *arguments],
             capture_output=True,
             text=True,
             check=False,
@@ -52,7 +52,31 @@ class BackupVaultTests(unittest.TestCase):
             self.assertTrue(legacy_file.is_file())
             self.assertFalse((vault / "backups" / backups[0].name).exists())
 
-    def test_retention_keeps_only_the_newest_three_managed_backups(self) -> None:
+    def test_provisional_backup_is_discarded_after_final_snapshot(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            vault = root / "vault"
+            vault.mkdir()
+            page = vault / "page.md"
+            page.write_text("before\n", encoding="utf-8")
+
+            provisional_result = self.run_backup(vault)
+            self.assertEqual(provisional_result.returncode, 0, provisional_result.stderr)
+            provisional = next((root / "backups").glob("vault-*.zip"))
+            page.write_text("after\n", encoding="utf-8")
+            final_result = self.run_backup(vault)
+            self.assertEqual(final_result.returncode, 0, final_result.stderr)
+            final = next(path for path in (root / "backups").glob("vault-*.zip") if path != provisional)
+
+            discarded = self.run_backup(vault, "--discard", str(provisional))
+
+            self.assertEqual(discarded.returncode, 0, discarded.stderr)
+            self.assertFalse(provisional.exists())
+            self.assertEqual(list((root / "backups").glob("vault-*.zip")), [final])
+            with zipfile.ZipFile(final) as archive:
+                self.assertEqual(archive.read("page.md"), b"after\n")
+
+    def test_retention_keeps_only_the_newest_ten_managed_backups(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project_root = Path(temporary)
             vault = project_root / "vault"
@@ -64,6 +88,13 @@ class BackupVaultTests(unittest.TestCase):
                 "20000101T000000Z",
                 "20000102T000000Z",
                 "20000103T000000Z",
+                "20000104T000000Z",
+                "20000105T000000Z",
+                "20000106T000000Z",
+                "20000107T000000Z",
+                "20000108T000000Z",
+                "20000109T000000Z",
+                "20000110T000000Z",
             ):
                 (backup_dir / f"vault-{timestamp}.zip").write_bytes(b"old")
             unrelated_file = backup_dir / "keep.txt"
@@ -73,11 +104,31 @@ class BackupVaultTests(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0, result.stderr)
             backups = sorted(backup_dir.glob("vault-*.zip"))
-            self.assertEqual(len(backups), 3)
+            self.assertEqual(len(backups), 10)
             self.assertFalse((backup_dir / "vault-20000101T000000Z.zip").exists())
             self.assertTrue((backup_dir / "vault-20000102T000000Z.zip").exists())
-            self.assertTrue((backup_dir / "vault-20000103T000000Z.zip").exists())
+            self.assertTrue((backup_dir / "vault-20000110T000000Z.zip").exists())
             self.assertTrue(unrelated_file.is_file())
+
+    def test_discard_removes_only_a_managed_backup(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            vault = root / "vault"
+            vault.mkdir()
+            (vault / "page.md").write_text("synthetic\n", encoding="utf-8")
+            created = self.run_backup(vault)
+            self.assertEqual(created.returncode, 0, created.stderr)
+            managed = next((root / "backups").glob("vault-*.zip"))
+
+            discarded = self.run_backup(vault, "--discard", str(managed))
+
+            self.assertEqual(discarded.returncode, 0, discarded.stderr)
+            self.assertFalse(managed.exists())
+            outside = root / "outside.zip"
+            outside.write_bytes(b"keep")
+            rejected = self.run_backup(vault, "--discard", str(outside))
+            self.assertNotEqual(rejected.returncode, 0)
+            self.assertTrue(outside.exists())
 
     def test_missing_vault_blocks_backup(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

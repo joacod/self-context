@@ -51,7 +51,8 @@ Add Relationships as a first-class, on-demand vertical:
   graph, provider integration, or dedicated runtime.
 - Existing v0.1 vaults do not require migration. New initialization exposes a
   Relationships index, while a requested mutation of an older vault adds only
-  the missing area and root navigation before the normal post-write backup.
+  the missing area and root navigation within the provisional/final backup
+  lifecycle.
 - Career can retain professional evidence and Relationships can retain the
   ongoing human relationship when both have distinct purposes; links prevent
   uncontrolled duplication.

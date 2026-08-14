@@ -236,9 +236,10 @@ uncertainty and freshness, and label conclusions as derived. If the result is
 advice, label recommendations as recommendations. Never phrase a recommendation
 as a newly confirmed goal.
 
-After creating or updating the derived page, updating its index, or appending
-any operation log for the query, validate the resulting vault and create the
-post-write backup described in [Vault Backups](backups.md).
+For a persisted query result, create the provisional recovery backup before
+creating or updating the derived page, index, or operation log. Validate the
+resulting vault, create the final backup, and discard the provisional only after
+final backup success as described in [Vault Backups](backups.md).
 
 ## Task context packets
 

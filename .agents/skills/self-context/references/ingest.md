@@ -5,13 +5,15 @@ a recollection, or a correction to existing context.
 
 After orientation and once the operation is known to require a write,
 determine the schema-specific vertical activation plan in
-[Initialization](initialization.md). Apply that plan and the requested page,
-index, source-record, review-item, or log changes, validate the resulting vault,
-then create one post-write backup described in [Vault Backups](backups.md).
-Schema 0.1 preserves its legacy schema without contract markers; schema 0.2
-records only the exact contract for the required vertical. Read-only work never
-activates a vertical. If backup creation fails, stop further writes and report
-the mutation as incomplete until the resulting state is backed up.
+[Initialization](initialization.md). Create the provisional recovery backup,
+then apply that plan and the requested page, index, source-record, review-item,
+or log changes. Validate the resulting vault, create the final backup, and
+discard the provisional only after final backup success, following the [Vault
+Backups](backups.md) procedure. Schema 0.1 preserves its legacy schema without
+contract markers; schema 0.2 records only the exact contract for the required
+vertical.
+Read-only work never activates a vertical. If a required backup fails, keep the
+recovery archive, stop further writes, and report the mutation as incomplete.
 
 ## 1. Understand the Input
 

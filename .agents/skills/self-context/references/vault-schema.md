@@ -51,10 +51,11 @@ delete or move it.
 
 The canonical [Migration procedure](migration.md) and helper infer enabled
 verticals conservatively from existing areas, indexes, and schema text. The
-helper stages and validates the complete target state, preserves every page and
-custom area, adds only control metadata and managed index blocks, applies the
-transaction, validates the final state, and creates one post-write backup of
-that result. Natural-language orchestration must not create a second backup.
+helper creates a pre-write recovery backup, stages and validates the complete
+target state, preserves every page and custom area, adds only control metadata
+and managed index blocks, applies the transaction, validates the final state,
+and creates one post-write backup of that result while retaining the recovery
+archive. Natural-language orchestration must not create separate backups.
 Optional page metadata is not bulk-added.
 
 ## Top-level layout
@@ -83,9 +84,9 @@ Create a vertical directory and index only when a triggering mutation requires
 that vertical or the user explicitly adopts it. A read-only query about an
 absent vertical treats it as empty and creates no files. On first required use, follow [Initialization](initialization.md): schema 0.1
 adds only legacy area/index/root navigation without a contract marker; schema
-0.2 creates only that vertical, records its exact available contract, adds
-its root-index link, completes the operation in the same turn, and then creates
-one normal post-write backup.
+0.2 creates the provisional recovery backup, records its exact available
+contract, adds its root-index link, completes the operation in the same turn,
+creates the final backup, and discards the provisional only after success.
 
 Schema 0.1 vaults may have the historical default areas, custom areas, or only
 some verticals. Preserve their taxonomy. The current available verticals are

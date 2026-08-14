@@ -85,8 +85,10 @@ The body must include the question or objective, linked evidence, uncertainty,
 and clearly labeled recommendations. A derived page is not a source for a new
 fact, current goal, or agent confidence loop.
 
-After creating a derived page, updating the relevant derived index, or logging
-the persisted advice, validate the resulting vault and create the post-write
-backup through SelfContext's [Vault Backups](../../self-context/references/backups.md)
-procedure. If persistence is not clearly valuable, keep the answer ephemeral
-and do not create a backup solely for the read-only advice.
+Before creating a derived page, updating the relevant derived index, or
+logging persisted advice, create the provisional recovery backup. Validate the
+resulting vault, create the final backup through SelfContext's [Vault
+Backups](../../self-context/references/backups.md) procedure, and discard the
+provisional only after final backup success. If persistence is not clearly
+valuable, keep the answer ephemeral and do not create a backup solely for the
+read-only advice.

@@ -1969,7 +1969,7 @@ def apply_migration(
     target: Any = "latest",
     registry: Optional[MigrationRegistry] = None,
 ) -> Dict[str, Any]:
-    """Atomically apply, validate, and back up a migration's final state."""
+    """Back up, atomically apply, validate, and back up a migration."""
 
     plan = plan_migration(vault, target=target, registry=registry)
     if not plan.get("migration_needed", plan.get("from_schema") == "0.1"):
@@ -2000,6 +2000,46 @@ def apply_migration(
         )
         plan["status"] = "stale-plan"
         plan["write_ready"] = False
+        return plan
+
+    try:
+        pre_write_backup, pre_write_removed = backup_vault.create_backup(supplied)
+        pre_write_backup = Path(pre_write_backup)
+        if not pre_write_backup.is_file():
+            raise backup_vault.BackupError(
+                f"backup helper returned a path that does not exist: {pre_write_backup}"
+            )
+    except Exception as error:
+        plan["findings"].append(
+            _finding("error", "backups/", f"pre-write recovery backup failed: {error}", "backup")
+        )
+        plan["status"] = "blocked"
+        plan["write_ready"] = False
+        return plan
+
+    plan["pre_write_backup"] = str(pre_write_backup)
+    plan["pre_write_removed_backups"] = [str(path) for path in pre_write_removed]
+    try:
+        after_pre_write_snapshot = snapshot_id(supplied)
+    except (OSError, ValueError, RuntimeError) as error:
+        after_pre_write_snapshot = ""
+        plan["findings"].append(
+            _finding("error", "", f"unable to verify snapshot after recovery backup: {error}", "snapshot-drift")
+        )
+    if after_pre_write_snapshot != expected_snapshot:
+        plan["findings"].append(
+            _finding(
+                "error",
+                "",
+                "source vault changed after the recovery backup; migration stopped and must be re-planned",
+                "snapshot-drift",
+                planned_snapshot=expected_snapshot,
+                current_snapshot=after_pre_write_snapshot,
+            )
+        )
+        plan["status"] = "stale-plan"
+        plan["write_ready"] = False
+        plan["rollback"] = {"status": "not-needed", "ok": True}
         return plan
 
     updates = plan.get("_planned_updates", {})
@@ -2110,6 +2150,7 @@ def apply_migration(
     plan["backup"] = str(backup_path)
     plan["removed_backups"] = [str(path) for path in removed]
     plan["backup_snapshot_id"] = actual_final_snapshot
+    plan["backups"] = [str(pre_write_backup), str(backup_path)]
     plan["rollback"] = {"status": "not-needed", "ok": True}
     plan["changed"] = sorted(updates)
     plan["applied_changed"] = sorted(updates)
@@ -2128,7 +2169,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("vault", nargs="?", default="vault")
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--check", action="store_true", help="read-only migration plan")
-    mode.add_argument("--write", action="store_true", help="apply the migration and create one final-state backup")
+    mode.add_argument("--write", action="store_true", help="create recovery and final-state backups around the migration")
     parser.add_argument(
         "--target",
         default="latest",

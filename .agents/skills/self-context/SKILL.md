@@ -11,10 +11,11 @@ description: >
   writing, recollections, or other durable sources; and vault initialization,
   copying, restoring, backing up, exporting, or migration to the latest
   supported format. Canonical shortcuts include `migrate vault latest`,
-  `deep review vault`, and `deep update vault`. After ordinary writes and
-  validation, create a retained backup of the resulting vault; schema migration
-  uses its helper-owned post-write backup. Do not use for generic resume writing,
-  Obsidian organization, Git-ignore questions, or unrelated advice.
+  `deep review vault`, and `deep update vault`. For ordinary mutations, create
+  a provisional recovery backup before writing, a final backup after validation,
+  and discard the provisional only after final backup success. Migration and
+  deep maintenance retain both snapshots. Do not use for generic resume
+  writing, Obsidian organization, Git-ignore questions, or unrelated advice.
 compatibility: Requires local filesystem access from the repository root. Uses standard Markdown, YAML frontmatter, relative Markdown links, and optional Python 3 for deterministic linting.
 ---
 
@@ -60,12 +61,13 @@ skill, the current harness, the model, Obsidian, or a search tool disappears.
 - Treat the project-root `backups/` directory and its ZIP archives as private
   operational state, not context. Never index, search, lint, link to, or use
   backup contents as evidence.
-- After completing and validating an ordinary mutation-producing operation,
-  create one backup using [the backup procedure](references/backups.md). Schema
-  migration invokes its helper, which creates the one post-write backup of the
-  validated final state. If backup creation fails after a generic mutation,
-  stop further writes and report the mutation as incomplete until the resulting
-  vault is backed up; transactional helpers should roll back when they can.
+- For ordinary mutations, create a provisional recovery backup before the
+  first active write, then create a final backup after the mutation and relevant
+  validation. Discard the provisional only after the final backup succeeds. For
+  migration and deep maintenance, retain both the pre-write recovery backup and
+  the final-state backup. If any required backup fails, stop further writes and
+  report the operation as incomplete; transactional helpers should roll back
+  when they can.
 
 ## User Mode Boundary
 
@@ -109,7 +111,8 @@ Infer the operation from natural language:
 - **Deep update:** perform an explicitly authorized mutating maintenance batch;
   the canonical shorthand is `deep update vault`. Use it after a reviewed plan,
   applying safe structural changes and only explicitly approved semantic
-  proposals, with snapshot validation, one backup, and post-write validation.
+  proposals, with snapshot validation, a retained recovery backup, and a final
+  validated backup.
   It must not silently migrate an old schema; an explicitly requested schema
   migration delegates to the canonical procedure.
 - **Adopt vertical / update vertical contract:** assess read-only first, then
@@ -130,9 +133,9 @@ Schema-specific vertical activation is canonical in
 meaningful mutation may add only the needed legacy area/index/root link and
 never adds contract markers; schema 0.2 first meaningful mutation requiring a
 vertical adds only that vertical, records its exact available `vertical@version`,
-and adds the root link before the operation's post-write backup. Read-only
-operations never create or enable verticals, and malformed or unknown schema
-state remains conservative. Use [Vault Schema](references/vault-schema.md) for the distinct
+and adds the root link before the operation's backup lifecycle completes.
+Read-only operations never create or enable verticals, and malformed or unknown
+schema state remains conservative. Use [Vault Schema](references/vault-schema.md) for the distinct
 available/enabled/applied states and version comparison rules.
 
 | Area | Scope | Current reasoning owner |
@@ -220,14 +223,14 @@ confirmation question instead of silently using it as current.
    scan `.obsidian/` inside the vault or the project-root `backups/` directory;
    they are noncanonical operational state, not personal context.
 4. If an ordinary operation will mutate the vault, read [the backup procedure](references/backups.md)
-   and create its post-write backup after the mutation and relevant validation.
-   For schema migration, read [Migration](references/migration.md) and do not
-   create a separate backup: the migration helper owns that one final-state
-   backup. If the operation is read-only, do not create a backup merely because
-   the vault was inspected.
+   and create its provisional recovery backup before the first active write,
+   then its final backup after mutation and validation; discard the provisional
+   only after final success. For schema migration or deep maintenance, read the
+   relevant procedure and retain both backups. If the operation is read-only, do
+   not create a backup merely because the vault was inspected.
 5. Read the relevant reference procedure before writing or validating content:
-   - [Vault backups](references/backups.md) for the post-write archive and
-     retention rule.
+   - [Vault backups](references/backups.md) for provisional/final archives,
+     guarded discard, and ten-archive retention.
    - [Vault schema](references/vault-schema.md) for paths, frontmatter, links,
      and assertion categories.
    - [Initialization](references/initialization.md) for a missing or incomplete
@@ -273,10 +276,12 @@ End the response with a concise account of:
   synthesis; and
 - any confirmation needed from the user.
 
-For a mutation, also report the timestamped backup created after the write and
-which older backups were removed by the retention rule. If that backup fails,
-report the mutation as incomplete and do not perform further writes until the
-resulting vault is safely backed up.
+For a mutation, report the provisional recovery archive, final-state archive,
+any discarded provisional archive, and older archives removed by the ten-item
+retention rule. If a required backup fails, report the mutation as incomplete,
+keep the recovery archive, and do not perform further writes until the resulting
+vault is safely backed up. If guarded discard fails after final backup success,
+report the cleanup failure and keep the provisional rather than force-deleting it.
 
 If a request asks for advice, distinguish retrieved evidence, likely
 interpretations, unknowns, and recommendations. A recommendation must never

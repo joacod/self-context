@@ -25,10 +25,11 @@ not use the ignored real `vault/` as a mutation target.
   `python3 -m unittest tests.test_deep_maintenance_integration.DeepMaintenanceIntegrationTests.test_read_only_operations_preserve_complete_synthetic_tree`.
 - [ ] Run the copied-vault mutation smoke test and inspect its backup,
   migration, index, lint, search, and task-packet assertions:
-  `python3 -m unittest tests.test_deep_maintenance_integration.DeepMaintenanceIntegrationTests.test_migration_copy_creates_one_backup_and_interoperates_after_write`.
+  `python3 -m unittest tests.test_deep_maintenance_integration.DeepMaintenanceIntegrationTests.test_migration_copy_creates_recovery_and_final_backups`.
 - [ ] Validate first-class migration dry-run and write behavior, including
-  target `latest`, explicit `0.2`, one helper-owned backup, post-migration
-  ordinary/deep lint, catalog check, no-op behavior, and rollback coverage.
+  target `latest`, explicit `0.2`, helper-owned recovery and final backups,
+  post-migration ordinary/deep lint, catalog check, no-op behavior, and rollback
+  coverage.
 - [ ] Exercise the natural-language migration procedure: assessment requests
   stop after the read-only plan, authorized requests continue only when the
   plan is write-ready, and deep review/deep lint/deep update/vertical-contract

@@ -1,6 +1,6 @@
 # ADR 0016: Create Post-Write Vault Backups
 
-- **Status:** Accepted
+- **Status:** Superseded by [ADR 0017](0017-vault-backup-lifecycles.md)
 - **Date:** 2026-08-14
 - **Supersedes:** [ADR 0009](0009-pre-write-vault-backups.md)
 

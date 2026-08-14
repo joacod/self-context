@@ -56,8 +56,8 @@ Add Writing as a first-class vertical that reuses the existing vault contract:
   Advisor.
 - Existing v0.1 vaults do not require a schema migration; Writing navigation is
   added during new initialization or, for a requested mutation, minimally
-  created before the post-write backup. Read-only work treats a missing Writing
-  area as empty.
+  created within the provisional/final backup lifecycle. Read-only work treats a
+  missing Writing area as empty.
 - More sources can improve accuracy without requiring more durable traits.
 - Generic writing advice remains replaceable and is not confused with personal
   evidence.
