@@ -38,9 +38,10 @@ other vault file to the repository merely to preserve the directory.
 First determine the schema state from `SCHEMA.md`:
 
 - **Schema 0.1:** preserve its text and legacy layout. A first meaningful
-  mutation may create the required vertical area, index, and root link after
-  the normal pre-write backup, but must not add contract markers or silently
-  migrate to 0.2.
+  ordinary mutation may create the required vertical area, index, and root link
+  after the normal pre-write backup, but must not add contract markers or
+  silently migrate to 0.2. Only an explicitly authorized operation following
+  [Migration](migration.md) may upgrade the schema.
 - **Schema 0.2:** parse `vertical_contracts` strictly and treat it as
   selective. An available vertical is not enabled merely because it exists in
   the repository catalog. A first meaningful mutation that requires a vertical
@@ -53,10 +54,14 @@ First determine the schema state from `SCHEMA.md`:
   ambiguity. Do not guess a migration, infer a contract version, or create a
   vertical until the schema state is repaired or explicitly resolved.
 
-Read-only queries, lint, assessments, and deep review never enable or create a
-vertical and never create a backup merely because a vertical is absent. Use the
-explicit migration helper for a 0.1-to-0.2 upgrade; it backs up before writing,
-preserves pages and custom areas, and reports ambiguity.
+Read-only queries, lint, assessments, deep review, and migration assessment
+never enable or create a vertical and never create a backup merely because a
+vertical is absent. For an explicitly authorized schema upgrade, follow the
+canonical [Migration procedure](migration.md) and its explicit migration
+helper: the helper plans first, owns the single pre-write backup, preserves
+pages and custom areas, and reports
+ambiguity. The natural-language agent must not create a second backup before
+calling it.
 
 An existing vault may have more files, a different ordering, or a previously
 initialized schema. Preserve its knowledge and orient before changing it.

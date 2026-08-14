@@ -24,14 +24,22 @@ ingest my resume into SelfContext
 what does my context say about [a skill or experience]?
 review my context for stale or conflicting information
 based on my context, how should I position myself for [a role]?
+Migrate my SelfContext vault to the latest supported schema.
 ```
 
+For migration, SelfContext plans first, stops safely when the plan is blocked,
+creates one backup before writing, applies the supported migration chain, and
+validates and rolls back when necessary. The user does not need to know schema
+versions, migration paths, backup commands, index synchronization, or lint
+commands.
+
 The skills infer whether the request is for ingest, query, targeted review,
-ordinary lint, deep lint, read-only deep review, explicitly authorized deep
-update, or career, learning, writing, relationships, and media/taste evidence
-and reasoning. No custom CLI or slash command is required. Schema-specific
-activation and contract comparison are defined once in the SelfContext
-initialization and vault-schema references.
+ordinary lint, deep lint, migration assessment or application, read-only deep
+review, explicitly authorized deep update, or career, learning, writing,
+relationships, and media/taste evidence and reasoning. No custom CLI or slash
+command is required. Schema-specific activation, migration, and contract
+comparison are defined once in the SelfContext initialization, migration, and
+vault-schema references.
 
 ## Repository Validation
 
@@ -141,6 +149,7 @@ are deterministic, disposable aids rather than canonical storage.
 - [Architecture](docs/ARCHITECTURE.md): boundaries and lifecycle details.
 - [Roadmap](docs/ROADMAP.md): current scope and future experiments.
 - [Deep Maintenance Protocol](.agents/skills/self-context/references/deep-maintenance.md): explicit maintenance modes.
+- [Vault Migration](.agents/skills/self-context/references/migration.md): first-class natural-language schema migration.
 - [Deep Maintenance Release Checklist](docs/DEEP_MAINTENANCE_RELEASE_CHECKLIST.md): repeatable stabilization validation.
 - [Build record](docs/BUILD_PLAN.md): historical bootstrap phases and validation
   history.

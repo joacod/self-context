@@ -183,6 +183,41 @@ class RepositoryConsistencyTests(unittest.TestCase):
                     self.assertIsInstance(parsed, list)
         self.assertGreaterEqual(len(eval_paths), 2)
 
+    def test_migration_procedure_and_skill_routing_are_canonical(self) -> None:
+        skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+        procedure_path = SKILL_ROOT / "references/migration.md"
+        procedure = procedure_path.read_text(encoding="utf-8")
+        self.assertTrue(procedure_path.is_file())
+        self.assertIn("Migrate vault", skill)
+        self.assertIn("references/migration.md", skill)
+        self.assertIn("migration is the exception", skill.casefold())
+        self.assertIn("--check", procedure)
+        self.assertIn("--write", procedure)
+        self.assertIn("--target latest", procedure)
+        self.assertIn("one pre-write backup", procedure)
+        self.assertIn("sync_indexes.py", procedure)
+        self.assertIn("Deep review", procedure)
+        self.assertIn("Deep update", procedure)
+        self.assertIn("Vertical-contract update", procedure)
+
+    def test_migration_eval_corpus_covers_natural_language_boundaries(self) -> None:
+        evals = json.loads(
+            (SKILL_ROOT / "evals/evals.json").read_text(encoding="utf-8")
+        )["evals"]
+        prompts = {str(case["prompt"]) for case in evals}
+        required = {
+            "Migrate my SelfContext vault to the latest supported schema.",
+            "Upgrade my old vault.",
+            "Bring my vault up to date.",
+            "Check whether my vault needs migration.",
+            "Show me a migration plan for my old SelfContext vault, but do not change anything.",
+            "Deep review my old vault.",
+            "Deep lint my vault.",
+            "Deep update my old vault.",
+            "Update my Writing vertical contract using only its documented migration.",
+        }
+        self.assertTrue(required.issubset(prompts))
+
     def test_consistency_test_is_independent_of_a_real_vault(self) -> None:
         # This test does not open vault/; the actual ignored vault, when
         # present, is intentionally outside the consistency contract.

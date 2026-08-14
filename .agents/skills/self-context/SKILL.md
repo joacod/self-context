@@ -4,15 +4,17 @@ description: >
   Operate a user's local SelfContext Vault as the portable source of truth for
   personal context. Use this skill when asked to ingest, remember, add,
   update, organize, connect, query, retrieve, review, lint, validate, reconcile,
-  or inspect information about themselves, their history, goals, preferences,
+  migrate, upgrade, or inspect information about themselves, their history, goals, preferences,
   constraints, experiences, or evidence, even without saying "SelfContext" or
   "vault." Use for evidence retrieval supporting career questions, resumes,
   profiles, or professional positioning; a domain-specific Advisor Pack may add
   specialized reasoning. Also use it for resume text, recollections, profiles,
   authored writing, or other sources that should become durable personal
-  context, and for initializing, copying, restoring, backing up, or exporting a
-  Context Vault. Before any vault write, create the local retained backup
-  described below. Do not use it for generic resume writing, generic Obsidian
+  context, and for initializing, copying, restoring, backing up, exporting, or
+  bringing a Context Vault up to the latest supported format. Before any
+  ordinary vault write, create the local retained backup described below; schema
+  migration is the exception because its helper owns exactly one pre-write
+  backup. Do not use it for generic resume writing, generic Obsidian
   organization, Git ignore questions, or advice unrelated to the user's vault.
 compatibility: Requires local filesystem access from the repository root. Uses standard Markdown, YAML frontmatter, relative Markdown links, and optional Python 3 for deterministic linting.
 ---
@@ -59,9 +61,11 @@ skill, the current harness, the model, Obsidian, or a search tool disappears.
 - Treat the project-root `backups/` directory and its ZIP archives as private
   operational state, not context. Never index, search, lint, link to, or use
   backup contents as evidence.
-- Before the first write of any mutation-producing operation, create a backup
-  using [the backup procedure](references/backups.md). If backup creation fails,
-  do not modify canonical vault content.
+- Before the first write of any ordinary mutation-producing operation, create a
+  backup using [the backup procedure](references/backups.md). Schema migration
+  is the explicit exception: do not create a separate agent backup; invoke the
+  migration helper and let it create the one pre-write backup. If applicable
+  backup creation fails, do not modify canonical vault content.
 
 ## User Mode Boundary
 
@@ -92,12 +96,19 @@ Infer the operation from natural language:
   targeted.
 - **Lint:** validate deterministic structural and metadata integrity.
 - **Deep lint:** run the deterministic broad maintenance validator without
-  deciding whether claims are true.
+  deciding whether claims are true. Deep lint never migrates.
+- **Migrate vault:** assess or apply deterministic schema migrations through the
+  canonical [migration procedure](references/migration.md). Recognize intent
+  such as “migrate my vault,” “upgrade my old vault,” “bring my vault up to
+  date,” “use the latest SelfContext format,” or “apply all supported vault
+  migrations,” even when the user does not say “schema.”
 - **Deep review:** perform the explicit, read-only full-vault maintenance
-  protocol; it needs no backup and creates no report unless retention is asked.
+  protocol; it needs no backup, never applies migration, and creates no report
+  unless retention is asked.
 - **Deep update:** perform an explicitly authorized mutating maintenance batch
   with snapshot validation, one backup, bounded structural/approved changes,
-  and post-write validation.
+  and post-write validation. It must not silently migrate an old schema; an
+  explicitly requested schema migration delegates to the canonical procedure.
 - **Adopt vertical / update vertical contract:** assess read-only first, then
   mutate only after explicit authorization under the deep-update rules.
 - **Task context packet:** produce the smallest relevant derived retrieval
@@ -205,9 +216,11 @@ confirmation question instead of silently using it as current.
    provenance, freshness, status, and source links before answering. Do not
    scan `.obsidian/` inside the vault or the project-root `backups/` directory;
    they are noncanonical operational state, not personal context.
-4. If the operation will mutate the vault, read [the backup procedure](references/backups.md)
-   and create the pre-write backup before the first write. If it is read-only,
-   do not create a backup merely because the vault was inspected.
+4. If an ordinary operation will mutate the vault, read [the backup procedure](references/backups.md)
+   and create its pre-write backup before the first write. For schema migration,
+   read [Migration](references/migration.md) and do not create a separate
+   backup: the migration helper owns that one backup. If the operation is
+   read-only, do not create a backup merely because the vault was inspected.
 5. Read the relevant reference procedure before writing or validating content:
    - [Vault backups](references/backups.md) for the pre-write archive and
      retention rule.
@@ -227,6 +240,9 @@ confirmation question instead of silently using it as current.
      evidence-backed patterns, exceptions, and taste evolution.
    - [Review and lint](references/review-and-lint.md) for targeted review and
      ordinary/deep deterministic validation.
+   - [Migration](references/migration.md) for first-class schema migration
+     assessment, target resolution, authorization, transaction, rollback, and
+     reporting.
    - [Deep maintenance](references/deep-maintenance.md) for deep lint, read-only
      deep review, explicit deep update, vertical adoption/contract changes, and
      task context packets.

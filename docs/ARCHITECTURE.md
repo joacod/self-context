@@ -260,7 +260,8 @@ an older applied version is valid but emits an update-available warning; a newer
 applied version is an error. Unknown IDs, invalid versions, and duplicate
 entries for one ID are errors. The small parser accepts only non-negative
 integer versions such as `writing@1`; semantic-version strings and ranges are
-unsupported. Schema 0.1 has no contract markers and is not silently migrated.
+unsupported. Schema 0.1 has no contract markers and is not silently migrated. An explicit
+migration follows the canonical [Vault Migration procedure](../.agents/skills/self-context/references/migration.md): the helper detects the current and latest supported schema, resolves a validated registry path, stages the complete final state, creates one backup, and applies or rolls back one bounded transaction. It never rewrites personal evidence.
 
 ## Core Operations
 
@@ -269,9 +270,10 @@ The SelfContext skill recognizes natural-language intent and applies a lifecycle
 1. **Ingest** or update information, preserve useful provenance, avoid duplicate concepts, connect meaningful links, update navigation, and log the operation. Triage only high-impact or unresolved items for a bounded, batched confirmation follow-up. Authored Writing sources use a local-analysis and impact-comparison step before durable profile updates; Learning evidence uses a local comparison to separate exposure, understanding, demonstration, gaps, and corrections; Relationships separates shared context from third-party profiling; and Media / Taste separates consumption from reaction and pattern evidence.
 2. **Query** through orientation, indexes, targeted file search, metadata, and link traversal. A trivial retrieval returns an answer without creating a page; a substantial reusable synthesis or explicitly retained future-use guidance may be stored under derived material after a duplicate, ownership, contradiction, and freshness check. Review status and freshness before using context as current.
 3. **Review** unresolved inferences, stale context, contradictions, ambiguous claims, missing provenance, and important changes needing attention.
-4. **Lint** structural and epistemic integrity, including frontmatter, links, indexes, duplicates, metadata consistency, freshness, and schema drift.
-5. **Advise** through an Advisor Pack that retrieves evidence from the core skill and applies a domain-specific reasoning framework.
-6. **Maintain** through ordinary lint, deterministic deep lint, read-only deep review, and explicitly authorized deep update. Deep review uses snapshots and bounded semantic passes but never writes by default. Deep update creates one backup before mutation and stops on failed post-write validation.
+4. **Lint** structural and epistemic integrity, including frontmatter, links, indexes, duplicates, metadata consistency, freshness, and schema drift. Lint and deep lint never migrate.
+5. **Migrate** through the canonical migration procedure when the user requests an assessment or explicitly authorizes an upgrade. The natural-language workflow plans first and delegates the single backup and transaction to the migration helper.
+6. **Advise** through an Advisor Pack that retrieves evidence from the core skill and applies a domain-specific reasoning framework.
+7. **Maintain** through ordinary lint, deterministic deep lint, read-only deep review, and explicitly authorized deep update. Deep review uses snapshots and bounded semantic passes but never writes by default. Deep update does not silently migrate an old schema.
 
 `sync_indexes.py` compiles deterministic managed catalog blocks from page
 metadata while preserving user-written text outside markers. It requires one

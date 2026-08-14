@@ -330,5 +330,61 @@
   {
     "query": "Review my older applied vertical contract against its documented migration, and report no meaningful update when no evidence is affected.",
     "should_trigger": true
+  },
+  {
+    "query": "Migrate my SelfContext vault to the latest supported schema.",
+    "should_trigger": true
+  },
+  {
+    "query": "Upgrade my old vault.",
+    "should_trigger": true
+  },
+  {
+    "query": "Bring my vault up to date.",
+    "should_trigger": true
+  },
+  {
+    "query": "Check whether my vault needs migration.",
+    "should_trigger": true
+  },
+  {
+    "query": "Show me a migration plan for my old SelfContext vault, but do not change anything.",
+    "should_trigger": true
+  },
+  {
+    "query": "Apply all supported vault migrations and tell me what was preserved.",
+    "should_trigger": true
+  },
+  {
+    "query": "Deep review my old vault without changing it.",
+    "should_trigger": true
+  },
+  {
+    "query": "Deep lint my vault and do not migrate it.",
+    "should_trigger": true
+  },
+  {
+    "query": "Deep update my old vault, but do not implicitly migrate its schema.",
+    "should_trigger": true
+  },
+  {
+    "query": "Update my Writing vertical contract using only documented contract migrations.",
+    "should_trigger": true
+  },
+  {
+    "query": "Migrate a generic database from schema 1 to schema 2; this is not a SelfContext vault.",
+    "should_trigger": false
+  },
+  {
+    "query": "Upgrade a web app's database schema and run its production migration scripts.",
+    "should_trigger": false
+  },
+  {
+    "query": "Write a generic semver migration engine for package releases without reading my vault.",
+    "should_trigger": false
+  },
+  {
+    "query": "Bring this fictional documentation repository up to date without using personal context.",
+    "should_trigger": false
   }
 ]
