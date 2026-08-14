@@ -2,21 +2,19 @@
 name: self-context
 description: >
   Operate a user's local SelfContext Vault as the portable source of truth for
-  personal context. Use this skill when asked to ingest, remember, add,
-  update, organize, connect, query, retrieve, review, lint, validate, reconcile,
-  migrate, upgrade, or inspect information about themselves, their history, goals, preferences,
-  constraints, experiences, or evidence, even without saying "SelfContext" or
-  "vault." Use for evidence retrieval supporting career questions, resumes,
-  profiles, or professional positioning; a domain-specific Advisor Pack may add
-  specialized reasoning. Also use it for resume text, recollections, profiles,
-  authored writing, or other sources that should become durable personal
-  context, and for initializing, copying, restoring, backing up, exporting, or
-  bringing a Context Vault up to the latest supported format, including the
-  shorthand `migrate self-context latest`. Before any ordinary vault write,
-  create the local retained backup described below; schema
-  migration is the exception because its helper owns exactly one pre-write
-  backup. Do not use it for generic resume writing, generic Obsidian
-  organization, Git ignore questions, or advice unrelated to the user's vault.
+  personal context. Use whenever the user asks to ingest, remember, add, update,
+  organize, connect, query, retrieve, review, lint, validate, reconcile,
+  migrate, upgrade, or inspect information about themselves, their history,
+  goals, preferences, constraints, or evidence, even if they do not say
+  SelfContext or vault. Also use it for evidence retrieval supporting career,
+  learning, writing, relationship, or media/taste advice; resumes, profiles,
+  authored writing, recollections, or other sources that should become durable
+  context; and initializing, copying, restoring, backing up, exporting, or
+  migrating a vault to the latest supported format, including `migrate
+  self-context latest`. Before ordinary vault writes, create the local retained
+  backup; schema migration is the exception because its helper owns the
+  pre-write backup. Do not use for generic resume writing, Obsidian
+  organization, Git-ignore questions, or unrelated advice.
 compatibility: Requires local filesystem access from the repository root. Uses standard Markdown, YAML frontmatter, relative Markdown links, and optional Python 3 for deterministic linting.
 ---
 
