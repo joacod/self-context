@@ -388,6 +388,18 @@
     "should_trigger": false
   },
   {
+    "query": "migrate vault latest",
+    "should_trigger": true
+  },
+  {
+    "query": "deep review vault",
+    "should_trigger": true
+  },
+  {
+    "query": "deep update vault",
+    "should_trigger": true
+  },
+  {
     "query": "migrate self-context latest",
     "should_trigger": true
   }

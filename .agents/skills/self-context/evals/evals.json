@@ -991,12 +991,48 @@
     {
       "id": 89,
       "prompt": "migrate self-context latest",
-      "expected_output": "The short natural-language form triggers the SelfContext migration workflow and resolves latest through the repository registry.",
+      "expected_output": "The legacy short natural-language form remains a backward-compatible alias for the SelfContext migration workflow and resolves latest through the repository registry.",
       "expectations": [
-        "The SelfContext skill triggers from the lowercase shorthand.",
+        "The SelfContext skill triggers from the legacy lowercase shorthand.",
         "latest resolves to the repository's latest supported schema rather than a hard-coded version.",
         "The authorized flow plans first, lets the helper own exactly one backup, and validates the final state.",
         "A blocked or ambiguous plan stops before active-vault writes."
+      ],
+      "files": []
+    },
+    {
+      "id": 90,
+      "prompt": "migrate vault latest",
+      "expected_output": "The canonical short natural-language form triggers the SelfContext migration workflow and resolves latest through the repository registry.",
+      "expectations": [
+        "The SelfContext skill triggers from the canonical lowercase shorthand.",
+        "latest resolves to the repository's latest supported schema rather than a hard-coded version.",
+        "The authorized flow plans first, lets the helper own exactly one backup, and validates the final state.",
+        "A blocked or ambiguous plan stops before active-vault writes."
+      ],
+      "files": []
+    },
+    {
+      "id": 91,
+      "prompt": "deep review vault",
+      "expected_output": "The canonical short form triggers the full read-only deep-maintenance review and returns a bounded plan without changing the vault.",
+      "expectations": [
+        "The SelfContext skill routes the phrase to deep review rather than ordinary targeted review.",
+        "The review ignores backups and .obsidian viewer state.",
+        "No backup, active-vault write, log entry, or retained report is created by default.",
+        "The plan separates safe structural changes, semantic proposals, human decisions, and intentional no-change items."
+      ],
+      "files": []
+    },
+    {
+      "id": 92,
+      "prompt": "deep update vault",
+      "expected_output": "The canonical short form authorizes the bounded deep-update procedure after a reviewed plan, preserving evidence boundaries and never implying schema migration.",
+      "expectations": [
+        "The update reruns deep lint and checks the reviewed snapshot before mutation.",
+        "Exactly one ordinary pre-write backup is created before active-vault writes.",
+        "Only safe structural changes and explicitly approved semantic proposals are applied; human decisions remain unresolved.",
+        "Ordinary lint, deep lint, catalog validation, and changed/unchanged reporting are performed, and schema migration is not rerun implicitly."
       ],
       "files": []
     }

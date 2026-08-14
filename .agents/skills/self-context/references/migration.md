@@ -70,7 +70,8 @@ Requests such as these explicitly authorize the deterministic migration:
 - “Bring my old vault up to date.”
 - “Apply the required schema migrations.”
 - “Use the latest SelfContext format.”
-- `migrate self-context latest` (the shorthand form of the same authorized request).
+- `migrate vault latest` (the canonical shorthand form of the same authorized request).
+- `migrate self-context latest` (a backward-compatible legacy alias).
 
 Do not ask for a second confirmation merely because migration writes
 `SCHEMA.md`, indexes, or other control files. The request already authorizes

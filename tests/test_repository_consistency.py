@@ -187,8 +187,12 @@ class RepositoryConsistencyTests(unittest.TestCase):
         skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
         procedure_path = SKILL_ROOT / "references/migration.md"
         procedure = procedure_path.read_text(encoding="utf-8")
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
         self.assertTrue(procedure_path.is_file())
         self.assertIn("Migrate vault", skill)
+        for shortcut in ("migrate vault latest", "deep review vault", "deep update vault"):
+            self.assertIn(shortcut, skill.casefold())
+            self.assertIn(shortcut, readme.casefold())
         self.assertIn("migrate self-context latest", skill.casefold())
         self.assertIn("references/migration.md", skill)
         self.assertIn("migration is the exception", skill.casefold())
@@ -197,6 +201,8 @@ class RepositoryConsistencyTests(unittest.TestCase):
         self.assertIn("--target latest", procedure)
         self.assertIn("one pre-write backup", procedure)
         self.assertIn("sync_indexes.py", procedure)
+        self.assertIn("migrate vault latest", procedure.casefold())
+        self.assertIn("migrate self-context latest", procedure.casefold())
         self.assertIn("Deep review", procedure)
         self.assertIn("Deep update", procedure)
         self.assertIn("Vertical-contract update", procedure)
@@ -216,6 +222,9 @@ class RepositoryConsistencyTests(unittest.TestCase):
             "Deep lint my vault.",
             "Deep update my old vault.",
             "Update my Writing vertical contract using only its documented migration.",
+            "migrate vault latest",
+            "deep review vault",
+            "deep update vault",
             "migrate self-context latest",
         }
         self.assertTrue(required.issubset(prompts))

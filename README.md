@@ -25,7 +25,7 @@ what does my context say about [a skill or experience]?
 review my context for stale or conflicting information
 based on my context, how should I position myself for [a role]?
 Migrate my SelfContext vault to the latest supported schema.
-migrate self-context latest
+migrate vault latest
 ```
 
 For migration, SelfContext plans first, stops safely when the plan is blocked,
@@ -34,25 +34,18 @@ validates and rolls back when necessary. The user does not need to know schema
 versions, migration paths, backup commands, index synchronization, or lint
 commands.
 
-After a schema or maintenance improvement, use these three copy-paste prompts
+After a schema or maintenance improvement, use these three copy-paste shortcuts
 in order:
 
-1. **Migrate to the latest supported schema:** `migrate self-context latest`
-2. **Use this prompt first for a read-only deep review:**
+```text
+migrate vault latest
+deep review vault
+deep update vault
+```
 
-   ```text
-   Deep review my entire SelfContext vault for current-version organization and retrieval readiness. The vault is already migrated to the latest schema. Treat existing pages as previously ingested context, not fresh evidence. Inspect canonical content for ownership, duplicates, page granularity, provenance, links, indexes, vertical placement, stale or contradictory claims, review items, and reusable derived syntheses. Do not modify anything yet. Produce a bounded plan separating safe structural changes, semantic proposals, human decisions, and intentional no-change items. Ignore backups/ and .obsidian/.
-   ```
-
-3. **Then, after reviewing the plan, use this prompt for the deep update:**
-
-   ```text
-   Deep update my SelfContext vault using the approved review plan. Apply safe structural changes and only the semantic proposals I approve. Preserve source records, provenance, verification states, contradictions, and personal wording. Do not invent facts, merge ambiguous concepts, or run schema migration again. Create one backup, update indexes and links, run ordinary lint, deep lint, and catalog validation, then report changed and intentionally unchanged files.
-   ```
-
-The deep review is read-only. Review its plan before sending the deep update
-prompt; the update applies only safe structural changes and semantic proposals
-you approve.
+`deep review vault` is read-only and returns a bounded plan. After reviewing and
+approving that plan, `deep update vault` applies the canonical deep-update
+procedure. These are natural-language shortcuts; no custom CLI is required.
 
 The skills infer whether the request is for ingest, query, targeted review,
 ordinary lint, deep lint, migration assessment or application, read-only deep

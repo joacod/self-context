@@ -1,19 +1,19 @@
 ---
 name: self-context
 description: >
-  Operate a user's local SelfContext Vault as the portable source of truth for
-  personal context. Use whenever the user asks to ingest, remember, add, update,
-  organize, connect, query, retrieve, review, lint, validate, reconcile,
-  migrate, upgrade, or inspect information about themselves, their history,
-  goals, preferences, constraints, or evidence, even if they do not say
-  SelfContext or vault. Also use it for evidence retrieval supporting career,
-  learning, writing, relationship, or media/taste advice; resumes, profiles,
-  authored writing, recollections, or other sources that should become durable
-  context; and initializing, copying, restoring, backing up, exporting, or
-  migrating a vault to the latest supported format, including `migrate
-  self-context latest`. Before ordinary vault writes, create the local retained
-  backup; schema migration is the exception because its helper owns the
-  pre-write backup. Do not use for generic resume writing, Obsidian
+  Operate a user's SelfContext Vault as the source of truth for personal
+  context. Use for requests to ingest, remember, add, update, organize,
+  connect, query, retrieve, review, lint, validate, reconcile, migrate,
+  upgrade, or inspect a person's context, history, goals, preferences,
+  constraints, or evidence, even when they do not name SelfContext or a vault.
+  Also use it for evidence retrieval supporting career, learning, writing,
+  relationship, or media/taste advice; supplied resumes, profiles, authored
+  writing, recollections, or other durable sources; and vault initialization,
+  copying, restoring, backing up, exporting, or migration to the latest
+  supported format. Canonical shortcuts include `migrate vault latest`,
+  `deep review vault`, and `deep update vault`. Before ordinary writes, create
+  a retained backup; schema migration is the exception because its helper owns
+  the pre-write backup. Do not use for generic resume writing, Obsidian
   organization, Git-ignore questions, or unrelated advice.
 compatibility: Requires local filesystem access from the repository root. Uses standard Markdown, YAML frontmatter, relative Markdown links, and optional Python 3 for deterministic linting.
 ---
@@ -100,15 +100,17 @@ Infer the operation from natural language:
   canonical [migration procedure](references/migration.md). Recognize intent
   such as “migrate my vault,” “upgrade my old vault,” “bring my vault up to
   date,” “use the latest SelfContext format,” “apply all supported vault
-  migrations,” or the shorthand `migrate self-context latest`, even when the
-  user does not say “schema.”
+  migrations,” or the canonical shorthand `migrate vault latest`. The older
+  `migrate self-context latest` shorthand remains a backward-compatible alias.
 - **Deep review:** perform the explicit, read-only full-vault maintenance
-  protocol; it needs no backup, never applies migration, and creates no report
-  unless retention is asked.
-- **Deep update:** perform an explicitly authorized mutating maintenance batch
-  with snapshot validation, one backup, bounded structural/approved changes,
-  and post-write validation. It must not silently migrate an old schema; an
-  explicitly requested schema migration delegates to the canonical procedure.
+  protocol; the canonical shorthand is `deep review vault`. It needs no backup,
+  never applies migration, and creates no report unless retention is asked.
+- **Deep update:** perform an explicitly authorized mutating maintenance batch;
+  the canonical shorthand is `deep update vault`. Use it after a reviewed plan,
+  applying safe structural changes and only explicitly approved semantic
+  proposals, with snapshot validation, one backup, and post-write validation.
+  It must not silently migrate an old schema; an explicitly requested schema
+  migration delegates to the canonical procedure.
 - **Adopt vertical / update vertical contract:** assess read-only first, then
   mutate only after explicit authorization under the deep-update rules.
 - **Task context packet:** produce the smallest relevant derived retrieval
