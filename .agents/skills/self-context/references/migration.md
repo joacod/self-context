@@ -70,10 +70,13 @@ Requests such as these explicitly authorize the deterministic migration:
 - “Bring my old vault up to date.”
 - “Apply the required schema migrations.”
 - “Use the latest SelfContext format.”
+- `migrate self-context latest` (the shorthand form of the same authorized request).
 
 Do not ask for a second confirmation merely because migration writes
 `SCHEMA.md`, indexes, or other control files. The request already authorizes
-this bounded structural operation.
+this bounded structural operation. In the shorthand form, `latest` resolves at
+runtime to the latest target exposed by the repository migration registry; do
+not hard-code a schema version in the natural-language routing.
 
 For an authorized request:
 
