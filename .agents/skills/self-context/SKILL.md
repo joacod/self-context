@@ -1,8 +1,8 @@
 ---
 name: self-context
 description: >
-  Operate a user's SelfContext Vault as the source of truth for personal
-  context. Use whenever the user asks to ingest, remember, add, update,
+  Operate a user's local SelfContext Vault as the portable source of truth for
+  personal context. Use whenever the user asks to ingest, remember, add, update,
   organize, connect, query, retrieve, review, lint, validate, reconcile,
   migrate, upgrade, or inspect information about themselves, their history,
   goals, preferences, constraints, or evidence, even if they do not say
@@ -10,11 +10,11 @@ description: >
   learning, writing, relationship, or media/taste advice; resumes, profiles,
   authored writing, recollections, or other sources that should become durable
   context; and initializing, copying, restoring, backing up, exporting, or
-  migrating a vault to the latest format, including `migrate self-context
-  latest`. Before ordinary vault writes, create the retained backup; schema
-  migration is the exception because its helper owns the pre-write backup. Do
-  not use for generic resume writing, Obsidian organization, Git-ignore
-  questions, or unrelated advice.
+  migrating a vault to the latest supported format, including `migrate
+  self-context latest`. Before ordinary vault writes, create the local retained
+  backup; schema migration is the exception because its helper owns the
+  pre-write backup. Do not use for generic resume writing, Obsidian
+  organization, Git-ignore questions, or unrelated advice.
 compatibility: Requires local filesystem access from the repository root. Uses standard Markdown, YAML frontmatter, relative Markdown links, and optional Python 3 for deterministic linting.
 ---
 
