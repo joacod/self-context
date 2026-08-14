@@ -2190,8 +2190,10 @@ def main(argv: Optional[List[str]] = None) -> int:
             prefix = str(item.get("severity", "info")).upper()
             location = f"{item.get('path')}: " if item.get("path") else ""
             print(f"{prefix}: {location}{item.get('message', '')}")
+        if public.get("pre_write_backup"):
+            print(f"Recovery backup: {public['pre_write_backup']}")
         if public.get("backup"):
-            print(f"Backup: {public['backup']}")
+            print(f"Final backup: {public['backup']}")
         if public.get("changed"):
             print("Changed: " + ", ".join(public["changed"]))
         elif public.get("status") == "already-migrated":
