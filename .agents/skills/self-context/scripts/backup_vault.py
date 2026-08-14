@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-"""Create and retain pre-write ZIP backups for a SelfContext vault.
+"""Create and manage ZIP snapshots for a SelfContext vault.
 
-Archives contain private vault content and are not encrypted.  No encryption
+Callers use snapshots as either provisional pre-write recovery archives or
+post-write final-state archives. Archives contain private vault content and are
+not encrypted. No encryption
 dependency is used; users who need encryption should protect or copy the ZIPs
 with a separate user-controlled tool.
 """
@@ -24,7 +26,7 @@ BACKUP_DIR_NAME = "backups"
 BACKUP_NAME_PATTERN = re.compile(
     r"^vault-(?P<timestamp>\d{8}T\d{6}Z)(?:-(?P<sequence>\d+))?\.zip$"
 )
-RETENTION_LIMIT = 3
+RETENTION_LIMIT = 10
 
 
 class BackupError(RuntimeError):
@@ -57,6 +59,50 @@ def _managed_backups(backup_dir: Path) -> List[Path]:
         and BACKUP_NAME_PATTERN.fullmatch(path.name)
     ]
     return sorted(backups, key=_backup_sort_key)
+
+
+def discard_backup(vault: Path, backup: Path) -> bool:
+    """Discard one managed backup inside the vault's project backup directory.
+
+    Return ``False`` when the already-validated managed path is absent. This is
+    useful when retention removed a provisional archive before the caller's
+    cleanup step; arbitrary paths and symlinks are always rejected.
+    """
+
+    supplied = vault.expanduser()
+    if supplied.is_symlink():
+        raise BackupError(f"vault path is a symlink: {supplied}")
+    if not supplied.exists():
+        raise BackupError(f"vault does not exist: {supplied}")
+    if not supplied.is_dir():
+        raise BackupError(f"vault path is not a directory: {supplied}")
+    resolved_vault = supplied.resolve(strict=True)
+
+    backup_dir = resolved_vault.parent / BACKUP_DIR_NAME
+    if backup_dir.is_symlink() or not backup_dir.is_dir():
+        raise BackupError(f"backup directory is not a real directory: {backup_dir}")
+
+    candidate = backup.expanduser()
+    if candidate.is_symlink():
+        raise BackupError(f"backup path is a symlink: {candidate}")
+    if BACKUP_NAME_PATTERN.fullmatch(candidate.name) is None:
+        raise BackupError(f"not a managed backup filename: {candidate}")
+    try:
+        candidate.resolve(strict=False).relative_to(backup_dir.resolve(strict=True))
+    except ValueError as error:
+        raise BackupError(f"backup path is outside the project backup directory: {candidate}") from error
+    except OSError as error:
+        raise BackupError(f"could not resolve backup path: {candidate}") from error
+
+    if not candidate.exists():
+        return False
+    if not candidate.is_file():
+        raise BackupError(f"backup path is not a regular file: {candidate}")
+    try:
+        candidate.unlink()
+    except OSError as error:
+        raise BackupError(f"could not discard backup: {candidate}") from error
+    return True
 
 
 def _backup_sort_key(path: Path) -> Tuple[str, int, str]:
@@ -149,7 +195,7 @@ def _validate_temporary_zip(path: Path, vault: Path) -> None:
 def create_backup(
     vault: Path, now: Optional[dt.datetime] = None
 ) -> Tuple[Path, List[Path]]:
-    """Create one backup and delete managed archives older than the newest three."""
+    """Create one snapshot and retain only the newest managed archives."""
 
     supplied = vault.expanduser()
     if supplied.is_symlink():
@@ -208,8 +254,15 @@ def create_backup(
         for old_backup in removed:
             old_backup.unlink()
     except OSError as error:
+        try:
+            destination.unlink(missing_ok=True)
+        except OSError as cleanup_error:
+            raise BackupError(
+                f"created {destination}, but could not enforce {RETENTION_LIMIT}-backup retention "
+                f"or remove the new archive: {cleanup_error}"
+            ) from error
         raise BackupError(
-            f"created {destination}, but could not enforce {RETENTION_LIMIT}-backup retention"
+            f"could not enforce {RETENTION_LIMIT}-backup retention; removed new archive {destination}"
         ) from error
 
     return destination, removed
@@ -217,18 +270,34 @@ def create_backup(
 
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Create a timestamped pre-write backup of a SelfContext vault"
+        description="Create a timestamped snapshot of a SelfContext vault"
     )
     parser.add_argument(
         "vault", nargs="?", default="vault", help="Path to the vault (default: ./vault)"
     )
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument(
+        "--discard",
+        metavar="BACKUP",
+        help="Discard one managed provisional backup after a final backup succeeds",
+    )
     args = parser.parse_args(argv)
 
     try:
-        destination, removed = create_backup(Path(args.vault))
+        if args.discard:
+            discarded = discard_backup(Path(args.vault), Path(args.discard))
+        else:
+            destination, removed = create_backup(Path(args.vault))
     except BackupError as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 1
+
+    if args.discard:
+        if discarded:
+            print(f"Discarded provisional vault backup: {args.discard}")
+        else:
+            print(f"Provisional vault backup was already absent: {args.discard}")
+        return 0
 
     print(f"Created vault backup: {destination}")
     for old_backup in removed:

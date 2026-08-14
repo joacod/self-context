@@ -1,7 +1,7 @@
 # Private Context Vault data. Never force-add files from this directory.
 /vault/
 
-# Private pre-write vault backups. Never force-add files from this directory.
+# Private vault backups. Never force-add files from this directory.
 /backups/
 
 # Temporary skill evaluation workspaces.

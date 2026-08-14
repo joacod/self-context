@@ -169,7 +169,7 @@ An explicit retention request is a continuity signal, not permission to promote
 an interpretation into a fact. A positive reaction without a future-use signal
 does not require persistence.
 
-### Pre-write checks
+### Persistence checks
 
 Before creating or updating a derived page, perform a lightweight semantic
 check:
@@ -236,9 +236,10 @@ uncertainty and freshness, and label conclusions as derived. If the result is
 advice, label recommendations as recommendations. Never phrase a recommendation
 as a newly confirmed goal.
 
-Before creating the derived page, updating its index, or appending any
-operation log for the query, create the pre-write backup described in [Vault
-Backups](backups.md).
+For a persisted query result, create the provisional recovery backup before
+creating or updating the derived page, index, or operation log. Validate the
+resulting vault, create the final backup, and discard the provisional only after
+final backup success as described in [Vault Backups](backups.md).
 
 ## Task context packets
 

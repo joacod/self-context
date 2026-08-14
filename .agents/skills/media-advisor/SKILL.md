@@ -52,8 +52,8 @@ packet is derived output and remains ephemeral unless explicitly retained.
 
 For a request to record, correct, abandon, revisit, supersede, or delete taste
 context, let SelfContext apply the Media / Taste procedure, schema-specific
-activation, and pre-write backup. The Advisor does not define contract markers
-or mutate the profile merely by answering.
+activation, and provisional/final backup lifecycle. The Advisor does not define
+contract markers or mutate the profile merely by answering.
 
 ## Evidence discipline
 
@@ -119,6 +119,7 @@ linked `derived_synthesis`. It must remain derived and must not update a work
 reaction, taste pattern, `core/` preference, or verification state automatically.
 
 A supplied work reaction or explicit request to update taste context is an
-ingest operation: preserve the smallest evidence, update the appropriate index,
-create a backup before writing, and report whether the result was a meaningful
-update or **No meaningful Media / Taste update**.
+ingest operation: create the provisional recovery backup, preserve the smallest
+evidence, update the appropriate index, validate the result, create the final
+backup, discard the provisional after final backup success, and report whether
+the result was a meaningful update or **No meaningful Media / Taste update**.

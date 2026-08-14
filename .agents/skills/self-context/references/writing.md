@@ -334,9 +334,11 @@ communication fit, but Writing observations do not become career evidence.
 ## Persistence and Safety
 
 Writing source preservation, profile changes, index updates, and operation logs
-are vault mutations. Follow the shared pre-write backup procedure before the
-first write. Read-only local analysis and a no-op comparison do not require a
-backup unless a source or log is actually persisted.
+are vault mutations. Create the provisional recovery backup before the first
+write, complete the authorized writes and relevant validation, create the final
+backup, and discard the provisional only after final backup success. Read-only
+local analysis and a no-op comparison do not require a backup unless a source or
+log is actually persisted.
 
 Drafts, brainstorming, critiques, and reader analyses normally remain in the
 response. A substantial reusable synthesis may be stored under `derived/` with

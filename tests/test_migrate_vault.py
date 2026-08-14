@@ -4,6 +4,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 from typing import Mapping
 from unittest import mock
@@ -206,7 +207,7 @@ class MigrateVaultTests(unittest.TestCase):
             self.assertEqual(before, self.file_bytes(vault))
             self.assertEqual(self.backup_files(root), [])
 
-    def test_well_formed_migration_creates_one_backup_and_exact_contract(self) -> None:
+    def test_well_formed_migration_creates_recovery_and_final_backups(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             vault = self.make_legacy(root)
@@ -216,8 +217,19 @@ class MigrateVaultTests(unittest.TestCase):
             self.assertEqual(report["status"], "success")
             self.assertIn("schema_version: 0.2", (vault / "SCHEMA.md").read_text())
             self.assertIn("- career@1", (vault / "SCHEMA.md").read_text())
-            self.assertEqual(len(self.backup_files(root)), 1)
+            self.assertEqual(len(self.backup_files(root)), 2)
+            self.assertTrue(Path(report["pre_write_backup"]).is_file())
             self.assertTrue(Path(report["backup"]).is_file())
+            self.assertEqual(
+                set(report["backups"]),
+                {str(path.resolve()) for path in self.backup_files(root)},
+            )
+            with zipfile.ZipFile(report["pre_write_backup"]) as archive:
+                self.assertIn(b"schema_version: 0.1", archive.read("SCHEMA.md"))
+            with zipfile.ZipFile(report["backup"]) as archive:
+                self.assertIn(b"schema_version: 0.2", archive.read("SCHEMA.md"))
+                self.assertIn("career/index.md", archive.namelist())
+                self.assertIn(b"migrate_schema_0_1_to_0_2", archive.read("log.md"))
             self.assertIn("migrate_schema_0_1_to_0_2", (vault / "log.md").read_text())
             self.assertTrue((vault / "custom-archive" / "historical.md").is_file())
 
@@ -314,7 +326,7 @@ class MigrateVaultTests(unittest.TestCase):
             self.assertEqual(before, self.file_bytes(vault))
             self.assertEqual(self.backup_files(root), [])
 
-    def test_backup_failure_causes_zero_active_writes(self) -> None:
+    def test_pre_write_backup_failure_causes_zero_active_writes(self) -> None:
         module = self.migration_module()
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -327,8 +339,37 @@ class MigrateVaultTests(unittest.TestCase):
             ):
                 result = module.apply_migration(vault)
             self.assertTrue(any(item["classification"] == "backup" for item in result["findings"]))
+            self.assertTrue(any("pre-write recovery backup failed" in item["message"] for item in result["findings"]))
             self.assertEqual(before, self.file_bytes(vault))
             self.assertEqual(self.backup_files(root), [])
+
+    def test_post_write_backup_failure_rolls_back_active_writes(self) -> None:
+        module = self.migration_module()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            vault = self.make_legacy(root)
+            before = self.file_bytes(vault)
+            real_create_backup = module.backup_vault.create_backup
+            calls = {"count": 0}
+
+            def create_recovery_then_fail(path: Path):
+                calls["count"] += 1
+                if calls["count"] == 1:
+                    return real_create_backup(path)
+                raise module.backup_vault.BackupError("injected final backup failure")
+
+            with mock.patch.object(
+                module.backup_vault,
+                "create_backup",
+                side_effect=create_recovery_then_fail,
+            ):
+                result = module.apply_migration(vault)
+            self.assertTrue(any(item["classification"] == "backup" for item in result["findings"]))
+            self.assertTrue(any("post-write backup failed" in item["message"] for item in result["findings"]))
+            self.assertEqual(result["rollback"]["status"], "rolled-back")
+            self.assertEqual(before, self.file_bytes(vault))
+            self.assertEqual(len(self.backup_files(root)), 1)
+            self.assertTrue(Path(result["pre_write_backup"]).is_file())
 
     def test_replacement_failure_rolls_back_every_touched_file_and_temp_files(self) -> None:
         module = self.migration_module()
@@ -463,7 +504,7 @@ class MigrateVaultTests(unittest.TestCase):
             self.assertEqual(before, self.file_bytes(vault))
             self.assertEqual(self.backup_files(root), [])
 
-    def test_migration_helper_owns_exactly_one_backup(self) -> None:
+    def test_migration_helper_owns_recovery_and_final_backups(self) -> None:
         module = self.migration_module()
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -475,8 +516,8 @@ class MigrateVaultTests(unittest.TestCase):
             ) as create_backup:
                 result = module.apply_migration(vault, target="latest")
             self.assertEqual(result["status"], "success")
-            self.assertEqual(create_backup.call_count, 1)
-            self.assertEqual(len(self.backup_files(root)), 1)
+            self.assertEqual(create_backup.call_count, 2)
+            self.assertEqual(len(self.backup_files(root)), 2)
 
     def test_malformed_schema_blocks_before_backup_or_writes(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -612,7 +653,7 @@ class MigrateVaultTests(unittest.TestCase):
             self.assertEqual(result["migration_path"], ["0.1", "0.2", "test-only-0.3"])
             self.assertEqual(result["migration_path_applied"], result["migration_path"])
             self.assertEqual(replace.call_count, 1)
-            self.assertEqual(len(self.backup_files(root)), 1)
+            self.assertEqual(len(self.backup_files(root)), 2)
             self.assertIn(b"schema_version: test-only-0.3", (vault / "SCHEMA.md").read_bytes())
             self.assertEqual(before_page, (vault / "career" / "evidence.md").read_bytes())
             self.assertEqual(before_custom, (vault / "custom-archive" / "historical.md").read_bytes())

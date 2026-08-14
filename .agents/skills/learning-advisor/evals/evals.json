@@ -129,7 +129,7 @@
       "files": [],
       "expectations": [
         "Read-only work does not create a Learning index or backup.",
-        "A requested mutation would add only learning/index.md and the root link after backup.",
+        "A requested mutation would add only learning/index.md and the root link between a provisional recovery backup and a final backup.",
         "Existing schema and taxonomy are not silently migrated."
       ]
     }

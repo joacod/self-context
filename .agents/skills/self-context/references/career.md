@@ -59,7 +59,9 @@ into career evidence.
    than silently choosing or averaging them.
 6. Leave `core/` unchanged unless the user explicitly states a genuinely
    cross-domain value, preference, communication pattern, or constraint.
-7. Update the nearest index and operation log after the normal pre-write backup.
+7. Create the provisional recovery backup before the page, index, and
+   operation-log writes. Validate the result, create the final backup, and
+   discard the provisional only after final backup success.
 
 A source that repeats existing career evidence may produce **No meaningful
 Career update**. Preserving provenance and making no profile change is a

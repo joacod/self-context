@@ -83,14 +83,16 @@ For an authorized request:
 
 1. Produce the read-only plan first.
 2. Continue automatically when the plan is valid and unambiguous.
-3. Let the migration helper create its one pre-write backup.
+3. Let the migration helper create one pre-write recovery backup.
 4. Apply the complete supported migration path as one bounded transaction.
-5. Validate the active final state and run the independent checks below.
-6. Report the result and any remaining warnings or human decisions.
+5. Validate the active final state, then let the helper create one post-write
+   final-state backup while retaining the recovery archive.
+6. Run the independent checks below.
+7. Report the result and both backup paths, plus any remaining warnings or human
+   decisions.
 
-The natural-language agent orchestration must **not** create a separate backup
-before invoking the helper. The helper owns the single pre-write backup for the
-migration operation.
+The natural-language agent orchestration must **not** create separate backups
+before invoking the helper. The helper owns both migration snapshots.
 
 Stop before mutation when any of the following applies:
 
@@ -101,8 +103,13 @@ Stop before mutation when any of the following applies:
 - the plan contains blocking findings;
 - the staged proposed final state does not validate;
 - the vault changed between planning and writing;
-- the helper's backup fails;
+- the helper's pre-write recovery backup fails;
 - the helper reports that it is not write-ready.
+
+If the final-state backup fails after active replacement, the helper rolls back
+its transaction when it can and retains the recovery archive. If rollback cannot
+be proven, stop and report the failed migration and the recovery path rather
+than continuing with other writes.
 
 When blocked, do not attempt partial repairs outside this procedure. Explain the
 blocker and the smallest actionable human decision or repair.
@@ -184,8 +191,8 @@ The registry resolves a deterministic complete path. It rejects duplicate
 edges, cycles, unsupported targets, future schemas, invalid registries, and
 missing paths before any active-vault write. A future multi-step registry is
 planned entirely in staging: every edge is composed into one proposed final
-state before the final state is validated or one backup is created. The active
-vault is never exposed to an intermediate schema.
+state before the final state is validated or the recovery backup is created.
+The active vault is never exposed to an intermediate schema.
 
 ### C. Decide
 
@@ -206,8 +213,8 @@ blocked, stop without writing and report the blocker and safest next action.
 
 ### D. Apply
 
-For an authorized, write-ready plan, invoke the helper without making another
-backup first:
+For an authorized, write-ready plan, invoke the helper; do not create a
+separate backup around it:
 
 ```bash
 python3 .agents/skills/self-context/scripts/migrate_vault.py \
@@ -221,20 +228,24 @@ Treat success as valid only when the structured result reports:
 
 - a completed migration from the detected source to the requested target;
 - the complete path that was applied;
-- the helper's backup path;
-- successful post-write validation; and
+- successful post-write validation;
+- the helper's pre-write recovery backup path;
+- the helper's post-write backup path containing the resulting state; and
 - no failed rollback or unresolved active-vault inconsistency.
 
 The helper constructs and validates the complete proposed state before the
-first active replacement. It creates exactly one pre-write backup, uses
-temporary sibling files and atomic replacement where supported, and owns
-rollback after replacement or post-write validation failure.
+first active replacement. It creates one recovery backup, verifies the source
+snapshot again, uses temporary sibling files and atomic replacement where
+supported, validates the active final state, then creates one post-write backup
+containing that final state. It owns rollback after replacement, post-write
+validation failure, or final-backup failure while preserving the recovery
+archive.
 
 If the helper reports a rollback:
 
 - do not attempt further vault changes;
 - report whether rollback completed or failed;
-- report the preserved backup path;
+- report the preserved pre-write recovery backup path;
 - distinguish the failed proposed migration from the active restored vault;
 - if rollback failed, direct the user to restore from the reported backup and
   do not claim the active vault is safe.

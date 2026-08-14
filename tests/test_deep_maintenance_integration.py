@@ -138,8 +138,8 @@ class DeepMaintenanceIntegrationTests(unittest.TestCase):
         """Model the documented, explicitly authorized adoption boundary.
 
         The production skill has no adoption CLI.  This test-only harness
-        applies exactly the documented control-file contract after the normal
-        backup, then hands catalog rendering to the existing synchronizer.
+        creates a recovery snapshot, applies exactly the documented control-file
+        contract, validates it, then creates and retains the final snapshot.
         """
 
         catalog = vault_utils.load_vertical_catalog()
@@ -148,8 +148,8 @@ class DeepMaintenanceIntegrationTests(unittest.TestCase):
             for item in vault_utils.catalog_records(catalog)
             if item["id"] == identifier
         )
-        backup_path, _ = backup_vault.create_backup(vault)
-        self.assertTrue(Path(backup_path).is_file())
+        recovery_backup, _ = backup_vault.create_backup(vault)
+        self.assertTrue(Path(recovery_backup).is_file())
 
         schema_path = vault / "SCHEMA.md"
         schema = schema_path.read_text(encoding="utf-8")
@@ -178,6 +178,9 @@ class DeepMaintenanceIntegrationTests(unittest.TestCase):
         self.assertFalse(
             any(item.get("severity") == "error" for item in sync_result["findings"])
         )
+        final_backup, _ = backup_vault.create_backup(vault)
+        self.assertTrue(Path(final_backup).is_file())
+        self.assertEqual(len(backup_paths(project_root)), 2)
         return area
 
     def test_read_only_operations_preserve_complete_synthetic_tree(self) -> None:
@@ -294,7 +297,7 @@ class DeepMaintenanceIntegrationTests(unittest.TestCase):
                 self.assertFalse((vault / vertical).exists())
             self.assertFalse((vault / "review" / "deep-reviews").exists())
 
-    def test_migration_copy_creates_one_backup_and_interoperates_after_write(self) -> None:
+    def test_migration_copy_creates_recovery_and_final_backups(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             source_project = root / "source"
@@ -322,15 +325,25 @@ class DeepMaintenanceIntegrationTests(unittest.TestCase):
             report = json.loads(result.stdout)
             self.assertEqual(report["status"], "success")
             backups = backup_paths(copied_project)
-            self.assertEqual(len(backups), 1)
+            self.assertEqual(len(backups), 2)
+            self.assertTrue(report["pre_write_backup"])
             self.assertTrue(report["backup"])
+            self.assertEqual(
+                set(report["backups"]),
+                {str(path.resolve()) for path in backups},
+            )
 
-            # The archive must contain the pre-write state, demonstrating that
-            # backup creation preceded schema/index/log replacement.
-            with zipfile.ZipFile(backups[0]) as archive:
-                self.assertIn("SCHEMA.md", archive.namelist())
+            with zipfile.ZipFile(report["pre_write_backup"]) as archive:
                 self.assertIn(b"schema_version: 0.1", archive.read("SCHEMA.md"))
                 self.assertNotIn("writing/index.md", archive.namelist())
+
+            # The final archive must contain the resulting state, demonstrating
+            # that backup creation followed schema/index/log replacement.
+            with zipfile.ZipFile(report["backup"]) as archive:
+                self.assertIn("SCHEMA.md", archive.namelist())
+                self.assertIn(b"schema_version: 0.2", archive.read("SCHEMA.md"))
+                self.assertIn("writing/index.md", archive.namelist())
+                self.assertIn(b"migrate_schema_0_1_to_0_2", archive.read("log.md"))
 
             schema = (vault / "SCHEMA.md").read_text(encoding="utf-8")
             self.assertIn("schema_version: 0.2", schema)
@@ -369,7 +382,7 @@ class DeepMaintenanceIntegrationTests(unittest.TestCase):
                 {"career/harbor-launch.md", "writing/explanation-pattern.md"},
             )
 
-    def test_bounded_catalog_refresh_is_backed_up_once_and_idempotent(self) -> None:
+    def test_bounded_catalog_refresh_keeps_recovery_and_final_backups(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             vault = build_synthetic_vault(project, schema_version="0.2")
@@ -378,11 +391,13 @@ class DeepMaintenanceIntegrationTests(unittest.TestCase):
             before_pages = canonical_page_snapshot(vault)
             custom_before = (vault / "custom-notes" / "field-log.md").read_bytes()
 
-            backup_path, _ = backup_vault.create_backup(vault)
-            self.assertTrue(Path(backup_path).is_file())
+            recovery_backup, _ = backup_vault.create_backup(vault)
+            self.assertTrue(Path(recovery_backup).is_file())
             first = sync_indexes.synchronize(vault, write=True)
             self.assertEqual(first["changed"], ["career/index.md"])
-            self.assertEqual(len(backup_paths(project)), 1)
+            final_backup, _ = backup_vault.create_backup(vault)
+            self.assertTrue(Path(final_backup).is_file())
+            self.assertEqual(len(backup_paths(project)), 2)
             self.assertIn("Harbor Launch", index.read_text(encoding="utf-8"))
             self.assertEqual(canonical_page_snapshot(vault), before_pages)
             self.assertEqual(custom_before, (vault / "custom-notes" / "field-log.md").read_bytes())
@@ -391,7 +406,7 @@ class DeepMaintenanceIntegrationTests(unittest.TestCase):
             second = sync_indexes.synchronize(vault, write=True)
             self.assertEqual(second["changed"], [])
             self.assertEqual(after_first_write, tree_snapshot(vault))
-            self.assertEqual(len(backup_paths(project)), 1)
+            self.assertEqual(len(backup_paths(project)), 2)
             self.assert_success(
                 self.run_script(SYNC, "--check", "--format", "json", str(vault)),
                 "catalog check failed after repeated write",
@@ -407,7 +422,7 @@ class DeepMaintenanceIntegrationTests(unittest.TestCase):
             self.assertEqual(backup_paths(project), [])
 
             self.adopt_vertical_with_explicit_authorization(project, vault, "media")
-            self.assertEqual(len(backup_paths(project)), 1)
+            self.assertEqual(len(backup_paths(project)), 2)
             schema = (vault / "SCHEMA.md").read_text(encoding="utf-8")
             self.assertIn("- media@1", schema)
             self.assertTrue((vault / "media" / "index.md").is_file())
@@ -441,7 +456,7 @@ class DeepMaintenanceIntegrationTests(unittest.TestCase):
             self.assertEqual(backup_paths(project), [])
             self.assertEqual((vault / "SCHEMA.md").read_text().splitlines()[2], "schema_version: 0.1")
 
-    def test_failed_medium_migration_rolls_back_active_bytes_after_backup(self) -> None:
+    def test_failed_medium_migration_rolls_back_active_bytes_with_recovery_backup(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             vault = build_synthetic_vault(project, schema_version="0.1")
