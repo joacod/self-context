@@ -1258,6 +1258,7 @@ def _empty_registry_plan(
 ) -> Dict[str, Any]:
     supplied = vault.expanduser()
     target_text = str(target if target is not None else "latest")
+    resolved_target = registry.latest_supported_schema if target_text == "latest" else target_text
     return {
         "vault": str(supplied.resolve()) if supplied.exists() else str(supplied),
         "_vault_path": str(supplied),
@@ -1266,8 +1267,8 @@ def _empty_registry_plan(
         "current_schema": None,
         "source_schema_version": None,
         "source_schema": None,
-        "target_schema_version": target_text,
-        "target_schema": target_text,
+        "target_schema_version": resolved_target,
+        "target_schema": resolved_target,
         "requested_target": target_text,
         "latest_supported_schema": registry.latest_supported_schema,
         "supported_target_schemas": registry.supported_versions,
@@ -1678,6 +1679,21 @@ def plan_migration(
         )
     if _blocking_findings(plan):
         return _mark_blocked(plan)
+
+    if schema.get("version") == (0, 2):
+        contract_validation = _schema_contract_validation(supplied)
+        plan["current_schema_contract_validation"] = contract_validation
+        for item in contract_validation.get("errors", []):
+            plan["findings"].append(
+                _finding(
+                    "error",
+                    str(item.get("path", "SCHEMA.md")),
+                    str(item.get("message", "schema contract validation failed")),
+                    "schema-contract",
+                )
+            )
+        if _blocking_findings(plan):
+            return _mark_blocked(plan)
 
     current = str(schema.get("version_text"))
     requested_target = str(target if target is not None else "latest").strip()

@@ -23,7 +23,7 @@ except ImportError:  # pragma: no cover - package-style import fallback
 ROOT = Path(__file__).resolve().parents[1]
 TESTS_DIR = ROOT / "tests"
 TEST_PATTERN = "test_*.py"
-CURRENT_EXPECTED_TESTS = 113
+CURRENT_EXPECTED_TESTS = 128
 MIN_EXPECTED_TESTS = 40
 EXPECTED_DEEP_LINT_TESTS = 15
 
