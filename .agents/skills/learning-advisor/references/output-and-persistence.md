@@ -51,10 +51,11 @@ when new evidence repeats an existing state.
 
 ## Cross-vertical answers
 
-When a Career project or Writing artifact supplies evidence, name its owning
-page and explain the limited Learning implication. Do not reproduce the career
-outcome or communication pattern in the Learning profile. If a source only shows
-that a resource was consumed, report exposure rather than understanding.
+When a Career or Ventures project/initiative record, or a Writing artifact,
+supplies evidence, name its owning page and explain the limited Learning
+implication. Do not reproduce the career outcome, initiative lifecycle, or
+communication pattern in the Learning profile. If a source only shows that a
+resource was consumed, report exposure rather than understanding.
 
 ## Derived material
 

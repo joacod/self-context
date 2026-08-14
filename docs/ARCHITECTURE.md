@@ -165,7 +165,7 @@ may enable only a subset; availability does not create an area:
 
 | Vertical | Vault area | Scope | Advisor Pack |
 | --- | --- | --- | --- |
-| Career | `career/` | Roles, history, projects, skills, achievements, leadership examples, mentoring, public work, and professional goals | Career Advisor |
+| Career | `career/` | Roles, history, project participation as professional evidence, skills, achievements, leadership examples, mentoring, public work, and professional goals | Career Advisor |
 | Learning | `learning/` | Topics and concepts, qualitative knowledge states, meaningful gaps, misconceptions, corrections, mental models, prerequisites, and progression evidence | Learning Advisor |
 | Writing | `writing/` | Observable communication behavior, reasoning-through-writing, reader awareness, editorial preferences, anti-patterns, and evidenced modes | Writing Advisor |
 | Relationships | `relationships/` | The user's relationship with people: shared history, meaningful interactions, commitments, open loops, and dated evolution | Relationships Advisor |
@@ -189,8 +189,8 @@ facts about that person. It keeps sparse pages for shared history, meaningful
 interactions, commitments, open loops, and dated evolution. Reported statements,
 source-derived facts, user observations, and agent inferences remain distinct;
 sensitive third-party characteristics and unsupported motives or personality
-judgments are not inferred. Career, Writing, Learning, and Media pages remain
-the owners of their distinct claims and are linked rather than copied.
+judgments are not inferred. Career, Ventures, Writing, Learning, and Media pages
+remain the owners of their distinct claims and are linked rather than copied.
 
 Media / Taste centers the user's reaction to individual cultural works rather
 than a complete consumption history or external catalog. Work pages are sparse,
@@ -198,6 +198,16 @@ and patterns must explain their supporting reactions, scope, exceptions, and
 dates. Consumption is not preference, generated reviews are not evidence, and
 recommendations remain derived. Neither vertical adds a competing schema,
 confidence database, runtime, or cross-domain dependency.
+
+Ventures / Projects centers the living lifecycle of meaningful initiatives,
+experiments, opportunities, proposals, collaborations, and projects. Its sparse
+records preserve purpose, origin, lifecycle, current state, role, decisions,
+commitments, milestones, evidence, outcomes, dogfooding or adoption, unknowns,
+and dated evolution. Initiative lifecycle remains readable body content rather
+than a second status machine. Ventures does not become a task manager, CRM,
+repository catalog, generic business system, or source archive; Career owns what
+participation demonstrates professionally, Learning owns knowledge state,
+Relationships owns interpersonal continuity, and recommendations remain derived.
 
 Additional verticals should consume the same shared lifecycle rather than create
 competing formats. To add one, define its scope, give it a separate area and

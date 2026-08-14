@@ -33,8 +33,8 @@ Do not invent a competing vault schema or lifecycle ad hoc. Follow the SelfConte
 ## Operating Modes
 
 Normal vault use is **user mode**. Ingest, query, targeted review, ordinary
-lint, career, learning, writing, relationships, and media/taste advice operate
-on the private vault and the user's response only. Deep review is explicitly
+lint, career, learning, writing, relationships, media/taste, and ventures/project
+advice operate on the private vault and the user's response only. Deep review is explicitly
 read-only; deep update, vertical adoption, contract updates, and schema
 migration are explicitly authorized project operations. They must not
 modify skills, schemas, architecture, documentation, evals, scripts,

@@ -12,8 +12,8 @@ Retrieve only what answers the current objective:
 - source records for the specific conversation, event, or commitment;
 - selected review observations, stale entries, or contradictions that affect
   the answer;
-- Career, Writing, Learning, Media / Taste, or `core/` pages only when their
-  owning evidence is necessary; and
+- Career, Ventures, Writing, Learning, Media / Taste, or `core/` pages only
+  when their owning evidence is necessary; and
 - derived material only as labeled preparation or recommendation, never as
   independent relationship evidence.
 
@@ -75,10 +75,11 @@ do not resurrect the detail.
 
 ## Cross-vertical ownership
 
-Career may own a project or professional role. Writing may own a message draft
-or communication pattern. Learning may own what the user understood. Media /
-Taste may own a reaction to a film. Relationships may link those pages when the
-shared relationship is the point, but it must not duplicate the other claim.
+Career may own a professional role or its professional outcome. Ventures owns
+initiative lifecycle and project decisions. Writing may own a message draft or
+communication pattern. Learning may own what the user understood. Media / Taste
+may own a reaction to a film. Relationships may link those pages when the shared
+relationship is the point, but it must not duplicate the other claim.
 
 ## Insufficient evidence
 

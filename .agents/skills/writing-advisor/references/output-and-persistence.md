@@ -56,8 +56,8 @@ preference.
 When a draft uses personal context:
 
 - cite or name the relevant Writing observation and its scope;
-- retrieve career, project, belief, knowledge, and core context from their owning
-  areas;
+- retrieve Career, Ventures/project, belief, knowledge, and Core context from
+  their owning areas;
 - do not copy those pages into Writing or present a recommendation as a fact;
 - preserve uncertainty and contradictions that affect the draft; and
 - never infer an opinion merely because it sounds compatible with the user's

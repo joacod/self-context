@@ -94,8 +94,10 @@ Every vertical must satisfy the same boundaries:
 - every email, chat, calendar event, social profile, or incidental mention;
 - unrelated facts about third parties that do not help explain the user's
   relationship with them;
-- professional achievements, career projects, or mentoring evidence owned by
+- professional achievements, career relevance, or mentoring evidence owned by
   Career; or
+- initiative lifecycle, project decisions, or project-specific commitments
+  owned by Ventures / Projects; or
 - inferred medical, mental-health, sexual, religious, political, ethnic,
   criminal, financial, personality, motivational, or psychological attributes
   about third parties.
@@ -108,10 +110,10 @@ strength score. A raw interaction is retained only when it has future value; a
 compact fact is preferred to a transcript. The user's direct statement, a
 reported statement, a source, and an agent inference remain distinguishable.
 
-Relationships can link Career, Writing, Learning, and Media / Taste pages when
-those pages explain part of a shared relationship, but it does not copy their
-claims. Writing may use relationship context for a message while owning the
-generated draft. Explicit deletion, redaction, archive, and retention choices
+Relationships can link Career, Ventures / Projects, Writing, Learning, and
+Media / Taste pages when those pages explain part of a shared relationship, but
+it does not copy their claims. Writing may use relationship context for a
+message while owning the generated draft. Explicit deletion, redaction, archive, and retention choices
 are honored, and removed third-party detail is not silently recreated from old
 sources.
 
@@ -156,19 +158,53 @@ explainable from both matches and conflicts.
 External identifiers may help disambiguate a work when the user supplies them,
 but no service, scraper, provider integration, or complete media catalog is
 canonical or required. Taste evidence can link to Learning, Relationships,
-Writing, Career, or `core/` without duplicating their ownership.
+Writing, Career, Ventures / Projects, or `core/` without duplicating their
+ownership.
+
+## Ventures / Projects
+
+**Purpose:** Preserve continuity for meaningful initiatives without becoming a
+task manager, CRM, repository inventory, or generic business system.
+
+**Owns:**
+
+- initiative purpose, origin, readable lifecycle, current state, user role, and
+  evidenced authority;
+- project decisions, trade-offs, commitments, milestones, outcomes, and dated
+  evolution;
+- proposal, experiment, dogfooding, adoption, and opportunity evidence with its
+  scope and provenance; and
+- project-specific collaborator or organization context, assumptions, unknowns,
+  pauses, abandonment, completion, and supersession.
+
+**Does not own:**
+
+- professional impact or career positioning, which belongs to Career;
+- knowledge states or learning progression, which belongs to Learning;
+- relationship history or a collaborator CRM, which belongs to Relationships;
+- cross-domain preferences, which belong to `core/`; or
+- credentials, wholesale workspace/message archives, unsupported business claims,
+  or recommendations treated as project facts.
+
+Initiative lifecycle is readable body content, separate from shared page status,
+assertion kind, and freshness. An idea is not an active project; a proposal is
+not an engagement or commitment; dogfooding and one person's feedback are not
+validated adoption or demand; and a recommendation remains derived. Abandoned,
+paused, failed, and superseded initiatives remain useful history.
 
 ## Overlap risks
 
 The main risks are duplicated concepts rather than incompatible storage:
 
-- Learning may overlap with Career's skills, education, and project evidence or
-  with Media / Taste's resources. Keep professional outcomes in Career,
-  knowledge state in Learning, and cultural reactions in Media / Taste.
+- Learning may overlap with Career's skills, education, and professional project
+  evidence, or with Ventures / Projects' initiative records and Media / Taste's
+  resources. Keep professional outcomes in Career, initiative lifecycle in
+  Ventures, knowledge state in Learning, and cultural reactions in Media / Taste.
 - Relationships may overlap with Career's mentoring and networking evidence or
-  Writing's message-drafting context. Keep professional evidence in Career,
-  shared relationship context in Relationships, and generated communication in
-  Writing or `derived/` as appropriate.
+  Ventures / Projects' collaborator context, as well as Writing's
+  message-drafting context. Keep professional evidence in Career, project state
+  in Ventures, shared relationship context in Relationships, and generated
+  communication in Writing or `derived/` as appropriate.
 - Media / Taste may overlap with `core/` preferences, Learning's resource
   evidence, and Relationships' shared interests. Keep the underlying reaction
   evidence in Media / Taste and derive broader patterns only when they earn a
@@ -192,8 +228,7 @@ The implemented maintenance path is deliberately explicit:
   bounded to safe structural changes plus approved semantic proposals;
 - available Career, Learning, Writing, Relationships, Media / Taste, and
   Ventures / Projects verticals are selectively enabled in schema 0.2, with
-  schema-specific first
-  use and explicit contract comparison; and
+  schema-specific first use and explicit contract comparison; and
 - managed catalogs and local lexical search are disposable navigation aids, not
   evidence or a second store.
 
@@ -215,6 +250,9 @@ is planned.
   reported statements, commitments, and privacy-sensitive near misses.
 - Exercise Media / Taste recommendations against positive evidence, dislikes,
   exceptions, and taste evolution without growing a catalog.
+- Exercise Ventures / Projects comparisons, stale opportunity state, proposal
+  versus commitment, adoption evidence, and cross-vertical ownership with
+  synthetic data.
 
 ## Later Possibilities
 

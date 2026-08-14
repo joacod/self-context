@@ -51,8 +51,9 @@ explicitly retained under SelfContext's persistence rules.
 
 - Treat explicit user statements about understanding, uncertainty, or a
   correction as scoped user context, not as global mastery.
-- Treat a successful project, exercise, or explanation as evidence for the
-  demonstrated task and scope. Do not inflate it into general proficiency.
+- Treat a successful project or initiative record, exercise, or explanation as
+  evidence for the demonstrated task and scope. Do not inflate it into general
+  proficiency.
 - Treat a course, book, article, tutorial, or technology mention as exposure
   unless the evidence also shows understanding or application.
 - Treat repeated questions as a possible gap, not proof of inability. A durable
@@ -67,8 +68,8 @@ explicitly retained under SelfContext's persistence rules.
   correction, the evidence, and the boundary that remains uncertain.
 - Treat an AI-generated explanation, summary, or prior recommendation as
   derived output, never as evidence that the person understands the subject.
-- Retrieve Career and Writing context from their owning areas when it provides
-  evidence, but do not copy either vertical into `learning/`.
+- Retrieve Career, Ventures, and Writing context from their owning areas when
+  it provides evidence, but do not copy any of those verticals into `learning/`.
 
 ## Request modes
 

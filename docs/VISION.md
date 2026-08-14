@@ -52,8 +52,8 @@ understanding evolves. Relationships preserves intentional shared context with
 other people, while Media / Taste preserves reactions to cultural works and the
 evidence behind evolving preferences. Ventures / Projects preserves the
 lifecycle of meaningful initiatives, opportunities, experiments, and
-collaborations without becoming a task manager or CRM. The core should remain useful across
-domains without defining domain schemas itself. Every vertical and Advisor Pack
+collaborations without becoming a task manager or CRM. The core should remain
+useful across domains without defining domain schemas itself. Every vertical and Advisor Pack
 should consume the same portable context rather than create competing memory
 systems.
 

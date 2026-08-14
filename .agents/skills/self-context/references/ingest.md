@@ -137,8 +137,9 @@ corrections, and review observations.
   context. Treat an agent interpretation of an exercise, repeated question, or
   misconception as reviewable until the user confirms it or the evidence is
   otherwise explicit.
-- Keep Career projects and Writing artifacts in their owning areas and link them
-  as evidence rather than copying their facts into `learning/`.
+- Keep Career projects, Ventures initiative records, and Writing artifacts in
+  their owning areas and link them as evidence rather than copying their facts
+  into `learning/`.
 - Preserve prior models and dated evidence when understanding changes. A new
   source that repeats a known state is a successful no-op, not a reason to add a
   duplicate concept.
@@ -168,8 +169,8 @@ subject as the user's relationship and analyze the smallest useful evidence:
 - Do not infer sensitive characteristics about third parties. Honor explicit
   delete, redact, archive, and retention requests and do not recreate removed
   details from old sources.
-- Keep Career, Writing, Learning, Media / Taste, and `core/` claims in their
-  owning areas and link them when the relationship context needs them.
+- Keep Career, Ventures, Writing, Learning, Media / Taste, and `core/` claims
+  in their owning areas and link them when the relationship context needs them.
 
 A Relationships impact report should state the pages or source records changed,
 shared context or commitments retained, privacy or redaction decisions,

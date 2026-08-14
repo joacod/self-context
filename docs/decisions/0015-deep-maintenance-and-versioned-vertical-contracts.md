@@ -53,11 +53,12 @@ and status. `safe_structural`, `semantic_proposal`, `human_decision`, and
 
 ### Available, enabled, and applied vertical contracts
 
-The repository catalog is the source of truth for **available verticals**:
-Career, Learning, Writing, Relationships, and Media / Taste. It records each
-vertical's contract version, area, index, procedure, optional Advisor Pack,
-ownership, exclusions, and activation rule. Procedures contain detailed
-semantic rules and a machine-readable header matching the catalog.
+The repository catalog is the source of truth for **available verticals**.
+At the time of this decision it listed Career, Learning, Writing, Relationships,
+and Media / Taste. It records each vertical's contract version, area, index,
+procedure, optional Advisor Pack, ownership, exclusions, and activation rule;
+subsequent extensions use the same catalog contract. Procedures contain
+detailed semantic rules and a machine-readable header matching the catalog.
 
 A schema 0.2 vault has an **enabled vertical** only when it records exactly one
 `vertical@version` entry in `SCHEMA.md` and its area, index, and root link are

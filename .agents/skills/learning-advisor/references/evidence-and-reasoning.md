@@ -12,7 +12,8 @@ Retrieve only the pages needed for the question:
   prerequisite links in those pages;
 - selected `review/observations/` pages tagged `learning` when they explain
   uncertainty or a possible gap;
-- Career project or Writing pages only when they provide evidence owned there;
+- Career or Ventures project pages, and Writing pages, only when they provide
+  evidence owned there;
   and
 - derived material only as labeled analysis, never as independent evidence.
 
@@ -109,10 +110,11 @@ and state history. Preserve earlier periods and distinguish a mode change from
 actual learning when the evidence permits both interpretations. A later source
 is not automatically more reliable or more complete.
 
-Career owns professional projects and outcomes. Writing owns authored
-communication patterns and the source record for an article. They can support a
-Learning claim through links, but they are not duplicated into `learning/` and
-cannot be used to infer understanding beyond what they show.
+Career owns professional relevance and outcomes; Ventures owns initiative
+lifecycle and project decisions; Writing owns authored communication patterns
+and the source record for an article. They can support a Learning claim through
+links, but they are not duplicated into `learning/` and cannot be used to infer
+understanding beyond what they show.
 
 When evidence is insufficient, answer the supported portion, name the missing
 piece, and ask at most one bounded follow-up. Do not compensate with generic

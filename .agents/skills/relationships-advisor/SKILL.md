@@ -75,10 +75,10 @@ markers or mutate relationship context merely by answering.
   stated context and its uncertainty.
 - Treat `status: review`, `agent_inference`, stale pages, and contradictions as
   provisional. Explain the effect instead of selecting a convenient version.
-- Keep Career, Writing, Learning, Media / Taste, and `core/` ownership intact.
-  Link to their evidence rather than copying professional facts, writing
-  patterns, knowledge states, media taste, or general values into a
-  relationship answer.
+- Keep Career, Ventures, Writing, Learning, Media / Taste, and `core/`
+  ownership intact. Link to their evidence rather than copying professional
+  facts, initiative lifecycle, writing patterns, knowledge states, media taste,
+  or general values into a relationship answer.
 
 ## Request modes
 
