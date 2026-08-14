@@ -64,7 +64,7 @@ From the repository root, run the canonical dependency-free validation command:
 python3 scripts/validate_repo.py
 ```
 
-It checks test discovery and execution plus every tracked JSON file.
+It checks test discovery and execution, every tracked JSON file, and Agent Skill metadata budgets.
 
 ## How It Is Organized
 

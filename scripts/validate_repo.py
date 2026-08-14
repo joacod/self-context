@@ -16,8 +16,10 @@ from typing import Iterable, List, Tuple
 
 try:
     from validate_json import validate_tracked_json as _validate_tracked_json
+    from validate_skill_metadata import validate_skill_metadata
 except ImportError:  # pragma: no cover - package-style import fallback
     from .validate_json import validate_tracked_json as _validate_tracked_json  # type: ignore
+    from .validate_skill_metadata import validate_skill_metadata  # type: ignore
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -79,6 +81,23 @@ def _tracked_json_paths() -> List[Path]:
 
 def main() -> int:
     problems: List[str] = []
+    try:
+        skill_paths, skill_problems, skill_warnings = validate_skill_metadata(ROOT)
+        for warning in skill_warnings:
+            print(f"[WARN] skill metadata: {warning}")
+        if skill_problems:
+            for problem in skill_problems:
+                print(f"[FAIL] skill metadata: {problem}")
+            problems.extend(skill_problems)
+        else:
+            print(
+                f"[PASS] skill metadata: {len(skill_paths)} skill files checked"
+            )
+    except Exception as error:
+        message = f"skill metadata validation failed: {type(error).__name__}: {error}"
+        print(f"[FAIL] {message}")
+        problems.append(message)
+
     suite: unittest.TestSuite | None = None
     discovered: List[unittest.case.TestCase] = []
 
