@@ -1,173 +1,124 @@
 # SelfContext
 
-SelfContext is a local, portable way to keep personal context that you own. It
-stores durable information as ordinary Markdown files, so the context can be
-read, edited, copied, and used across AI models and harnesses.
+> Portable personal context for AI tools, stored in plain Markdown files you own.
 
-SelfContext is not a hosted app or a separate AI runtime. An existing AI
-harness uses the project-local skills to work with the private Context Vault.
+People often repeat their history, preferences, goals, and constraints across AI
+tools and sessions. SelfContext keeps that context in a local, inspectable vault
+that you can edit, copy, back up, and carry between models.
+
+SelfContext is not a hosted app or a separate AI runtime. It provides
+project-local skills for an existing AI tool that supports Agent Skills; the
+local `vault/` remains the source of truth.
+
+The core vault lifecycle and five optional areas are implemented and available.
+Future work is tracked as experiments in the [Roadmap](docs/ROADMAP.md), not
+promises.
 
 ## Quick Start
 
-Clone the repository and open it from the repository root in an AI harness that
-supports project-local Agent Skills:
+SelfContext works with an AI tool that can load project-local Agent Skills. No
+server or dependency installation is needed for normal use.
 
 ```bash
-git clone <repository-url> self-context
+git clone https://github.com/joacod/self-context.git
 cd self-context
 ```
 
-Use natural language. For example:
+Open the repository root in your AI tool and use natural language:
 
 ```text
 ingest my resume into SelfContext
-what does my context say about [a skill or experience]?
+what does my context say about a skill or experience?
 review my context for stale or conflicting information
-based on my context, how should I position myself for [a role]?
-Migrate my SelfContext vault to the latest supported schema.
-migrate vault latest
+help me position myself for a role based on my context
 ```
 
-For migration, SelfContext plans first, stops safely when the plan is blocked,
-creates a recovery backup, applies the supported migration chain, validates the
-final state, and creates a second backup of that resulting state. It retains both
-snapshots and rolls back when necessary. The user does not need to know schema
-versions, migration paths, backup commands, index synchronization, or lint
-commands.
+On first use, SelfContext initializes a missing `vault/` automatically. If you
+already have a vault, place it at `vault/`; the skill will orient itself from
+the vault's own files. No custom CLI is required.
 
-After a schema or maintenance improvement, use these three copy-paste shortcuts
-in order:
+## How It Works
 
 ```text
-migrate vault latest
-deep review vault
-deep update vault
+You
+ |
+ v
+Existing AI tool + model
+ |
+ v
+SelfContext skills
+ |
+ v
+Local Context Vault
+(Markdown + YAML frontmatter + standard links)
 ```
 
-`deep review vault` is read-only and returns a bounded plan. After reviewing and
-approving that plan, `deep update vault` applies the canonical deep-update
-procedure. These are natural-language shortcuts; no custom CLI is required.
+- The vault is the durable source of truth. You can inspect, edit, copy, and
+  back it up independently.
+- The existing AI tool provides the model and execution. SelfContext provides
+  workflows for ingest, query, review, lint, advice, and maintenance.
+- User-stated facts, source-derived facts, agent inferences, and derived
+  analyses remain distinguishable.
 
-The skills infer whether the request is for ingest, query, targeted review,
-ordinary lint, deep lint, migration assessment or application, read-only deep
-review, explicitly authorized deep update, or career, learning, writing,
-relationships, and media/taste evidence and reasoning. No custom CLI or slash
-command is required. Schema-specific activation, migration, and contract
-comparison are defined once in the SelfContext initialization, migration, and
-vault-schema references.
+## What It Supports
 
-## Repository Validation
+- **Portable storage:** ordinary Markdown, YAML frontmatter, and standard
+  relative links.
+- **Natural-language workflows:** ingest, query, targeted review, and structural
+  validation.
+- **Trustworthy context:** provenance, freshness, unresolved items,
+  contradictions, and explicit confirmation for important inferences.
+- **Optional areas:** Career, Learning, Writing, Relationships, and Media / Taste.
+  Each can be enabled independently and follows the shared vault rules.
 
-From the repository root, run the canonical dependency-free validation command:
+### Available Verticals
+
+These areas are available independently; a vault enables only the areas it
+needs.
+
+| Vertical | Vault area | Focus |
+| --- | --- | --- |
+| Career | `career/` | Career evidence and concepts |
+| Learning | `learning/` | Knowledge states, gaps, corrections, and progression |
+| Writing | `writing/` | Evidence-backed communication and writing context |
+| Relationships | `relationships/` | Shared history, commitments, and open loops |
+| Media / Taste | `media/` | Reactions to cultural works and evolving taste |
+
+- **Maintenance:** deterministic validation and explicit, backed-up vault
+  migrations. Advanced maintenance prompts include `migrate vault latest`,
+  `deep review vault`, and `deep update vault`.
+- **Obsidian:** use `vault/` as an Obsidian vault if you want a visual editor.
+  Obsidian is optional.
+
+## Privacy and Portability
+
+- `vault/` is local and Git-ignored. Never commit it or force-add files from it.
+- The canonical format remains useful without SelfContext, a particular model,
+  AI tool, search implementation, or Obsidian.
+- Git ignore helps prevent accidental commits, but it does not prevent a model
+  or provider from seeing information you give its tool.
+- No hosted service, database, embeddings, telemetry, background service, or
+  custom runtime is required.
+
+## Documentation
+
+- [Vision](docs/VISION.md): the problem, thesis, and design commitments.
+- [Architecture](docs/ARCHITECTURE.md): system boundaries, lifecycle, and vault
+  structure.
+- [Roadmap](docs/ROADMAP.md): the implemented foundation and future experiments.
+
+For repository rules and skill changes, see [Repository guidance](AGENTS.md) and
+[Skill maintenance](docs/SELF_CONTEXT_SKILL_MAINTENANCE.md).
+
+## Development
+
+From the repository root, run the canonical dependency-free validation:
 
 ```bash
 python3 scripts/validate_repo.py
 ```
 
-It checks test discovery and execution, every tracked JSON file, and Agent Skill metadata budgets.
+Detailed migration and deep-maintenance procedures live under
+[the SelfContext skill references](.agents/skills/self-context/references/).
 
-## How It Is Organized
-
-SelfContext has a shared foundation, available domain-specific verticals, and
-optional Advisor Packs. A private vault selectively enables only the verticals
-it needs; an available vertical is not automatically enabled. Each layer has a
-separate owner:
-
-| Layer | Owns | Does not own |
-| --- | --- | --- |
-| SelfContext core | Vault format, lifecycle, provenance, retrieval, review, linting, and backups | Domain-specific reasoning or a second memory store |
-| Vertical | Evidence and concepts for one domain in its own vault area | Shared schema rules or facts owned by another vertical |
-| Advisor Pack | Reasoning and output for a vertical, using retrieved evidence | Vault storage, provenance, or automatic fact creation |
-
-### Available Verticals
-
-The available verticals are deliberately separate. A private vault enables only
-the subset it needs. Their scopes and Advisor Packs are documented
-independently so another vertical can be added without mixing its rules into the
-core:
-
-| Vertical | Vault area | Owns | Advisor Pack |
-| --- | --- | --- | --- |
-| Career | `career/` | Roles, projects, skills, achievements, goals, and professional examples | Career Advisor |
-| Learning | `learning/` | What the person understands, meaningful gaps, corrections, mental models, prerequisites, and progression evidence | Learning Advisor |
-| Writing | `writing/` | Evidence-backed communication patterns, reasoning-through-writing, readers, revision, and writing modes | Writing Advisor |
-| Relationships | `relationships/` | Intentional relationship context, shared history, meaningful interactions, commitments, open loops, and relationship evolution | Relationships Advisor |
-| Media / Taste | `media/` | Reactions to experienced cultural works, explainable taste patterns, exceptions, and taste evolution | Media Advisor |
-
-A schema 0.2 vault starts with universal `core/`, `review/`, `sources/`, and
-`derived/` areas. It creates only the required vertical area and records its
-exact available contract when a triggering mutation or explicit adoption
-requires it; unrelated available verticals remain disabled. A legacy schema
-0.1 vault remains supported without automatic migration: first meaningful use
-may add the needed legacy area/index/root link but never adds contract markers.
-Read-only queries and assessments create nothing. Any vault can contain
-retained `sources/`, unresolved `review/` items, and clearly labeled `derived/`
-analyses. Vertical context stays in its owning area; an Advisor Pack may combine
-relevant areas without duplicating them. Learning treats sources as evidence
-about the person’s knowledge rather than as a resource archive. Relationships
-centers the user's connection with another person rather than a third-party
-profile. Media / Taste centers the user's reaction to a work rather than a
-consumption catalog. Each vertical uses the shared lifecycle and remains useful
-without the others.
-
-## Your Vault
-
-The private `vault/` directory is the source of truth and is ignored by Git.
-On a fresh clone, it is initialized automatically when an operation needs it.
-If you already have a Context Vault, copy it into `self-context/vault/`; the
-skill will orient itself from the vault's own files.
-
-The vault remains portable: its canonical content is Markdown, YAML frontmatter,
-and standard Markdown links. Ordinary mutations create a provisional recovery
-backup before writing, then a final backup after validation; the provisional is
-discarded only after final success. Deep maintenance and migration retain both
-snapshots. The project-root `backups/` directory beside `vault/` retains the ten
-newest managed archives and remains separate from the portable vault and ignored
-by Git.
-
-Never force-add anything from `vault/`. Git-ignoring the directory helps prevent
-accidental commits, but it does not prevent a model or provider from seeing
-information that you give its harness.
-
-## Optional Obsidian Use
-
-Obsidian can be used as a human viewer and editor. Open `vault/` as the Obsidian
-vault, not the repository root. Obsidian is not required; the portable format
-remains ordinary Markdown.
-
-## Current Scope
-
-The implementation supports:
-
-- the portable SelfContext core and shared vault lifecycle;
-- the Career, Learning, Writing, Relationships, and Media / Taste verticals described above;
-- natural-language ingest, query, review, and lint workflows;
-- replaceable Career, Learning, Writing, Relationships, and Media Advisor Packs;
-- Obsidian compatibility and multi-session continuity through the vault;
-- evidence-backed Learning context that distinguishes exposure from
-  understanding; and
-- evidence-backed, selectively updated Writing context, where analysis may
-  produce no profile change;
-- privacy-sensitive Relationships context for shared history, commitments, and
-  useful continuity; and
-- evidence-backed Media / Taste context that distinguishes consumption from
-  reaction and preserves exceptions.
-
-The project does not require cloud services, telemetry, automatic sync, a
-database, embeddings, MCP, a background service, an external synchronization
-layer, or a custom runtime. Local lexical search and compiled index catalogs
-are deterministic, disposable aids rather than canonical storage.
-
-## Further Reading
-
-- [Repository guidance](AGENTS.md): operational rules for using and maintaining
-  the project.
-- [Vision](docs/VISION.md): the product thesis and design commitments.
-- [Architecture](docs/ARCHITECTURE.md): boundaries and lifecycle details.
-- [Roadmap](docs/ROADMAP.md): current scope and future experiments.
-- [Deep Maintenance Protocol](.agents/skills/self-context/references/deep-maintenance.md): explicit maintenance modes.
-- [Vault Migration](.agents/skills/self-context/references/migration.md): first-class natural-language schema migration.
-- [Deep Maintenance Release Checklist](docs/DEEP_MAINTENANCE_RELEASE_CHECKLIST.md): repeatable stabilization validation.
-- [SelfContext Skill Maintenance](docs/SELF_CONTEXT_SKILL_MAINTENANCE.md): progressive disclosure, metadata budgets, and extension guidance.
-- [Build record](docs/BUILD_PLAN.md): historical bootstrap phases and validation
-  history.
+Licensed under the [MIT License](LICENSE).
