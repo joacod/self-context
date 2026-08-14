@@ -80,8 +80,10 @@ remains conservative and does not guess.
 
 Schema 0.1 remains supported exactly as a legacy vault. Ordinary ingest, query,
 targeted review, advice, and lint do not add contract markers, rewrite indexes,
-or bump the schema. An explicit schema migration or authorized deep update may
-upgrade a vault to schema 0.2.
+or bump the schema. An explicit schema migration, following the canonical procedure, or an
+explicitly requested migration delegated by deep update may upgrade a vault to
+schema 0.2. Deep review, deep lint, ordinary lint, and unrelated deep-update
+work never migrate merely because an old schema is found.
 
 Schema 0.2 records a selective parseable section such as:
 
@@ -98,11 +100,14 @@ adoption requires it. The first mutating use creates only the required area and
 index, records its exact available contract, adds the root link, creates one
 normal pre-write backup at the documented point, and continues the operation.
 Read-only queries and assessments create nothing, and unrelated available
-verticals remain disabled. The migration helper backs up before its first
-write, infers enabled verticals conservatively from existing areas, indexes,
-and schema text, preserves every page and taxonomy, adds only control metadata
-and managed blocks, leaves unknown optional metadata empty, and reports
-ambiguous or custom areas instead of deleting or relocating them.
+verticals remain disabled. The canonical [Vault Migration procedure](../../.agents/skills/self-context/references/migration.md) defines the natural-language assessment and authorized sequence. The migration helper backs up before its first write, infers enabled verticals conservatively from existing areas, indexes, and schema text, preserves every page and taxonomy, adds only control metadata and managed blocks, leaves unknown optional metadata empty, and reports ambiguous or custom areas instead of deleting or relocating them. The helper owns exactly one migration backup; agent orchestration does not create another.
+
+The helper uses a dependency-free migration registry whose production latest is
+schema 0.2 and whose supported edge is `0.1 -> 0.2`. The registry validates
+duplicate edges and cycles, resolves a deterministic complete path, and reports
+unsupported targets, future schemas, and missing paths. A future chain is
+staged and validated as one final proposed state and applied in one bounded
+transaction; test-only registry edges do not add a production schema.
 
 Durable pages may optionally contain an `aliases` YAML list and a relative
 Markdown `superseded_by` link. Empty optional fields are not bulk-added. Exact

@@ -841,6 +841,152 @@
         "Findings remain recommendations or human decisions rather than truth assertions."
       ],
       "files": []
+    },
+    {
+      "id": 76,
+      "prompt": "Migrate my SelfContext vault to the latest supported schema.",
+      "expected_output": "The agent orients from the repository vault, plans the detected-to-latest migration, applies it only when the plan is valid, lets the helper create one backup, validates the final vault, and reports the path and results without exposing page content.",
+      "expectations": [
+        "Natural-language migration intent routes to the canonical migration procedure.",
+        "The read-only plan precedes any authorized write.",
+        "Exactly one helper-owned backup is reported when migration is needed.",
+        "Ordinary lint, deep lint, and catalog validation are reported after success."
+      ],
+      "files": []
+    },
+    {
+      "id": 77,
+      "prompt": "Upgrade my old vault.",
+      "expected_output": "The request is treated as an authorized latest-schema migration without requiring the user to name the current version, target version, script, backup, or lint commands.",
+      "expectations": [
+        "The agent detects the current schema and latest supported schema itself.",
+        "The supported migration path is resolved rather than guessed.",
+        "The helper owns the single pre-write backup and validation sequence."
+      ],
+      "files": []
+    },
+    {
+      "id": 78,
+      "prompt": "Bring my vault up to date.",
+      "expected_output": "The phrase is recognized as explicit SelfContext migration authorization and is not confused with ordinary ingest, deep lint, or a semantic cleanup request.",
+      "expectations": [
+        "Only deterministic versioned structural changes are in scope.",
+        "Personal prose, verification, contradictions, and inferences remain unchanged.",
+        "A blocked or ambiguous plan stops before backup and writes."
+      ],
+      "files": []
+    },
+    {
+      "id": 79,
+      "prompt": "Check whether my vault needs migration.",
+      "expected_output": "The agent performs a read-only migration assessment, reports current/latest schema and the proposed path, and creates no backup, log entry, report, or file change.",
+      "expectations": [
+        "Assessment mode invokes the read-only planner.",
+        "The vault and backup directory remain unchanged.",
+        "The response says whether migration is needed and identifies blockers or warnings."
+      ],
+      "files": []
+    },
+    {
+      "id": 80,
+      "prompt": "Show me a migration plan for my old SelfContext vault, but do not change anything.",
+      "expected_output": "The agent stops after a structured read-only plan and does not create a backup or retain a report unless separately requested.",
+      "expectations": [
+        "The plan includes the source snapshot, target, complete path, write set, preservation set, enabled contracts, custom/ambiguous areas, and proposed validation.",
+        "No active-vault file is written.",
+        "No backup is created."
+      ],
+      "files": []
+    },
+    {
+      "id": 81,
+      "prompt": "Deep review my old vault.",
+      "expected_output": "The request routes to read-only deep maintenance review and may recommend migration, but it never applies schema migration or creates a migration backup by implication.",
+      "expectations": [
+        "Deep review remains read-only.",
+        "An old schema is reported as context for review rather than silently upgraded.",
+        "No migration helper write operation is invoked."
+      ],
+      "files": []
+    },
+    {
+      "id": 82,
+      "prompt": "Deep lint my vault.",
+      "expected_output": "The deterministic deep linter runs without migrating, backing up, writing control files, or resolving semantic questions.",
+      "expectations": [
+        "Deep lint reports deterministic findings only.",
+        "No backup or migration log entry is created.",
+        "Personal claims and verification remain untouched."
+      ],
+      "files": []
+    },
+    {
+      "id": 83,
+      "prompt": "Deep update my old vault.",
+      "expected_output": "Deep update does not implicitly migrate merely because schema 0.1 is found; it either performs its separately authorized bounded maintenance or explains that schema migration must be explicitly requested through the canonical migration procedure.",
+      "expectations": [
+        "Deep update and schema migration remain distinct operations.",
+        "No migration occurs without explicit migration authorization.",
+        "Any authorized structural update preserves the one-backup and validation boundaries."
+      ],
+      "files": []
+    },
+    {
+      "id": 84,
+      "prompt": "Update my Writing vertical contract using only its documented migration.",
+      "expected_output": "The request routes to vertical-contract maintenance, not schema migration; only the enabled Writing contract is considered and the vault schema is not bumped.",
+      "expectations": [
+        "Vertical-contract migration is distinguished from vault schema migration.",
+        "Only documented Writing contract changes are in scope.",
+        "No schema migration helper is invoked merely because a contract update was requested."
+      ],
+      "files": []
+    },
+    {
+      "id": 85,
+      "prompt": "My vault is already on the latest supported schema. Check it and tell me whether there is any meaningful migration update.",
+      "expected_output": "The agent reports a successful no-op: migration is not needed, no backup is created, and no file or log changes are made.",
+      "expectations": [
+        "Already-current status is explicit.",
+        "No backup is created for a no-op.",
+        "No meaningful migration update is reported while independent lint warnings remain separately distinguishable."
+      ],
+      "files": []
+    },
+    {
+      "id": 86,
+      "prompt": "Migrate this synthetic vault, but its schema is malformed or it declares a future unsupported version.",
+      "expected_output": "Migration stops before backup and active writes and reports the smallest actionable schema blocker.",
+      "expectations": [
+        "Malformed and future schema states are blocked conservatively.",
+        "No partial repair or guessed migration path is attempted.",
+        "No backup is created when planning is blocked."
+      ],
+      "files": []
+    },
+    {
+      "id": 87,
+      "prompt": "Migrate a synthetic schema 0.1 vault with a custom archive and personal durable pages to the latest supported schema.",
+      "expected_output": "The successful result reports one backup, the applied 0.1-to-0.2 path, created/modified control files, preserved personal/custom paths, enabled contracts, and ordinary/deep/catalog validation.",
+      "expectations": [
+        "Exactly one backup is created by the migration helper.",
+        "The final active state passes ordinary lint, deep lint, and catalog check.",
+        "Personal durable-page bytes, verification fields, and custom areas remain unchanged.",
+        "The report does not include private page bodies."
+      ],
+      "files": []
+    },
+    {
+      "id": 88,
+      "prompt": "Migrate my synthetic vault and preserve the truth boundaries: do not rewrite personal claims, change assertion kinds, set verified, resolve contradictions, or enable unrelated verticals.",
+      "expected_output": "Migration changes only versioned control metadata and deterministic managed catalogs, while preserving personal evidence and selective vertical activation.",
+      "expectations": [
+        "Personal durable-page content and epistemic metadata remain byte-for-byte unchanged.",
+        "Verification and contradictions are not changed by migration.",
+        "Only inferred/enabled legacy verticals are recorded; available-but-absent verticals stay disabled.",
+        "Custom and ambiguous areas are preserved and reported rather than reclassified silently."
+      ],
+      "files": []
     }
   ]
 }

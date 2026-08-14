@@ -26,8 +26,13 @@ not use the ignored real `vault/` as a mutation target.
 - [ ] Run the copied-vault mutation smoke test and inspect its backup,
   migration, index, lint, search, and task-packet assertions:
   `python3 -m unittest tests.test_deep_maintenance_integration.DeepMaintenanceIntegrationTests.test_migration_copy_creates_one_backup_and_interoperates_after_write`.
-- [ ] Validate migration dry-run and write behavior, including post-migration
-  ordinary/deep lint and rollback coverage.
+- [ ] Validate first-class migration dry-run and write behavior, including
+  target `latest`, explicit `0.2`, one helper-owned backup, post-migration
+  ordinary/deep lint, catalog check, no-op behavior, and rollback coverage.
+- [ ] Exercise the natural-language migration procedure: assessment requests
+  stop after the read-only plan, authorized requests continue only when the
+  plan is write-ready, and deep review/deep lint/deep update/vertical-contract
+  requests do not migrate implicitly.
 - [ ] Run the catalog refresh/idempotence check and verify a repeated write
   produces no further changes.
 - [ ] Run representative search-ranking fixtures and confirm unrelated custom
@@ -37,6 +42,8 @@ not use the ignored real `vault/` as a mutation target.
 
 ## Final inspection
 
+- [ ] Confirm no production schema 0.3 was introduced; test-only multi-step
+  registry labels remain injectable unit-test fixtures only.
 - [ ] Inspect the private-content boundary with `git diff --check` and
   `git diff --stat`; no real vault paths, titles, bodies, findings, or backup
   archives may appear in the tracked diff.

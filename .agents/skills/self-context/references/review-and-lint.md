@@ -86,8 +86,9 @@ python3 .agents/skills/self-context/scripts/lint_vault.py --deep --format text v
 python3 .agents/skills/self-context/scripts/lint_vault.py --deep --format json vault
 ```
 
-Ordinary lint is the fast backward-compatible path. Deep lint is deterministic
-and read-only; JSON output contains schema version, available contracts,
+Ordinary lint is the fast backward-compatible path and never migrates. Deep
+lint is deterministic and read-only; schema migration is a separate operation
+owned by the [Migration procedure](migration.md). JSON output contains schema version, available contracts,
 enabled verticals, applied contracts, a snapshot ID, compact page metadata,
 link/index relationships, findings, and severity counts, never complete page
 bodies. Neither path produces a numeric vault-health score.

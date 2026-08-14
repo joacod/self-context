@@ -49,11 +49,13 @@ intentionally unsupported. An available but disabled vertical is not missing.
 A known schema 0.2 area without an applied marker is an error, not a reason to
 delete or move it.
 
-The migration helper infers enabled verticals conservatively from existing
-areas, indexes, and schema text. It creates one backup before its first write,
-preserves every page and custom area, adds only control metadata and managed
-index blocks, and reports ambiguity rather than relocating anything. Optional
-page metadata is not bulk-added.
+The canonical [Migration procedure](migration.md) and helper infer enabled
+verticals conservatively from existing areas, indexes, and schema text. The
+helper creates one backup before its first write, stages and validates the
+complete target state, preserves every page and custom area, adds only control
+metadata and managed index blocks, and reports ambiguity rather than relocating
+anything. Natural-language orchestration must not create a second backup.
+Optional page metadata is not bulk-added.
 
 ## Top-level layout
 

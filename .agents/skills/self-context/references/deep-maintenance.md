@@ -23,7 +23,14 @@ deterministic helpers.
   the report.
 - **Deep update** is explicitly mutating. It may apply safe structural changes
   and explicitly approved semantic proposals only after snapshot validation,
-  one pre-write backup, and bounded post-write validation.
+  one pre-write backup, and bounded post-write validation. It does not silently
+  migrate an old schema; an explicitly requested schema migration delegates to
+  the canonical [Migration procedure](migration.md), whose helper owns the
+  single migration backup.
+- **Schema migration** is a separate deterministic format/control-file
+  operation. Its read-only assessment and authorized write sequence are defined
+  entirely in [Migration](migration.md); it never replaces deep review or
+  semantic maintenance.
 
 Read-only deep review is the default for “deep review my vault.” Natural
 language such as “deep lint,” “deep review,” “deep update,” “adopt the Learning
@@ -210,7 +217,7 @@ link repair supported by a stable ID or exact target. Never automatically set
 preference, delete/redact context, merge ambiguous pages, infer sensitive
 third-party details, or enable a vertical solely because it is available.
 
-## Contract adoption and migration
+## Contract adoption and vertical-contract updates
 
 Assessment is read-only. Adoption and contract updates are mutations and use
 the deep-update snapshot/backup rules. Adoption adds only the requested area,
@@ -227,9 +234,11 @@ is unambiguous and links can be updated; it leaves ambiguous pages in place as
 review findings; and it never creates placeholder personal pages or copies
 facts.
 
-A contract update applies only documented migrations after the currently
-recorded version. It preserves historical evidence, verification, provenance,
-and no-change migrations. A new contract never justifies invented context.
+A contract update applies only documented vertical-contract migrations after
+the currently recorded version. It preserves historical evidence, verification,
+provenance, and no-change migrations. A new contract never justifies invented
+context. This is not a schema migration; use [Migration](migration.md) for
+versioned vault-format changes.
 
 ## Task context packets
 
