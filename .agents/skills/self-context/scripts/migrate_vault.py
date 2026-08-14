@@ -1466,6 +1466,27 @@ def _chain_plan(
                     if isinstance(item, Mapping)
                 ]
                 findings.extend(step_findings)
+                for field in (
+                    "inference",
+                    "inferred_enabled_verticals",
+                    "inferred_verticals",
+                    "enabled_vertical_contracts",
+                    "ambiguous_vertical_findings",
+                    "ambiguous_findings",
+                    "custom_area_findings",
+                    "custom_findings",
+                    "human_decisions",
+                    "schema_changes",
+                    "missing_vertical_indexes",
+                    "missing_indexes_to_create",
+                    "root_index_links_to_add",
+                    "root_links_to_add",
+                    "catalog_blocks_to_add_or_synchronize",
+                    "catalog_blocks",
+                    "catalog_block_changes",
+                ):
+                    if field in step:
+                        plan[field] = step[field]
                 edge_summaries.append(
                     {
                         "source": edge.source,
@@ -1701,6 +1722,17 @@ def plan_migration(
     plan["requested_target"] = requested_target
     plan["target_schema"] = target_label
     plan["target_schema_version"] = target_label
+    if not target_label:
+        plan["findings"].append(
+            _finding(
+                "error",
+                "SCHEMA.md",
+                "migration target cannot be empty",
+                "unsupported-target",
+                code="unsupported-target",
+            )
+        )
+        return _mark_blocked(plan)
     if _is_future_schema(current, migration_registry.latest_supported_schema):
         plan["findings"].append(
             _finding(
