@@ -11,10 +11,10 @@ description: >
   writing, recollections, or other durable sources; and vault initialization,
   copying, restoring, backing up, exporting, or migration to the latest
   supported format. Canonical shortcuts include `migrate vault latest`,
-  `deep review vault`, and `deep update vault`. Before ordinary writes, create
-  a retained backup; schema migration is the exception because its helper owns
-  the pre-write backup. Do not use for generic resume writing, Obsidian
-  organization, Git-ignore questions, or unrelated advice.
+  `deep review vault`, and `deep update vault`. After ordinary writes and
+  validation, create a retained backup of the resulting vault; schema migration
+  uses its helper-owned post-write backup. Do not use for generic resume writing,
+  Obsidian organization, Git-ignore questions, or unrelated advice.
 compatibility: Requires local filesystem access from the repository root. Uses standard Markdown, YAML frontmatter, relative Markdown links, and optional Python 3 for deterministic linting.
 ---
 
@@ -60,11 +60,12 @@ skill, the current harness, the model, Obsidian, or a search tool disappears.
 - Treat the project-root `backups/` directory and its ZIP archives as private
   operational state, not context. Never index, search, lint, link to, or use
   backup contents as evidence.
-- Before the first write of any ordinary mutation-producing operation, create a
-  backup using [the backup procedure](references/backups.md). Schema migration
-  is the explicit exception: do not create a separate agent backup; invoke the
-  migration helper and let it create the one pre-write backup. If applicable
-  backup creation fails, do not modify canonical vault content.
+- After completing and validating an ordinary mutation-producing operation,
+  create one backup using [the backup procedure](references/backups.md). Schema
+  migration invokes its helper, which creates the one post-write backup of the
+  validated final state. If backup creation fails after a generic mutation,
+  stop further writes and report the mutation as incomplete until the resulting
+  vault is backed up; transactional helpers should roll back when they can.
 
 ## User Mode Boundary
 
@@ -129,9 +130,9 @@ Schema-specific vertical activation is canonical in
 meaningful mutation may add only the needed legacy area/index/root link and
 never adds contract markers; schema 0.2 first meaningful mutation requiring a
 vertical adds only that vertical, records its exact available `vertical@version`,
-and adds the root link after the normal backup. Read-only operations never
-create or enable verticals, and malformed or unknown schema state remains
-conservative. Use [Vault Schema](references/vault-schema.md) for the distinct
+and adds the root link before the operation's post-write backup. Read-only
+operations never create or enable verticals, and malformed or unknown schema
+state remains conservative. Use [Vault Schema](references/vault-schema.md) for the distinct
 available/enabled/applied states and version comparison rules.
 
 | Area | Scope | Current reasoning owner |
@@ -219,12 +220,13 @@ confirmation question instead of silently using it as current.
    scan `.obsidian/` inside the vault or the project-root `backups/` directory;
    they are noncanonical operational state, not personal context.
 4. If an ordinary operation will mutate the vault, read [the backup procedure](references/backups.md)
-   and create its pre-write backup before the first write. For schema migration,
-   read [Migration](references/migration.md) and do not create a separate
-   backup: the migration helper owns that one backup. If the operation is
-   read-only, do not create a backup merely because the vault was inspected.
+   and create its post-write backup after the mutation and relevant validation.
+   For schema migration, read [Migration](references/migration.md) and do not
+   create a separate backup: the migration helper owns that one final-state
+   backup. If the operation is read-only, do not create a backup merely because
+   the vault was inspected.
 5. Read the relevant reference procedure before writing or validating content:
-   - [Vault backups](references/backups.md) for the pre-write archive and
+   - [Vault backups](references/backups.md) for the post-write archive and
      retention rule.
    - [Vault schema](references/vault-schema.md) for paths, frontmatter, links,
      and assertion categories.
@@ -271,8 +273,10 @@ End the response with a concise account of:
   synthesis; and
 - any confirmation needed from the user.
 
-For a mutation, also report the timestamped backup created before the write and
-which older backups were removed by the retention rule.
+For a mutation, also report the timestamped backup created after the write and
+which older backups were removed by the retention rule. If that backup fails,
+report the mutation as incomplete and do not perform further writes until the
+resulting vault is safely backed up.
 
 If a request asks for advice, distinguish retrieved evidence, likely
 interpretations, unknowns, and recommendations. A recommendation must never

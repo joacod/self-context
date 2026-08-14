@@ -52,7 +52,7 @@ packet is derived output and remains ephemeral unless explicitly retained.
 
 For a request to record, correct, abandon, revisit, supersede, or delete taste
 context, let SelfContext apply the Media / Taste procedure, schema-specific
-activation, and pre-write backup. The Advisor does not define contract markers
+activation, and post-write backup. The Advisor does not define contract markers
 or mutate the profile merely by answering.
 
 ## Evidence discipline
@@ -120,5 +120,5 @@ reaction, taste pattern, `core/` preference, or verification state automatically
 
 A supplied work reaction or explicit request to update taste context is an
 ingest operation: preserve the smallest evidence, update the appropriate index,
-create a backup before writing, and report whether the result was a meaningful
-update or **No meaningful Media / Taste update**.
+validate the result, create the post-write backup, and report whether the result
+was a meaningful update or **No meaningful Media / Taste update**.

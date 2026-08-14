@@ -4,6 +4,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 from typing import Mapping
 from unittest import mock
@@ -218,6 +219,10 @@ class MigrateVaultTests(unittest.TestCase):
             self.assertIn("- career@1", (vault / "SCHEMA.md").read_text())
             self.assertEqual(len(self.backup_files(root)), 1)
             self.assertTrue(Path(report["backup"]).is_file())
+            with zipfile.ZipFile(report["backup"]) as archive:
+                self.assertIn(b"schema_version: 0.2", archive.read("SCHEMA.md"))
+                self.assertIn("career/index.md", archive.namelist())
+                self.assertIn(b"migrate_schema_0_1_to_0_2", archive.read("log.md"))
             self.assertIn("migrate_schema_0_1_to_0_2", (vault / "log.md").read_text())
             self.assertTrue((vault / "custom-archive" / "historical.md").is_file())
 
@@ -314,7 +319,7 @@ class MigrateVaultTests(unittest.TestCase):
             self.assertEqual(before, self.file_bytes(vault))
             self.assertEqual(self.backup_files(root), [])
 
-    def test_backup_failure_causes_zero_active_writes(self) -> None:
+    def test_post_write_backup_failure_rolls_back_active_writes(self) -> None:
         module = self.migration_module()
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -327,6 +332,8 @@ class MigrateVaultTests(unittest.TestCase):
             ):
                 result = module.apply_migration(vault)
             self.assertTrue(any(item["classification"] == "backup" for item in result["findings"]))
+            self.assertTrue(any("post-write backup failed" in item["message"] for item in result["findings"]))
+            self.assertEqual(result["rollback"]["status"], "rolled-back")
             self.assertEqual(before, self.file_bytes(vault))
             self.assertEqual(self.backup_files(root), [])
 
@@ -357,7 +364,7 @@ class MigrateVaultTests(unittest.TestCase):
             self.assertEqual(result["rollback"]["status"], "rolled-back")
             self.assertEqual(before, self.file_bytes(vault))
             self.assertFalse(any("migrate-" in path.name for path in vault.rglob(".*")))
-            self.assertEqual(len(self.backup_files(root)), 1)
+            self.assertEqual(len(self.backup_files(root)), 0)
 
     def test_post_write_validation_failure_rolls_back_new_files_and_changes(self) -> None:
         module = self.migration_module()
@@ -376,7 +383,7 @@ class MigrateVaultTests(unittest.TestCase):
             self.assertEqual(before, self.file_bytes(vault))
             self.assertFalse((vault / "career" / "index.md").exists())
             self.assertFalse(any("migrate-" in path.name for path in vault.rglob(".*")))
-            self.assertEqual(len(self.backup_files(root)), 1)
+            self.assertEqual(len(self.backup_files(root)), 0)
 
     def test_result_passes_ordinary_deep_lint_and_catalog_sync(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -666,7 +673,7 @@ class MigrateVaultTests(unittest.TestCase):
             self.assertEqual(result["status"], "failed")
             self.assertEqual(result["rollback"]["status"], "rolled-back")
             self.assertEqual(before, self.file_bytes(vault))
-            self.assertEqual(len(self.backup_files(root)), 1)
+            self.assertEqual(len(self.backup_files(root)), 0)
             self.assertFalse(any("migrate-" in path.name for path in vault.rglob(".*")))
 
 

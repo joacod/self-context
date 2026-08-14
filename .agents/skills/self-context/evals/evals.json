@@ -180,14 +180,14 @@
     },
     {
       "id": 17,
-      "prompt": "In a synthetic existing Context Vault, update one page and its index. Before writing anything, create a timestamped ZIP under the project-root backups/ directory beside vault/, keep the vault independent, and keep no more than the latest three managed backups.",
-      "expected_output": "The skill creates a pre-write backup before the synthetic mutation, blocks the write if backup creation fails, excludes operational backups from canonical context, and enforces three-backup retention.",
+      "prompt": "In a synthetic existing Context Vault, update one page and its index. After the mutation and relevant validation, create a timestamped ZIP under the project-root backups/ directory beside vault/, keep the vault independent, and keep no more than the latest three managed backups.",
+      "expected_output": "The skill creates a post-write backup containing the resulting synthetic mutation, reports backup failure as an incomplete operation, excludes operational backups from canonical context, and enforces three-backup retention.",
       "files": [],
       "expectations": [
-        "A mutation of an existing vault is preceded by the backup helper.",
-        "The created archive has a UTC timestamped filename under project-root backups/ beside vault/.",
+        "A mutation of an existing vault is followed by the backup helper after its writes and validation.",
+        "The created archive has a UTC timestamped filename under project-root backups/ beside vault/ and contains the resulting page/index state.",
         "The backup archive does not include the separate backups directory and retention leaves at most three managed ZIPs.",
-        "The page and index are changed only after successful backup creation."
+        "A failed post-write backup stops further writes and is reported as an incomplete mutation."
       ]
     },
     {
@@ -324,12 +324,12 @@
     },
     {
       "id": 30,
-      "prompt": "A synthetic copied vault follows the shared structure with SCHEMA.md, index.md, log.md, core, career, review, sources, and derived, but no writing directory. First answer a read-only question about the user's Writing context without creating files. Then, only when explicitly asked to ingest an authored essay, create writing/index.md and its root link after the pre-write backup without rewriting the existing schema or reorganizing existing pages.",
+      "prompt": "A synthetic copied vault follows the shared structure with SCHEMA.md, index.md, log.md, core, career, review, sources, and derived, but no writing directory. First answer a read-only question about the user's Writing context without creating files. Then, only when explicitly asked to ingest an authored essay, create writing/index.md and its root link, complete the ingest, and create the post-write backup without rewriting the existing schema or reorganizing existing pages.",
       "expected_output": "The missing Writing area is treated as empty for read-only work and is added minimally only for an authorized mutation under the existing backup and compatibility lifecycle.",
       "files": [],
       "expectations": [
         "Read-only Writing retrieval does not create an index, profile, or backup.",
-        "A requested Writing mutation creates only the missing Writing navigation after backup.",
+        "A requested Writing mutation creates only the missing Writing navigation before the post-write backup.",
         "The existing schema, pages, links, and taxonomy are preserved without migration."
       ]
     },
@@ -391,12 +391,12 @@
     },
     {
       "id": 36,
-      "prompt": "A synthetic existing Context Vault has no learning directory. First answer a read-only question about prior knowledge without creating files. Then, only after an explicit request to ingest evidence, add the minimal Learning index and root link after the normal pre-write backup.",
+      "prompt": "A synthetic existing Context Vault has no learning directory. First answer a read-only question about prior knowledge without creating files. Then, only after an explicit request to ingest evidence, add the minimal Learning index and root link, complete the ingest, and create the normal post-write backup.",
       "expected_output": "The skill treats a missing Learning area as empty for read-only retrieval and adds it minimally only for a requested mutation.",
       "files": [],
       "expectations": [
         "Read-only retrieval does not create Learning files or a backup.",
-        "A requested mutation adds only the missing Learning navigation after backup.",
+        "A requested mutation adds only the missing Learning navigation before the post-write backup.",
         "Existing schema, pages, and taxonomy are not silently migrated."
       ]
     },
@@ -407,7 +407,7 @@
       "files": [],
       "expectations": [
         "Read-only relationship retrieval does not create files or a backup.",
-        "A requested mutation adds only relationships/index.md and its root link after backup.",
+        "A requested mutation adds only relationships/index.md and its root link before the post-write backup.",
         "The existing schema and taxonomy are not silently migrated into a CRM."
       ]
     },
@@ -479,11 +479,11 @@
     },
     {
       "id": 44,
-      "prompt": "In a synthetic vault, explicitly authorize a deep update after reviewing a plan. The snapshot changed first, so re-evaluate affected findings, create one backup before writing, apply only a managed-index refresh, validate afterward, and report the backup path.",
-      "expected_output": "The skill detects a stale plan, re-evaluates rather than applying it blindly, backs up before the first write, and performs only safe structural maintenance.",
+      "prompt": "In a synthetic vault, explicitly authorize a deep update after reviewing a plan. The snapshot changed first, so re-evaluate affected findings, apply only a managed-index refresh, validate the final state, create one post-write backup, and report the backup path.",
+      "expected_output": "The skill detects a stale plan, re-evaluates rather than applying it blindly, backs up the validated resulting state, and performs only safe structural maintenance.",
       "expectations": [
         "A snapshot mismatch prevents blind application of a stale plan.",
-        "One pre-write backup is created before mutation.",
+        "One post-write backup is created after the mutation and final validation.",
         "Managed index refresh is classified safe_structural and semantic decisions remain deferred.",
         "Post-write ordinary and deep validation are reported."
       ],
@@ -502,11 +502,11 @@
     },
     {
       "id": 46,
-      "prompt": "In a synthetic schema 0.1 vault with a custom archive area and existing personal pages, explicitly request migration to schema 0.2. Infer enabled verticals conservatively, preserve all pages and custom areas, add only control metadata and managed catalogs, and create the backup before the first write.",
-      "expected_output": "The migration is conservative, backed up, selective, and does not rewrite or relocate personal pages.",
+      "prompt": "In a synthetic schema 0.1 vault with a custom archive area and existing personal pages, explicitly request migration to schema 0.2. Infer enabled verticals conservatively, preserve all pages and custom areas, add only control metadata and managed catalogs, validate the final state, and create the backup of that resulting state.",
+      "expected_output": "The migration is conservative, backed up after successful final validation, selective, and does not rewrite or relocate personal pages.",
       "expectations": [
         "Schema 0.1 is not migrated during ordinary operations but is upgraded when explicitly requested.",
-        "The first migration write follows a successful backup.",
+        "The migration's final-state backup contains the resulting schema and managed controls.",
         "Custom areas and existing pages are preserved and ambiguities are reported.",
         "Only schema control metadata, root links, and managed catalog blocks are added or changed."
       ],
@@ -616,19 +616,19 @@
     },
     {
       "id": 56,
-      "prompt": "In a synthetic schema 0.2 vault with no optional verticals, explicitly ingest one authored essay requiring Writing. Activate exactly Writing at the catalog version, create its area and index, add the root link after one normal backup, and continue the ingest without enabling other verticals.",
+      "prompt": "In a synthetic schema 0.2 vault with no optional verticals, explicitly ingest one authored essay requiring Writing. Activate exactly Writing at the catalog version, create its area and index, add the root link, continue the ingest, and create one normal post-write backup without enabling other verticals.",
       "expected_output": "The first mutating use records exactly one available Writing contract and continues the original operation.",
       "expectations": [
         "Exactly one vertical is activated.",
         "The recorded contract matches the available version.",
         "Unrelated verticals remain disabled.",
-        "The pre-write backup occurs before the mutation."
+        "The post-write backup occurs after the mutation and captures the resulting state."
       ],
       "files": []
     },
     {
       "id": 57,
-      "prompt": "In a synthetic schema 0.1 vault with no Writing area, explicitly ingest an authored essay. Add only the needed legacy Writing area, index, and root link after the normal backup; preserve schema_version: 0.1 and do not add vertical_contracts or silently migrate.",
+      "prompt": "In a synthetic schema 0.1 vault with no Writing area, explicitly ingest an authored essay. Add only the needed legacy Writing area, index, and root link, complete validation, and create the normal post-write backup; preserve schema_version: 0.1 and do not add vertical_contracts or silently migrate.",
       "expected_output": "Schema 0.1 first use remains backward compatible and does not gain schema 0.2 markers.",
       "expectations": [
         "schema_version: 0.1 is preserved.",
@@ -778,7 +778,7 @@
       "prompt": "A synthetic deep-update plan was reviewed at snapshot A, then an unrelated page changed before authorization. Re-run deep lint, compare the current snapshot with A, and stop or re-plan the affected mutation instead of applying the stale plan blindly.",
       "expected_output": "Deep update validates the reviewed snapshot at the mutation boundary and treats drift as a safety event.",
       "expectations": [
-        "The current snapshot is compared with the reviewed snapshot before backup or active writes.",
+        "The current snapshot is compared with the reviewed snapshot before active writes and the post-write backup.",
         "Stale plans are stopped or re-planned and are never blindly applied.",
         "No backup is created when drift prevents the first active write."
       ],
@@ -845,7 +845,7 @@
     {
       "id": 76,
       "prompt": "Migrate my SelfContext vault to the latest supported schema.",
-      "expected_output": "The agent orients from the repository vault, plans the detected-to-latest migration, applies it only when the plan is valid, lets the helper create one backup, validates the final vault, and reports the path and results without exposing page content.",
+      "expected_output": "The agent orients from the repository vault, plans the detected-to-latest migration, applies it only when the plan is valid, validates the final vault, lets the helper create one post-write backup of that state, and reports the path and results without exposing page content.",
       "expectations": [
         "Natural-language migration intent routes to the canonical migration procedure.",
         "The read-only plan precedes any authorized write.",
@@ -861,7 +861,7 @@
       "expectations": [
         "The agent detects the current schema and latest supported schema itself.",
         "The supported migration path is resolved rather than guessed.",
-        "The helper owns the single pre-write backup and validation sequence."
+        "The helper owns the single post-write backup and final validation sequence."
       ],
       "files": []
     },
@@ -956,7 +956,7 @@
     {
       "id": 86,
       "prompt": "Migrate this synthetic vault, but its schema is malformed or it declares a future unsupported version.",
-      "expected_output": "Migration stops before backup and active writes and reports the smallest actionable schema blocker.",
+      "expected_output": "Migration stops before active writes and reports the smallest actionable schema blocker without creating a backup.",
       "expectations": [
         "Malformed and future schema states are blocked conservatively.",
         "No partial repair or guessed migration path is attempted.",
@@ -995,7 +995,7 @@
       "expectations": [
         "The SelfContext skill triggers from the legacy lowercase shorthand.",
         "latest resolves to the repository's latest supported schema rather than a hard-coded version.",
-        "The authorized flow plans first, lets the helper own exactly one backup, and validates the final state.",
+        "The authorized flow plans first, lets the helper own exactly one post-write backup, and validates the final state.",
         "A blocked or ambiguous plan stops before active-vault writes."
       ],
       "files": []
@@ -1007,7 +1007,7 @@
       "expectations": [
         "The SelfContext skill triggers from the canonical lowercase shorthand.",
         "latest resolves to the repository's latest supported schema rather than a hard-coded version.",
-        "The authorized flow plans first, lets the helper own exactly one backup, and validates the final state.",
+        "The authorized flow plans first, lets the helper own exactly one post-write backup, and validates the final state.",
         "A blocked or ambiguous plan stops before active-vault writes."
       ],
       "files": []
@@ -1030,7 +1030,7 @@
       "expected_output": "The canonical short form authorizes the bounded deep-update procedure after a reviewed plan, preserving evidence boundaries and never implying schema migration.",
       "expectations": [
         "The update reruns deep lint and checks the reviewed snapshot before mutation.",
-        "Exactly one ordinary pre-write backup is created before active-vault writes.",
+        "Exactly one ordinary post-write backup is created after active-vault writes and final validation.",
         "Only safe structural changes and explicitly approved semantic proposals are applied; human decisions remain unresolved.",
         "Ordinary lint, deep lint, catalog validation, and changed/unchanged reporting are performed, and schema migration is not rerun implicitly."
       ],

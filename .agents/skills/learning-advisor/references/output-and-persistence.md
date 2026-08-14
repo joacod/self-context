@@ -85,6 +85,6 @@ The body must identify the question, linked evidence, assumptions, uncertainty,
 and recommendations. A derived page is not evidence, does not verify a
 Learning concept, and does not change a goal or core preference.
 
-Before any persisted result, use the shared pre-write backup. Report whether a
-Learning page changed, whether only derived material changed, and what remains
-unconfirmed.
+After any persisted result and its validation, use the shared post-write
+backup. Report whether a Learning page changed, whether only derived material
+changed, and what remains unconfirmed.

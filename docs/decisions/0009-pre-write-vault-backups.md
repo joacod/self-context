@@ -1,6 +1,6 @@
 # ADR 0009: Create Pre-Write Vault Backups
 
-- **Status:** Accepted
+- **Status:** Superseded by [ADR 0016](0016-post-write-vault-backups.md)
 - **Date:** 2026-08-10
 
 ## Context

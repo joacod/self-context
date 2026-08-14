@@ -83,13 +83,14 @@ For an authorized request:
 
 1. Produce the read-only plan first.
 2. Continue automatically when the plan is valid and unambiguous.
-3. Let the migration helper create its one pre-write backup.
-4. Apply the complete supported migration path as one bounded transaction.
-5. Validate the active final state and run the independent checks below.
+3. Apply the complete supported migration path as one bounded transaction.
+4. Validate the active final state, then let the migration helper create its one
+   post-write backup of that final state.
+5. Run the independent checks below.
 6. Report the result and any remaining warnings or human decisions.
 
 The natural-language agent orchestration must **not** create a separate backup
-before invoking the helper. The helper owns the single pre-write backup for the
+before invoking the helper. The helper owns the single post-write backup for the
 migration operation.
 
 Stop before mutation when any of the following applies:
@@ -101,8 +102,11 @@ Stop before mutation when any of the following applies:
 - the plan contains blocking findings;
 - the staged proposed final state does not validate;
 - the vault changed between planning and writing;
-- the helper's backup fails;
 - the helper reports that it is not write-ready.
+
+If the final-state backup fails after active replacement, the helper rolls back
+its transaction when it can. If rollback cannot be proven, stop and report the
+failed migration and the recovery path rather than continuing with other writes.
 
 When blocked, do not attempt partial repairs outside this procedure. Explain the
 blocker and the smallest actionable human decision or repair.
@@ -221,14 +225,15 @@ Treat success as valid only when the structured result reports:
 
 - a completed migration from the detected source to the requested target;
 - the complete path that was applied;
-- the helper's backup path;
-- successful post-write validation; and
+- successful post-write validation;
+- the helper's post-write backup path containing the resulting state; and
 - no failed rollback or unresolved active-vault inconsistency.
 
 The helper constructs and validates the complete proposed state before the
-first active replacement. It creates exactly one pre-write backup, uses
-temporary sibling files and atomic replacement where supported, and owns
-rollback after replacement or post-write validation failure.
+first active replacement. It uses temporary sibling files and atomic replacement
+where supported, validates the active final state, then creates exactly one
+post-write backup containing that final state. It owns rollback after replacement,
+post-write validation failure, or final-backup failure.
 
 If the helper reports a rollback:
 

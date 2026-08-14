@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-"""Create and retain pre-write ZIP backups for a SelfContext vault.
+"""Create and retain post-write ZIP snapshots for a SelfContext vault.
 
-Archives contain private vault content and are not encrypted.  No encryption
+Callers should invoke this helper after a mutation and its relevant validation
+so the archive represents the resulting vault state. Archives contain private
+vault content and are not encrypted.  No encryption
 dependency is used; users who need encryption should protect or copy the ZIPs
 with a separate user-controlled tool.
 """
@@ -217,7 +219,7 @@ def create_backup(
 
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Create a timestamped pre-write backup of a SelfContext vault"
+        description="Create a timestamped post-write snapshot of a SelfContext vault"
     )
     parser.add_argument(
         "vault", nargs="?", default="vault", help="Path to the vault (default: ./vault)"

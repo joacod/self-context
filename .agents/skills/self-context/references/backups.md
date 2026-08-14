@@ -1,10 +1,10 @@
 # Vault Backups
 
-Use the backup helper before the first write of every operation that will
-create, update, delete, move, or append anything in the existing vault. This
-includes normalized pages, source records, indexes, `log.md`, review
-resolutions, and persisted derived or advice pages. Make one backup for the
-operation, not one backup per file.
+Use the backup helper after every operation that creates, updates, deletes,
+moves, or appends anything in the existing vault. This includes normalized
+pages, source records, indexes, `log.md`, review resolutions, and persisted
+derived or advice pages. Complete the intended writes and relevant validation
+first, then make one backup for the operation, not one backup per file.
 
 If another procedure already created the backup for the enclosing operation,
 reuse that archive and do not create a second one.
@@ -23,7 +23,8 @@ The helper:
 - creates the project-root `backups/` directory beside `vault/` on the first
   backup;
 - writes `backups/vault-YYYYMMDDTHHMMSSZ.zip` using a UTC timestamp;
-- archives the vault state that exists before the operation. The backup
+- archives the vault state that exists when the helper runs, so callers must
+  invoke it after the operation and its relevant validation. The backup
   directory is outside the vault, so archives cannot contain themselves or
   grow recursively;
 - keeps only the three newest managed backup ZIPs; and
@@ -31,9 +32,11 @@ The helper:
 
 The archive is built in a temporary file, fully read/tested as a ZIP, and moved
 into place atomically only after validation. A failed validation leaves no
-partial destination. Treat a non-zero exit as a write blocker: do not modify
-canonical vault content if the pre-write backup fails. Report the created backup
-and any retention cleanup after the operation completes.
+partial destination. Treat a non-zero exit as an incomplete mutation: stop
+further writes and report that the resulting vault still needs a successful
+backup. Transactional helpers should roll back the mutation when they can;
+ordinary agent-directed mutations cannot be assumed reversible. Report the
+created backup and any retention cleanup after the operation completes.
 
 The helper applies restrictive owner-only directory/file permissions where the
 platform supports them without requiring POSIX behavior. ZIP archives contain
@@ -43,8 +46,8 @@ when encryption is required.
 
 Read-only retrieval, lint, or review that does not persist a log entry does not
 need a backup. If the vault does not exist, there is no prior state to archive:
-initialize the empty vault first, then create a backup before continuing the
-requested mutation.
+initialize the empty vault, complete the requested mutation and validation, then
+create the first backup of that resulting state.
 
 The project-root `backups/` directory is private operational state, not
 canonical context. Do not index, search, lint, link to, or include its contents

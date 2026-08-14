@@ -59,7 +59,8 @@ into career evidence.
    than silently choosing or averaging them.
 6. Leave `core/` unchanged unless the user explicitly states a genuinely
    cross-domain value, preference, communication pattern, or constraint.
-7. Update the nearest index and operation log after the normal pre-write backup.
+7. Complete the page, index, and operation-log writes, validate the result,
+   and create the normal post-write backup.
 
 A source that repeats existing career evidence may produce **No meaningful
 Career update**. Preserving provenance and making no profile change is a

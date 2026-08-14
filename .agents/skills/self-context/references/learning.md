@@ -174,10 +174,11 @@ material:
    index when the area is first created, and `log.md` for a meaningful
    operation. Keep source records under `sources/` when retaining them makes
    the claim auditable.
-9. **Use the shared backup and confirmation rules.** Before the first write,
-   create the project-root pre-write backup. Batch at most one concise follow-up
-   for selected high-impact, ambiguous, contradictory, or inferred items. A
-   source alone never verifies a Learning claim.
+9. **Use the shared backup and confirmation rules.** Complete the authorized
+   writes and validation, then create the project-root post-write backup. Batch
+   at most one concise follow-up for selected high-impact, ambiguous,
+   contradictory, or inferred items. A source alone never verifies a Learning
+   claim.
 
 For an existing vault without `learning/`, a read-only request treats the area
 as empty. A requested Learning mutation follows the schema-specific activation

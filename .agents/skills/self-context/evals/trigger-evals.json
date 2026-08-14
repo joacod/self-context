@@ -40,7 +40,7 @@
     "should_trigger": true
   },
   {
-    "query": "Before updating my Context Vault, create a local timestamped backup and keep only the latest three copies.",
+    "query": "After updating my Context Vault, create a local timestamped backup of the resulting state and keep only the latest three copies.",
     "should_trigger": true
   },
   {

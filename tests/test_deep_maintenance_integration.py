@@ -138,8 +138,8 @@ class DeepMaintenanceIntegrationTests(unittest.TestCase):
         """Model the documented, explicitly authorized adoption boundary.
 
         The production skill has no adoption CLI.  This test-only harness
-        applies exactly the documented control-file contract after the normal
-        backup, then hands catalog rendering to the existing synchronizer.
+        applies exactly the documented control-file contract, validates it,
+        then creates the normal post-write backup through the existing helper.
         """
 
         catalog = vault_utils.load_vertical_catalog()
@@ -148,9 +148,6 @@ class DeepMaintenanceIntegrationTests(unittest.TestCase):
             for item in vault_utils.catalog_records(catalog)
             if item["id"] == identifier
         )
-        backup_path, _ = backup_vault.create_backup(vault)
-        self.assertTrue(Path(backup_path).is_file())
-
         schema_path = vault / "SCHEMA.md"
         schema = schema_path.read_text(encoding="utf-8")
         marker = "vertical_contracts:\n"
@@ -178,6 +175,8 @@ class DeepMaintenanceIntegrationTests(unittest.TestCase):
         self.assertFalse(
             any(item.get("severity") == "error" for item in sync_result["findings"])
         )
+        backup_path, _ = backup_vault.create_backup(vault)
+        self.assertTrue(Path(backup_path).is_file())
         return area
 
     def test_read_only_operations_preserve_complete_synthetic_tree(self) -> None:
@@ -325,12 +324,13 @@ class DeepMaintenanceIntegrationTests(unittest.TestCase):
             self.assertEqual(len(backups), 1)
             self.assertTrue(report["backup"])
 
-            # The archive must contain the pre-write state, demonstrating that
-            # backup creation preceded schema/index/log replacement.
+            # The archive must contain the final state, demonstrating that
+            # backup creation followed schema/index/log replacement.
             with zipfile.ZipFile(backups[0]) as archive:
                 self.assertIn("SCHEMA.md", archive.namelist())
-                self.assertIn(b"schema_version: 0.1", archive.read("SCHEMA.md"))
-                self.assertNotIn("writing/index.md", archive.namelist())
+                self.assertIn(b"schema_version: 0.2", archive.read("SCHEMA.md"))
+                self.assertIn("writing/index.md", archive.namelist())
+                self.assertIn(b"migrate_schema_0_1_to_0_2", archive.read("log.md"))
 
             schema = (vault / "SCHEMA.md").read_text(encoding="utf-8")
             self.assertIn("schema_version: 0.2", schema)
@@ -378,10 +378,10 @@ class DeepMaintenanceIntegrationTests(unittest.TestCase):
             before_pages = canonical_page_snapshot(vault)
             custom_before = (vault / "custom-notes" / "field-log.md").read_bytes()
 
-            backup_path, _ = backup_vault.create_backup(vault)
-            self.assertTrue(Path(backup_path).is_file())
             first = sync_indexes.synchronize(vault, write=True)
             self.assertEqual(first["changed"], ["career/index.md"])
+            backup_path, _ = backup_vault.create_backup(vault)
+            self.assertTrue(Path(backup_path).is_file())
             self.assertEqual(len(backup_paths(project)), 1)
             self.assertIn("Harbor Launch", index.read_text(encoding="utf-8"))
             self.assertEqual(canonical_page_snapshot(vault), before_pages)
@@ -441,7 +441,7 @@ class DeepMaintenanceIntegrationTests(unittest.TestCase):
             self.assertEqual(backup_paths(project), [])
             self.assertEqual((vault / "SCHEMA.md").read_text().splitlines()[2], "schema_version: 0.1")
 
-    def test_failed_medium_migration_rolls_back_active_bytes_after_backup(self) -> None:
+    def test_failed_medium_migration_rolls_back_active_bytes_before_backup(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             vault = build_synthetic_vault(project, schema_version="0.1")
@@ -458,7 +458,7 @@ class DeepMaintenanceIntegrationTests(unittest.TestCase):
             self.assertEqual(result["status"], "failed")
             self.assertEqual(result["rollback"]["status"], "rolled-back")
             self.assertEqual(before, tree_snapshot(vault))
-            self.assertEqual(len(backup_paths(project)), 1)
+            self.assertEqual(len(backup_paths(project)), 0)
             self.assertFalse(any(path.name.startswith(".index.md.migrate-") for path in vault.rglob(".*")))
 
     def test_valid_and_invalid_fixture_lint_modes_are_both_controlled(self) -> None:

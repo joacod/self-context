@@ -66,14 +66,15 @@ self-context/
 
 Git ignore is a commit-safety boundary, not a promise that a provider cannot see data supplied to it by the user. The vault should also be independently copyable without the repository.
 
-## Pre-Write Backups
+## Post-Write Backups
 
-Any operation that will mutate an existing vault creates one timestamped ZIP
-before its first write. The dependency-free helper stores the archive under
-the project-root `backups/` directory beside `vault/`, outside the portable
-vault. It retains only the three newest managed ZIPs, and a failed backup blocks
-the planned mutation. Read-only retrieval and validation do not create a backup
-unless they also persist a log entry or other change.
+Any operation that mutates an existing vault creates one timestamped ZIP after
+its writes and relevant validation. The dependency-free helper stores the
+archive under the project-root `backups/` directory beside `vault/`, outside the
+portable vault. It retains only the three newest managed ZIPs. A failed backup
+leaves a generic mutation incomplete and blocks further writes; transactional
+helpers roll back when they can. Read-only retrieval and validation do not create
+a backup unless they also persist a log entry or other change.
 
 The root `backups/` directory is private operational state rather than
 canonical context and is ignored by Git. Because it is outside `vault/`, the
@@ -250,8 +251,9 @@ The canonical schema-specific activation procedure is
 [Initialization](../.agents/skills/self-context/references/initialization.md):
 schema 0.1 first meaningful use may add only the needed legacy area/index/root
 link, while schema 0.2 first mutating use records the exact available
-`vertical@version` for only the required vertical after the normal backup.
-Read-only queries and assessments create nothing.
+`vertical@version` for only the required vertical, completes the operation,
+and then creates the normal post-write backup. Read-only queries and
+assessments create nothing.
 
 In schema 0.2, **available** means present in the repository catalog, **enabled**
 means recorded in `SCHEMA.md` with its area, index, and root link, and **applied**
@@ -261,7 +263,7 @@ applied version is an error. Unknown IDs, invalid versions, and duplicate
 entries for one ID are errors. The small parser accepts only non-negative
 integer versions such as `writing@1`; semantic-version strings and ranges are
 unsupported. Schema 0.1 has no contract markers and is not silently migrated. An explicit
-migration follows the canonical [Vault Migration procedure](../.agents/skills/self-context/references/migration.md): the helper detects the current and latest supported schema, resolves a validated registry path, stages the complete final state, creates one backup, and applies or rolls back one bounded transaction. It never rewrites personal evidence.
+migration follows the canonical [Vault Migration procedure](../.agents/skills/self-context/references/migration.md): the helper detects the current and latest supported schema, resolves a validated registry path, stages the complete final state, applies and validates one bounded transaction, creates one post-write backup, and rolls back when final validation or backup creation fails. It never rewrites personal evidence.
 
 ## Core Operations
 
@@ -303,4 +305,4 @@ remains subordinate to the Markdown vault and does not replace semantic review.
 
 These exclusions keep the durable asset portable, local, inspectable, and replaceable. Future disposable search indexes or user-controlled off-device copies can be considered only without changing the vault's canonical role.
 
-See the [architectural decisions](decisions/) for the reasoning behind these boundaries, including the [user-mode and project-maintenance separation](decisions/0007-user-mode-project-maintenance.md), the [selective confirmation and freshness policy](decisions/0008-selective-confirmation-and-freshness.md), the [pre-write backup policy](decisions/0009-pre-write-vault-backups.md), the [Writing vertical decision](decisions/0010-writing-vertical.md), the [query persistence triage decision](decisions/0011-query-persistence-triage.md), the [Learning vertical decision](decisions/0012-learning-vertical.md), the [Relationships vertical decision](decisions/0013-relationships-vertical.md), the [Media / Taste vertical decision](decisions/0014-media-taste-vertical.md), and the [Deep Maintenance and versioned vertical contracts decision](decisions/0015-deep-maintenance-and-versioned-vertical-contracts.md).
+See the [architectural decisions](decisions/) for the reasoning behind these boundaries, including the [user-mode and project-maintenance separation](decisions/0007-user-mode-project-maintenance.md), the [selective confirmation and freshness policy](decisions/0008-selective-confirmation-and-freshness.md), the [post-write backup policy](decisions/0016-post-write-vault-backups.md), the [Writing vertical decision](decisions/0010-writing-vertical.md), the [query persistence triage decision](decisions/0011-query-persistence-triage.md), the [Learning vertical decision](decisions/0012-learning-vertical.md), the [Relationships vertical decision](decisions/0013-relationships-vertical.md), the [Media / Taste vertical decision](decisions/0014-media-taste-vertical.md), and the [Deep Maintenance and versioned vertical contracts decision](decisions/0015-deep-maintenance-and-versioned-vertical-contracts.md).

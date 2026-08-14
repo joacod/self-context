@@ -13,7 +13,7 @@ The current system provides:
 - first-run initialization and orientation of existing vaults;
 - natural-language ingest, query, review, and lint workflows;
 - shared provenance, lifecycle, freshness, review, and epistemic boundaries;
-- local pre-write ZIP backups with retention of the latest three archives;
+- local post-write ZIP backups with retention of the latest three archives;
 - Obsidian compatibility and multi-session continuity; and
 - separate Career, Learning, Writing, Relationships, and Media / Taste
   verticals with replaceable Advisor Packs.

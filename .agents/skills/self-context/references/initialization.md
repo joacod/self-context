@@ -25,10 +25,11 @@ When a request requires a vault and `<repository-root>/vault/` does not exist:
    reason to make the user repeat the request.
 
 There is no prior vault state to archive before first-run initialization. After
-the empty structure exists, create one normal pre-write backup before
-continuing with the requested ingest or other mutation. The same backup covers
-any first-use vertical activation in that operation. Subsequent writes follow
-[the backup procedure](backups.md) before their first change.
+the empty structure exists, complete the requested ingest or other mutation and
+its validation, then create one normal post-write backup of the resulting state.
+The same backup covers any first-use vertical activation in that operation.
+Subsequent writes follow [the backup procedure](backups.md) after their
+changes and relevant validation.
 
 The private directory is intentionally not tracked. Never add a `.gitkeep` or
 other vault file to the repository merely to preserve the directory.
@@ -39,15 +40,15 @@ First determine the schema state from `SCHEMA.md`:
 
 - **Schema 0.1:** preserve its text and legacy layout. A first meaningful
   ordinary mutation may create the required vertical area, index, and root link
-  after the normal pre-write backup, but must not add contract markers or
+  before the normal post-write backup, but must not add contract markers or
   silently migrate to 0.2. Only an explicitly authorized operation following
   [Migration](migration.md) may upgrade the schema.
 - **Schema 0.2:** parse `vertical_contracts` strictly and treat it as
   selective. An available vertical is not enabled merely because it exists in
   the repository catalog. A first meaningful mutation that requires a vertical
   creates only that vertical's area and index, records the exact available
-  `vertical@version`, adds its root link, and continues the original operation
-  after one normal pre-write backup. It does not enable unrelated available
+  `vertical@version`, adds its root link, completes the original operation, and
+  then creates one normal post-write backup. It does not enable unrelated available
   verticals. Missing area/index/root-link companions for an already applied
   contract are lint/maintenance errors.
 - **Unrecognized or malformed state:** remain conservative and report the
@@ -58,8 +59,8 @@ Read-only queries, lint, assessments, deep review, and migration assessment
 never enable or create a vertical and never create a backup merely because a
 vertical is absent. For an explicitly authorized schema upgrade, follow the
 canonical [Migration procedure](migration.md) and its explicit migration
-helper: the helper plans first, owns the single pre-write backup, preserves
-pages and custom areas, and reports
+helper: the helper plans first, applies and validates the migration, owns the
+single post-write backup, preserves pages and custom areas, and reports
 ambiguity. The natural-language agent must not create a second backup before
 calling it.
 
@@ -74,8 +75,8 @@ initialized schema. Preserve its knowledge and orient before changing it.
 - If a schema declares a future or unknown major version, remain read-only,
   explain the compatibility issue, and ask before modifying content.
 - If a required control file is missing, create only the missing file after
-  checking that no conflicting file or convention exists. Create a pre-write
-  backup first, then preserve all existing pages and links.
+  checking that no conflicting file or convention exists. Preserve all existing
+  pages and links, validate the result, and create the post-write backup.
 
 All available verticals follow the same schema-specific activation rule above.
 The individual vertical procedures define ownership and evidence handling; they
@@ -159,12 +160,12 @@ Follow the schema-specific activation rule above. The `vertical_contracts:`
 line in a new schema 0.2 `SCHEMA.md` is the explicit empty contract list; a
 first vertical activation appends its exact `vertical@version` entry there.
 
-- schema 0.1: after the normal pre-write backup, create only the required area,
-  `index.md`, and root-index link; preserve the schema text and do not add a
-  `vertical_contracts` entry;
-- schema 0.2: after the normal pre-write backup, create only the required area
-  and `index.md`, add the exact available `vertical@version` entry, add its
-  root-index link, and continue the original operation;
+- schema 0.1: create only the required area, `index.md`, and root-index link;
+  preserve the schema text and do not add a `vertical_contracts` entry, then
+  validate and create the normal post-write backup;
+- schema 0.2: create only the required area and `index.md`, add the exact
+  available `vertical@version` entry, add its root-index link, and continue the
+  original operation before validating and creating the post-write backup;
 - unrecognized or malformed state: report ambiguity and do not initialize the
   vertical.
 

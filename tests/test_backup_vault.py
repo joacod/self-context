@@ -22,13 +22,18 @@ class BackupVaultTests(unittest.TestCase):
             check=False,
         )
 
-    def test_backup_captures_state_in_project_root_and_excludes_legacy_state(self) -> None:
+    def test_backup_captures_current_state_in_project_root_and_excludes_legacy_state(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project_root = Path(temporary)
             vault = project_root / "vault"
             (vault / "career").mkdir(parents=True)
             (vault / "career" / "profile.md").write_bytes(
                 b"before the operation\n"
+            )
+            # The helper is intentionally a current-state snapshot primitive;
+            # callers invoke it after their mutation so the archive is current.
+            (vault / "career" / "profile.md").write_bytes(
+                b"after the operation\n"
             )
             (vault / "backups").mkdir()
             legacy_file = vault / "backups" / "notes.txt"
@@ -41,7 +46,7 @@ class BackupVaultTests(unittest.TestCase):
             self.assertEqual(len(backups), 1)
             with zipfile.ZipFile(backups[0]) as archive:
                 self.assertEqual(
-                    archive.read("career/profile.md"), b"before the operation\n"
+                    archive.read("career/profile.md"), b"after the operation\n"
                 )
                 self.assertNotIn("backups/notes.txt", archive.namelist())
             self.assertTrue(legacy_file.is_file())
