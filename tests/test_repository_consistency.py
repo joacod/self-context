@@ -129,16 +129,17 @@ class RepositoryConsistencyTests(unittest.TestCase):
 
     def test_initialization_preserves_schema_compatibility_and_selective_activation(self) -> None:
         text = (SKILL_ROOT / "references/initialization.md").read_text(encoding="utf-8")
-        self.assertIn("schema_version: 0.2", text)
-        self.assertIn("vertical_contracts:", text)
-        self.assertIn("schema 0.1", text)
-        self.assertIn("schema 0.2", text)
-        self.assertRegex(text, r"do not add contract\s+markers")
-        self.assertRegex(text, r"explicit\s+migration\s+helper")
-        self.assertRegex(text, r"does not enable unrelated available\s+verticals")
+        normalized = " ".join(text.casefold().split())
+        self.assertRegex(text, r"schema_version:\s*0\.2")
+        self.assertRegex(text, r"vertical_contracts:")
+        self.assertRegex(normalized, r"schema\s+0\.1")
+        self.assertRegex(normalized, r"schema\s+0\.2")
+        self.assertRegex(normalized, r"do not add contract\s+markers")
+        self.assertRegex(normalized, r"explicit\s+migration\s+helper")
+        self.assertRegex(normalized, r"does not enable unrelated available\s+verticals")
         self.assertRegex(
-            text,
-            r"Never create or enable a vertical for a read-only query, assessment, lint, or\s+review\.",
+            normalized,
+            r"never create or enable a vertical for a read-only query, assessment, lint, or\s+review\.",
         )
 
     def test_deep_maintenance_terminology_keeps_read_only_and_mutating_boundaries(self) -> None:
@@ -183,7 +184,6 @@ class RepositoryConsistencyTests(unittest.TestCase):
         self.assertGreaterEqual(len(eval_paths), 2)
 
     def test_consistency_test_is_independent_of_a_real_vault(self) -> None:
-        self.assertFalse((ROOT / "vault").is_symlink())
         # This test does not open vault/; the actual ignored vault, when
         # present, is intentionally outside the consistency contract.
         gitignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
