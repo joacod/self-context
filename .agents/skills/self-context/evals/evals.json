@@ -748,6 +748,99 @@
         "Useful provenance can remain visible even when no semantic update is needed."
       ],
       "files": []
+    },
+    {
+      "id": 68,
+      "prompt": "On a synthetic copied vault, perform a deep review without retaining a report. Run the read-only preflight inventory first, keep the reviewed snapshot, and prove that the vault bytes, backups, log, indexes, schema, vertical directories, and report directory are unchanged.",
+      "expected_output": "The no-retention deep review is a read-only operation whose deterministic inventory remains ephemeral.",
+      "expectations": [
+        "The reviewed snapshot is recorded without changing canonical files.",
+        "No backup is created and no log entry is appended.",
+        "No vertical, report, catalog synchronization, or SCHEMA.md mutation occurs.",
+        "The report contains bounded metadata/findings rather than page bodies."
+      ],
+      "files": []
+    },
+    {
+      "id": 69,
+      "prompt": "Explicitly retain a synthetic deep-review result after the read-only review completes. Store only the justified private metadata report under the deep-review area, keep source bodies and task packets out, and ensure the retained report is excluded from ordinary personal retrieval and never becomes evidence.",
+      "expected_output": "Retention is explicit and bounded: one private derived maintenance report is written, without promoting it into personal context.",
+      "expectations": [
+        "Retention creates only the justified private deep-review report and required report navigation.",
+        "The retained report contains paths, compact metadata, relationships, findings, decisions, and validation rather than page bodies or transcripts.",
+        "The report is excluded from ordinary search and is not a source or personal evidence page.",
+        "The report does not silently verify claims, resolve contradictions, or promote inferences."
+      ],
+      "files": []
+    },
+    {
+      "id": 70,
+      "prompt": "A synthetic deep-update plan was reviewed at snapshot A, then an unrelated page changed before authorization. Re-run deep lint, compare the current snapshot with A, and stop or re-plan the affected mutation instead of applying the stale plan blindly.",
+      "expected_output": "Deep update validates the reviewed snapshot at the mutation boundary and treats drift as a safety event.",
+      "expectations": [
+        "The current snapshot is compared with the reviewed snapshot before backup or active writes.",
+        "Stale plans are stopped or re-planned and are never blindly applied.",
+        "No backup is created when drift prevents the first active write."
+      ],
+      "files": []
+    },
+    {
+      "id": 71,
+      "prompt": "Review a synthetic update plan containing a safe managed-catalog refresh, a semantic proposal about a personal page, and an unresolved contradiction requiring a human decision. Apply only the safe structural change after explicit authorization; leave the semantic proposal pending and the human decision unresolved.",
+      "expected_output": "Deep update separates automation classes and does not turn deterministic maintenance into semantic truth.",
+      "expectations": [
+        "Safe structural catalog work may be automated within the bounded plan.",
+        "Semantic proposals require explicit approval for their exact scope and are not auto-applied.",
+        "Contradictions and human-decision findings remain unresolved.",
+        "No inference is promoted and no verification date is invented."
+      ],
+      "files": []
+    },
+    {
+      "id": 72,
+      "prompt": "A synthetic deep-update batch would change more than the default 25 personal durable pages while also touching control indexes. Enforce the mutation budget, count only personal durable pages, and stop for explicit scope rather than using control metadata as a loophole.",
+      "expected_output": "The deep-update mutation budget is an executable scope boundary, with control files excluded from the personal-page count but not used to bypass it.",
+      "expectations": [
+        "The default maximum of 25 personal durable pages is respected.",
+        "Control files and managed indexes do not count as personal durable pages.",
+        "An over-budget update stops or requests explicit broader authorization."
+      ],
+      "files": []
+    },
+    {
+      "id": 73,
+      "prompt": "Build a synthetic career interview task packet from Career and Writing evidence while Relationships contains unrelated shared history. Keep each fact in its owning vertical, include relevant examples and communication constraints, and state that unrelated Relationships context is excluded.",
+      "expected_output": "The packet combines relevant verticals without changing ownership and preserves a privacy boundary around unrelated relationships.",
+      "expectations": [
+        "Career evidence remains Career-owned and Writing context remains Writing-owned.",
+        "The packet is derived retrieval output and does not update either owner automatically.",
+        "Unrelated Relationships pages and details are excluded and named in important exclusions.",
+        "Only the smallest relevant evidence paths and constraints are included."
+      ],
+      "files": []
+    },
+    {
+      "id": 74,
+      "prompt": "Create a synthetic current-career task packet where the decisive role page is stale, a second page is status: review, and a retained packet is explicitly requested for future work. Keep both uncertainty labels visible, record the confirmation needed, and store the packet only as a linked derived synthesis.",
+      "expected_output": "A retained task packet remains derived and visibly qualified rather than becoming settled personal context.",
+      "expectations": [
+        "Stale decisive context remains visibly stale and is not used as an unqualified current fact.",
+        "Status: review context remains provisional and its human decision is visible.",
+        "The retained packet uses derived_synthesis metadata and provenance links.",
+        "The packet does not change Career ownership, verification, goals, or source pages."
+      ],
+      "files": []
+    },
+    {
+      "id": 75,
+      "prompt": "A synthetic deep-review report mentions a page path, a freshness candidate, and an unresolved contradiction. Search for the underlying personal context and inspect the report boundary; ensure the report remains maintenance output, not a source, concept, or verification record.",
+      "expected_output": "Deep-review reports never become personal evidence or a feedback loop into retrieval.",
+      "expectations": [
+        "The report is excluded from ordinary retrieval by default.",
+        "The report is not used as provenance for a personal claim or derived synthesis.",
+        "Findings remain recommendations or human decisions rather than truth assertions."
+      ],
+      "files": []
     }
   ]
 }
