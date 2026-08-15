@@ -245,14 +245,14 @@ class BackupVaultTests(unittest.TestCase):
             vault = project_root / "vault"
             vault.mkdir()
             for filename in ("SCHEMA.md", "index.md", "log.md"):
-                (vault / filename).write_text("# synthetic\n", encoding="utf-8")
+                (vault / filename).write_text("schema_version: 0.1\n", encoding="utf-8")
             (project_root / "backups").mkdir()
             (project_root / "backups" / "not-a-page.md").write_text(
                 "not durable context\n", encoding="utf-8"
             )
 
             result = subprocess.run(
-                [sys.executable, str(LINT_SCRIPT), str(vault)],
+                [sys.executable, str(LINT_SCRIPT), "--migration-source", str(vault)],
                 capture_output=True,
                 text=True,
                 check=False,
@@ -267,7 +267,7 @@ class BackupVaultTests(unittest.TestCase):
             vault = Path(temporary) / "vault"
             (vault / "writing").mkdir(parents=True)
             for filename in ("SCHEMA.md", "index.md", "log.md"):
-                (vault / filename).write_text("# synthetic\n", encoding="utf-8")
+                (vault / filename).write_text("schema_version: 0.1\n", encoding="utf-8")
             (vault / "core").mkdir()
             (vault / "career").mkdir()
             (vault / "review").mkdir()
@@ -294,7 +294,7 @@ class BackupVaultTests(unittest.TestCase):
             )
 
             result = subprocess.run(
-                [sys.executable, str(LINT_SCRIPT), str(vault)],
+                [sys.executable, str(LINT_SCRIPT), "--migration-source", str(vault)],
                 capture_output=True,
                 text=True,
                 check=False,
@@ -309,7 +309,7 @@ class BackupVaultTests(unittest.TestCase):
             sources = vault / "sources"
             sources.mkdir(parents=True)
             for filename in ("SCHEMA.md", "index.md", "log.md"):
-                (vault / filename).write_text("# synthetic\n", encoding="utf-8")
+                (vault / filename).write_text("schema_version: 0.1\n", encoding="utf-8")
             source = sources / "writing-source.md"
             source.write_text(
                 """---
@@ -332,7 +332,7 @@ stale_after: null
             )
 
             invalid = subprocess.run(
-                [sys.executable, str(LINT_SCRIPT), str(vault)],
+                [sys.executable, str(LINT_SCRIPT), "--migration-source", str(vault)],
                 capture_output=True,
                 text=True,
                 check=False,
@@ -352,7 +352,7 @@ stale_after: null
                 encoding="utf-8",
             )
             malformed = subprocess.run(
-                [sys.executable, str(LINT_SCRIPT), str(vault)],
+                [sys.executable, str(LINT_SCRIPT), "--migration-source", str(vault)],
                 capture_output=True,
                 text=True,
                 check=False,
@@ -369,7 +369,7 @@ stale_after: null
                 encoding="utf-8",
             )
             valid = subprocess.run(
-                [sys.executable, str(LINT_SCRIPT), str(vault)],
+                [sys.executable, str(LINT_SCRIPT), "--migration-source", str(vault)],
                 capture_output=True,
                 text=True,
                 check=False,

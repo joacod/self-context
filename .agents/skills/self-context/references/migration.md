@@ -21,11 +21,19 @@ redact context, or enable every available vertical. When a future schema needs
 semantic judgment, migration stops with a human-decision finding instead of
 inventing an answer.
 
+Historical schemas are supported through migration, not as indefinite runtime
+modes. Current SelfContext operations target the latest schema and current
+contracts; migration preserves the deterministic path that moves older data
+forward while leaving semantic backfill and selective adoption to
+`upgrade vault latest` and deep maintenance.
+
 Keep these operations distinct:
 
-- **Lint** is deterministic structural validation. It never migrates.
+- **Lint** is deterministic structural validation for the current runtime. Its
+  explicit migration-source mode can inspect recognized old schemas for
+  migration validation; it never migrates.
 - **Deep lint** is broader deterministic inventory and integrity validation. It
-  never migrates.
+  can report migration-source state but never migrates.
 - **Review** is targeted semantic review. It never migrates unless the user
   separately requests migration.
 - **Deep review** is a read-only full-vault maintenance analysis. It may

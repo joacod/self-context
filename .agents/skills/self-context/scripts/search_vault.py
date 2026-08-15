@@ -11,12 +11,18 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 try:
-    from vault_utils import durable_page_records, normalized_text, normalized_tokens
+    from vault_utils import (
+        durable_page_records,
+        normalized_text,
+        normalized_tokens,
+        runtime_compatibility,
+    )
 except ImportError:  # pragma: no cover
     from .vault_utils import (  # type: ignore
         durable_page_records,
         normalized_text,
         normalized_tokens,
+        runtime_compatibility,
     )
 
 
@@ -382,6 +388,16 @@ def search_vault(
     vault = vault.expanduser()
     if not vault.exists() or vault.is_symlink() or not vault.is_dir():
         return {"query": query, "results": [], "findings": [f"vault is not a real directory: {vault}"]}
+
+    compatibility = runtime_compatibility(vault)
+    if not compatibility.get("ok"):
+        return {
+            "query": query,
+            "limit": limit,
+            "results": [],
+            "findings": [str(compatibility.get("message") or "vault is not current")],
+            "runtime_compatibility": compatibility,
+        }
     try:
         catalog = json.loads(
             (Path(__file__).resolve().parent.parent / "references" / "verticals.json").read_text(encoding="utf-8")
@@ -433,7 +449,13 @@ def search_vault(
             }
         )
     results.sort(key=lambda item: (-int(item["rank_score"]), str(item["path"])))
-    return {"query": query, "limit": limit, "results": results[: max(0, limit)], "findings": []}
+    return {
+        "query": query,
+        "limit": limit,
+        "results": results[: max(0, limit)],
+        "findings": [],
+        "runtime_compatibility": compatibility,
+    }
 
 
 def main(argv: Optional[List[str]] = None) -> int:

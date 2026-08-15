@@ -27,7 +27,12 @@ class RelationshipsMediaVerticalTests(unittest.TestCase):
             (vault / directory).mkdir(parents=True, exist_ok=True)
 
         (vault / "SCHEMA.md").write_text(
-            "# SelfContext Vault Schema\n\nschema_version: 0.1\n",
+            "# SelfContext Vault Schema\n\n"
+            "schema_version: 0.2\n"
+            "vertical_contracts:\n"
+            "  - career@1\n"
+            "  - relationships@1\n"
+            "  - media@1\n",
             encoding="utf-8",
         )
         root_links = [

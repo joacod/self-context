@@ -134,8 +134,8 @@ class RepositoryConsistencyTests(unittest.TestCase):
         self.assertRegex(text, r"vertical_contracts:")
         self.assertRegex(normalized, r"schema\s+0\.1")
         self.assertRegex(normalized, r"schema\s+0\.2")
-        self.assertRegex(normalized, r"do not add contract\s+markers")
-        self.assertRegex(normalized, r"explicit\s+migration\s+helper")
+        self.assertIn("contract markers", normalized)
+        self.assertRegex(normalized, r"migration\s+procedure")
         self.assertRegex(normalized, r"does not enable unrelated available\s+verticals")
         self.assertRegex(
             normalized,
@@ -280,6 +280,22 @@ class RepositoryConsistencyTests(unittest.TestCase):
             "Upgrade a synthetic schema 0.2 vault containing a vertical contract version newer than the repository supports.",
         }
         self.assertTrue(required.issubset(prompts))
+
+    def test_latest_first_runtime_policy_is_documented_without_a_second_version_axis(self) -> None:
+        architecture = (ROOT / "docs/ARCHITECTURE.md").read_text(encoding="utf-8")
+        schema = (SKILL_ROOT / "references/vault-schema.md").read_text(encoding="utf-8")
+        skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+        adr = (ROOT / "docs/decisions/0020-latest-first-runtime-compatibility.md").read_text(encoding="utf-8")
+        combined = "\n".join((architecture, schema, skill, adr)).casefold()
+        self.assertIn("latest-first", combined)
+        self.assertIn("upgrade vault latest", combined)
+        self.assertIn("migration source", combined)
+        self.assertIn("safe compatibility blocker", combined)
+        self.assertIn("future", combined)
+        self.assertIn("combinatorial", combined)
+        self.assertIn("no global", combined)
+        self.assertIn("silently", combined)
+        self.assertIn("--migration-source", (SKILL_ROOT / "references/review-and-lint.md").read_text(encoding="utf-8"))
 
     def test_consistency_test_is_independent_of_a_real_vault(self) -> None:
         # This test does not open vault/; the actual ignored vault, when

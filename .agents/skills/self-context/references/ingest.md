@@ -3,17 +3,21 @@
 Use this procedure when the user supplies new information, a source document,
 a recollection, or a correction to existing context.
 
-After orientation and once the operation is known to require a write,
-determine the schema-specific vertical activation plan in
+After orientation, run the shared latest-first runtime gate before planning a
+write. Only a current schema with current applied contracts may continue to
+normal ingest. If the vault is schema 0.1 or has an older applied contract, do
+not run legacy ingest semantics or silently upgrade; tell the user to run
+`upgrade vault latest`. Future, malformed, or unversioned state is a safe
+blocker/recovery case.
+
+For a current vault, determine the current-schema vertical activation plan in
 [Initialization](initialization.md). Create the provisional recovery backup,
 then apply that plan and the requested page, index, source-record, review-item,
 or log changes. Validate the resulting vault, create the final backup, and
 discard the provisional only after final backup success, following the [Vault
-Backups](backups.md) procedure. Schema 0.1 preserves its legacy schema without
-contract markers; schema 0.2 records only the exact contract for the required
-vertical.
-Read-only work never activates a vertical. If a required backup fails, keep the
-recovery archive, stop further writes, and report the mutation as incomplete.
+Backups](backups.md) procedure. Read-only work never activates a vertical. If a
+required backup fails, keep the recovery archive, stop further writes, and
+report the mutation as incomplete.
 
 ## 1. Understand the Input
 

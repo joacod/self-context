@@ -48,9 +48,11 @@ implemented by this Learning procedure.
 
 ## Storage and page choices
 
-Use the schema-specific activation rule in [Initialization](initialization.md);
+Use the current-schema activation rule in [Initialization](initialization.md);
 this procedure does not redefine vertical enablement, contract markers, or
-schema migration. The shared contract remains the only storage schema.
+schema migration. A recognized older schema must be upgraded before Learning
+activation or normal Learning operations. The shared contract remains the only
+storage schema.
 
 - `learning/index.md` is the navigation page for durable Learning concepts.
 - `learning/` contains the smallest useful set of topic or concept pages. Add a
@@ -183,10 +185,11 @@ material:
    ambiguous, contradictory, or inferred items. A source alone never verifies a
    Learning claim.
 
-For an existing vault without `learning/`, a read-only request treats the area
-as empty. A requested Learning mutation follows the schema-specific activation
-rule in [Initialization](initialization.md) and does not move pages or migrate
-the rest of the vault.
+For an existing current vault without `learning/`, a read-only request treats
+the area as empty. A requested Learning mutation follows the current-schema
+activation rule in [Initialization](initialization.md) and does not move pages
+or migrate the rest of the vault. An older schema upgrades first and receives
+no legacy Learning activation.
 
 ## Gaps, questions, and misconceptions
 
@@ -324,10 +327,8 @@ can be safely moved, split, or linked, and what remains ambiguous. `upgrade
 vault latest` may apply only a complete documented safe path; it does not
 replace this procedure or infer competence, erase prior models, or decide
 ambiguous knowledge ownership.
- If the repository later advertises a newer
-version, an older applied Learning contract remains readable and reviewable;
-read only the documented migrations before proposing an update. Future versions
-must identify affected Learning evidence, safe structural changes, semantic
-review requirements, and forbidden automatic changes. A contract update never
-invents competence, promotes an inference, erases a prior model, or converts a
-generated explanation into evidence.
+ Older applied Learning contracts are migration sources, not permanent runtime
+modes. Future versions must identify affected Learning evidence, safe structural
+changes, semantic review requirements, and forbidden automatic changes. A
+contract update never invents competence, promotes an inference, erases a prior
+model, or converts a generated explanation into evidence.

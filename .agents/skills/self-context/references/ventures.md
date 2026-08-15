@@ -50,11 +50,13 @@ source record, or recommendation into a venture page.
 ## Contract and durable record
 
 Ventures uses the shared Markdown, YAML frontmatter, provenance, verification,
-freshness, review, and standard relative-link contract. Durable pages retain the
-common fields `type`, `title`, `description`, `tags`, `status`, `generated`,
-`verified`, `sources`, `assertion_kind`, and `stale_after`. Do not add required
-Ventures-specific frontmatter or a database. In particular, do not overload
-shared page `status` with initiative lifecycle state.
+freshness, review, and standard relative-link contract. A recognized older
+schema must be upgraded before Ventures activation or normal Ventures
+operations. Durable pages retain the common fields `type`, `title`,
+`description`, `tags`, `status`, `generated`, `verified`, `sources`,
+`assertion_kind`, and `stale_after`. Do not add required Ventures-specific
+frontmatter or a database. In particular, do not overload shared page `status`
+with initiative lifecycle state.
 
 The initiative lifecycle is readable body content, normally using the smallest
 useful vocabulary: candidate, proposed, active, paused, completed,
@@ -166,12 +168,12 @@ repository mention, meeting, vague maybe, or company/person name.
 4. Link Career, Learning, Relationships, Writing, Core, and Sources only when
    their owned evidence helps explain the initiative. Route new facts to their
    real owner instead of copying them into Ventures.
-5. For a meaningful mutation, follow the shared provisional recovery backup,
-   validation, final backup, and guarded provisional-discard lifecycle. A
-   schema 0.2 first use records exactly `ventures@1`, creates only the area and
-   index, and adds the root link. A schema 0.1 first use adds only the legacy
-   area, index, and root link without a contract marker or schema migration.
-   Read-only work never creates or enables Ventures.
+5. For a meaningful mutation in a current vault, follow the shared provisional
+   recovery backup, validation, final backup, and guarded provisional-discard
+   lifecycle. A schema 0.2 first use records exactly `ventures@1`, creates only
+   the area and index, and adds the root link. A schema 0.1 vault upgrades first
+   and receives no legacy Ventures activation. Read-only work never creates or
+   enables Ventures.
 
 ## Query and cross-vertical routing
 
@@ -195,9 +197,11 @@ Combine verticals when the question needs them, but preserve ownership:
 | What should I publicly say about X? | Ventures evidence plus Writing and/or Career reasoning |
 | What source supports this claim? | Sources and provenance |
 
-A read-only question about an absent available vertical treats it as empty. It
-does not create `ventures/`, an index, a marker, a placeholder page, or a
-backup, and it does not alter schema 0.1. Query-derived advice remains
+A read-only question about an absent available vertical in a current vault
+treats it as empty. It does not create `ventures/`, an index, a marker, a
+placeholder page, or a backup. A query against schema 0.1 first reports the
+upgrade requirement rather than altering or semantically operating on that
+legacy state. Query-derived advice remains
 `derived_synthesis` only when the shared persistence rules and explicit user
 intent justify retention; it never silently becomes a fact or commitment.
 
@@ -239,11 +243,9 @@ stranded in Career or another area, what can be safely moved, split, or linked,
 and what remains ambiguous. `upgrade vault latest` may apply only a complete
 documented safe path; it does not replace this procedure, move ambiguous Career
 pages, or invent initiative outcomes, authority, adoption, or commitments.
- If a later repository
-version is advertised, an older applied `ventures@1` remains readable and
-structurally valid while the documented migration is reviewed. A future
-contract must identify affected evidence, safe structural changes, semantic
-review requirements, and forbidden automatic changes. It must not move Career
-pages, split ambiguous ownership, invent outcomes, promote recommendations,
-change verification, or migrate a user's private vault merely because Ventures
-became available.
+ An older applied Ventures contract is a migration source, not a permanent
+runtime mode. A future contract must identify affected evidence, safe structural
+changes, semantic review requirements, and forbidden automatic changes. It must
+not move Career pages, split ambiguous ownership, invent outcomes, promote
+recommendations, change verification, or migrate a user's private vault merely
+because Ventures became available.

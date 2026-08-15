@@ -28,7 +28,7 @@ Current vertical routing:
   or that every vertical needs an Advisor Pack.
 - For creating or materially modifying a project skill, use the installed `skill-creator` workflow and place the canonical result under `.agents/skills/`.
 
-Do not invent a competing vault schema or lifecycle ad hoc. Follow the SelfContext skill, the vault's `SCHEMA.md`, and the Deep Maintenance Protocol once they exist. Schema 0.1 remains supported without automatic migration; schema 0.2 records selective vertical contracts and compiled catalogs. Prefer natural-language interaction; commands are optional conveniences, never the canonical interface.
+Do not invent a competing vault schema or lifecycle ad hoc. Follow the SelfContext skill, the vault's `SCHEMA.md`, and the Deep Maintenance Protocol once they exist. SelfContext is latest-first: the current schema and applied contracts are the only normal runtime target; recognized historical schemas remain upgrade/migration sources, and schema 0.2 records selective vertical contracts and compiled catalogs. Prefer natural-language interaction; commands are optional conveniences, never the canonical interface.
 
 ## Operating Modes
 

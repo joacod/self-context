@@ -31,11 +31,14 @@ Synthetic page body.
 
 
 class DeepLintTests(unittest.TestCase):
-    def base_vault(self, root: Path, *, schema: str = "0.1") -> Path:
+    def base_vault(self, root: Path, *, schema: str = "0.2") -> Path:
         vault = root / "vault"
         for directory in ("core", "review", "sources", "derived"):
             (vault / directory).mkdir(parents=True)
-        (vault / "SCHEMA.md").write_text(f"# Schema\n\nschema_version: {schema}\n", encoding="utf-8")
+        schema_text = f"# Schema\n\nschema_version: {schema}\n"
+        if schema == "0.2":
+            schema_text += "vertical_contracts:\n"
+        (vault / "SCHEMA.md").write_text(schema_text, encoding="utf-8")
         (vault / "index.md").write_text(
             "# Root\n\nSCHEMA.md\nlog.md\n"
             "- [Core](core/index.md)\n- [Review](review/index.md)\n"

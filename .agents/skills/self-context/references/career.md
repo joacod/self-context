@@ -25,9 +25,11 @@ purpose, lifecycle, current state, decisions, commitments, and outcomes.
 ## Storage and evidence
 
 Use the shared Markdown, YAML frontmatter, provenance, verification, freshness,
-review, and relative-link contract. Apply the schema-specific activation rule
-in [Initialization](initialization.md); this procedure does not redefine
-vertical enablement or contract markers. Common career groupings such as
+review, and relative-link contract. Apply the current-schema activation rule in
+[Initialization](initialization.md); this procedure does not redefine vertical
+enablement, contract markers, or schema migration. A recognized older schema
+must be upgraded before Career activation or normal Career operations. Common
+career groupings such as
 `roles/`,
 `projects/`, `skills/`, `stories/`, `goals/`, and `public-work/` are optional;
 create them only when a real collection benefits from the grouping.
@@ -101,11 +103,9 @@ advertising it: where earlier evidence may be stranded in other areas, what
 can be safely moved, split, or linked, and what remains ambiguous. `upgrade
 vault latest` may apply only a complete documented safe path; it does not
 replace this procedure or make ambiguous Career/project ownership decisions.
- If the repository later advertises a newer
-version, an older applied Career contract remains readable and reviewable; read
-only the documented migrations before proposing an update. Future versions
-must identify affected career evidence, list safe structural changes separately
-from semantic review requirements, and state forbidden automatic changes. A
-new contract version never invents experience, changes a goal, promotes an
-inference, resolves a contradiction, or removes historical evidence
-automatically.
+ Older applied Career contracts are migration sources, not permanent runtime
+modes. Future versions must identify affected career evidence, list safe
+structural changes separately from semantic review requirements, and state
+forbidden automatic changes. A new contract version never invents experience,
+changes a goal, promotes an inference, resolves a contradiction, or removes
+historical evidence automatically.

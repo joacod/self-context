@@ -14,7 +14,9 @@ knowledge base or allowing generated interpretation to rewrite personal truth.
 The existing project also has several optional verticals. Their procedures and
 Advisor Packs need a versioned, selectively adopted contract surface without
 forcing every vault to create every area. Legacy schema 0.1 vaults must remain
-usable without an automatic migration.
+recoverable through migration, while current runtime behavior should not grow a
+permanent branch for every historical format. The later latest-first policy is
+recorded in ADR 0020.
 
 ## Decision
 
@@ -22,8 +24,9 @@ usable without an automatic migration.
 
 Keep five distinct operations:
 
-- **Lint** is the fast deterministic structural validator and remains
-  backward-compatible with schema 0.1.
+- **Lint** is the fast deterministic structural validator for the current
+  runtime; its explicit migration-source mode can still inspect schema 0.1 for
+  upgrade validation.
 - **Deep lint** is a deterministic read-only inventory and integrity pass. It
   adds symlink and UTF-8 safety, reachability, nearest-index ownership,
   managed-catalog synchronization, dead entries, duplicate title/alias/ID or
@@ -73,19 +76,21 @@ creates nothing. Adoption is explicit and adds only the necessary area, index,
 exact available contract marker, and root link; it does not copy facts or create
 placeholder personal pages.
 
-Schema 0.1 remains a legacy format without contract markers. Its first
-meaningful mutation may add the needed legacy area, index, and root link, but it
-never silently migrates to schema 0.2. Unrecognized or malformed schema state
-remains conservative and does not guess.
+Schema 0.1 remains a legacy format without contract markers and is an
+upgrade/migration source only. Normal first-use activation and mutation target
+schema 0.2's current contract model; an older vault must be upgraded first.
+Unrecognized or malformed schema state remains conservative and does not guess.
 
 ### Schema compatibility and migration
 
-Schema 0.1 remains supported exactly as a legacy vault. Ordinary ingest, query,
-targeted review, advice, and lint do not add contract markers, rewrite indexes,
-or bump the schema. An explicit schema migration, following the canonical procedure, or an
-explicitly requested migration delegated by deep update may upgrade a vault to
-schema 0.2. Deep review, deep lint, ordinary lint, and unrelated deep-update
-work never migrate merely because an old schema is found.
+Schema 0.1 remains supported as a deterministic migration source. Current
+SelfContext does not promise ordinary ingest, query, targeted review, advice,
+lint, or maintenance semantics while a vault deliberately stays on 0.1. An
+explicit schema migration, following the canonical procedure, or an explicitly
+requested migration delegated by upgrade may upgrade a vault to schema 0.2.
+Read-only orientation and migration-source validation may inspect it, while
+deep review, deep lint, ordinary lint, and unrelated deep-update work do not
+silently migrate or operate it as current.
 
 Schema 0.2 records a selective parseable section such as:
 
@@ -196,5 +201,6 @@ The vault gains deterministic maintenance and better task-oriented retrieval
 without adding a database, embeddings, MCP, background service, custom runtime,
 or synchronization layer. Deep review can identify semantic work while staying
 read-only; deep update makes mutation explicit, backed up, bounded, and
-reviewable. Schema 0.1 users keep ordinary compatibility, while schema 0.2
-users gain selective contract tracking and managed catalogs.
+reviewable. Schema 0.1 users retain backward-compatible migration, while
+schema 0.2 users gain the latest-first runtime, selective contract tracking, and
+managed catalogs.

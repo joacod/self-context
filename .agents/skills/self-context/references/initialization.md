@@ -2,9 +2,10 @@
 
 The repository catalog at `references/verticals.json` is the canonical list of
 available verticals. A private vault enables only verticals it intentionally
-contains and, in schema 0.2, records their applied contract versions. Schema
-0.1 remains a legacy format during ordinary operations; do not add contract
-markers or migrate it automatically.
+contains and, in the current schema 0.2, records their applied contract
+versions. The current runtime is latest-first: recognized schema 0.1 state is
+preserved for migration and diagnosis, but ordinary operations upgrade it first
+rather than activating historical semantics.
 
 ## Missing Vault
 
@@ -38,12 +39,11 @@ other vault file to the repository merely to preserve the directory.
 
 First determine the schema state from `SCHEMA.md`:
 
-- **Schema 0.1:** preserve its text and legacy layout. A first meaningful
-  ordinary mutation may create the required vertical area, index, and root link
-  after the provisional recovery backup and before the final backup, but must
-  not add contract markers or silently migrate to 0.2. Only an explicitly
-  authorized operation following
-  [Migration](migration.md) may upgrade the schema.
+- **Schema 0.1:** preserve its text and legacy layout as a migration source.
+  Do not perform ordinary mutation, current vertical activation, or modern
+  semantic operations against it. Direct the user to `upgrade vault latest`;
+  only the explicitly authorized [Migration](migration.md) path may transform
+  it to 0.2.
 - **Schema 0.2:** parse `vertical_contracts` strictly and treat it as
   selective. An available vertical is not enabled merely because it exists in
   the repository catalog. A first meaningful mutation that requires a vertical
@@ -59,12 +59,13 @@ First determine the schema state from `SCHEMA.md`:
 
 Read-only queries, lint, assessments, deep review, and migration assessment
 never enable or create a vertical and never create a backup merely because a
-vertical is absent. For an explicitly authorized schema upgrade, follow the
-canonical [Migration procedure](migration.md) and its explicit migration
-helper: the helper plans first, creates the pre-write recovery backup, applies
-and validates the migration, creates the final-state backup, preserves pages and
-custom areas, and reports ambiguity. The natural-language agent must not create
-separate backups before calling it.
+vertical is absent. On an older schema, read-only orientation may diagnose or
+plan an upgrade, but it must not promise full current query semantics. For an
+explicitly authorized schema upgrade, follow the canonical [Migration
+procedure](migration.md) and its helper: it plans first, creates the pre-write
+recovery backup, applies and validates the migration, creates the final-state
+backup, preserves pages and custom areas, and reports ambiguity. The
+natural-language agent must not create separate backups before calling it.
 
 An existing vault may have more files, a different ordering, or a previously
 initialized schema. Preserve its knowledge and orient before changing it.
@@ -77,16 +78,19 @@ initialized schema. Preserve its knowledge and orient before changing it.
 - If a schema declares a future or unknown major version, remain read-only,
   explain the compatibility issue, and ask before modifying content.
 - If a required control file is missing, create only the missing file after
-  checking that no conflicting file or convention exists. Create the provisional
-  recovery backup, preserve all existing pages and links, validate the result,
-  create the final backup, and discard the provisional only after success.
+  checking that no conflicting file or convention exists. For a current vault,
+  create the provisional recovery backup, preserve all existing pages and
+  links, validate the result, create the final backup, and discard the
+  provisional only after success. For an older, future, malformed, or
+  unversioned vault, remain read-only and use the recovery or migration path.
 
-All available verticals follow the same schema-specific activation rule above.
-The individual vertical procedures define ownership and evidence handling; they
+All available verticals follow the current-schema activation rule above. The
+individual vertical procedures define ownership and evidence handling; they
 must not redefine activation, contract markers, or schema migration behavior.
 
-Existing-vault support means the user can continue immediately; it does not
-mean silently migrating or flattening their data.
+Existing-vault support means its knowledge can move forward safely. It does not
+mean silently migrating, flattening data, or keeping an old format as a live
+runtime mode.
 
 ## Obsidian Viewer State
 
@@ -129,9 +133,9 @@ Top-level areas:
 - `derived/`: reusable query or advice syntheses.
 
 Vertical areas are optional and are created only when a triggering mutation
-or explicit adoption requires them, following the schema-specific activation
-rule below. Available verticals are Career, Learning, Writing, Relationships, Media / Taste,
-and Ventures / Projects.
+or explicit adoption requires them, following the current-schema activation
+rule below. Available verticals are Career, Learning, Writing, Relationships,
+Media / Taste, and Ventures / Projects.
 
 Durable pages use YAML frontmatter described in this file's operational
 documentation. The common fields are:
@@ -159,20 +163,17 @@ syntax.
 
 ### Optional vertical initialization
 
-Follow the schema-specific activation rule above. The `vertical_contracts:`
-line in a new schema 0.2 `SCHEMA.md` is the explicit empty contract list; a
-first vertical activation appends its exact `vertical@version` entry there.
+Follow the current-schema activation rule above. The `vertical_contracts:` line
+in a schema 0.2 `SCHEMA.md` is the explicit empty contract list; a first
+vertical activation appends its exact `vertical@version` entry there. Create a
+provisional recovery backup, add only the required area and `index.md`, add the
+exact available contract marker and root-index link, continue the original
+operation, validate, create the final backup, and discard the provisional only
+after success.
 
-- schema 0.1: create a provisional recovery backup, add only the required
-  area, `index.md`, and root-index link; preserve the schema text and do not add
-  a `vertical_contracts` entry, then validate, create the final backup, and
-  discard the provisional after success;
-- schema 0.2: create a provisional recovery backup, add only the required area
-  and `index.md`, add the exact available `vertical@version` entry, add its
-  root-index link, continue the original operation, validate, create the final
-  backup, and discard the provisional after success;
-- unrecognized or malformed state: report ambiguity and do not initialize the
-  vertical.
+A schema 0.1 vault does not receive legacy first-use activation; upgrade it
+first. An unrecognized or malformed state reports ambiguity and does not
+initialize the vertical.
 
 Never create or enable a vertical for a read-only query, assessment, lint, or
 review.

@@ -469,9 +469,10 @@
     {
       "id": 43,
       "prompt": "In a synthetic schema 0.1 vault, ask for a deep review of maintenance issues. Keep the review read-only, do not create a backup or report, and distinguish deterministic deep-lint findings from semantic human decisions.",
-      "expected_output": "The skill runs ordinary/deep lint as read-only preflight, records a snapshot, and returns stable findings without mutating the vault.",
+      "expected_output": "The skill runs read-only maintenance preflight, records a snapshot, reports that the old schema requires upgrade for current semantics, and returns stable findings without mutating the vault.",
       "expectations": [
         "Deep review is explicitly read-only by default.",
+        "The old schema is treated as an upgrade source, not a live runtime mode.",
         "No backup, log entry, report page, or catalog write is created.",
         "Deterministic lint findings are separated from semantic proposals and human decisions."
       ],
@@ -505,7 +506,7 @@
       "prompt": "In a synthetic schema 0.1 vault with a custom archive area and existing personal pages, explicitly request migration to schema 0.2. Infer enabled verticals conservatively, preserve all pages and custom areas, add only control metadata and managed catalogs, validate the final state, and create the backup of that resulting state.",
       "expected_output": "The migration is conservative, backed up after successful final validation, selective, and does not rewrite or relocate personal pages.",
       "expectations": [
-        "Schema 0.1 is not migrated during ordinary operations but is upgraded when explicitly requested.",
+        "Schema 0.1 remains a migration source and is not treated as a current runtime target.",
         "The migration's final-state backup contains the resulting schema and managed controls.",
         "Custom areas and existing pages are preserved and ambiguities are reported.",
         "Only schema control metadata, root links, and managed catalog blocks are added or changed."
@@ -628,24 +629,24 @@
     },
     {
       "id": 57,
-      "prompt": "In a synthetic schema 0.1 vault with no Writing area, explicitly ingest an authored essay. Create the provisional recovery backup, add only the needed legacy Writing area, index, and root link, complete validation, create the final backup, discard the provisional, preserve schema_version: 0.1, and do not add vertical_contracts or silently migrate.",
-      "expected_output": "Schema 0.1 first use remains backward compatible and does not gain schema 0.2 markers.",
+      "prompt": "In a synthetic schema 0.1 vault with no Writing area, explicitly ingest an authored essay. Do not run legacy ingest semantics or silently migrate; explain that the vault must first use upgrade vault latest, and leave the vault unchanged.",
+      "expected_output": "Current SelfContext blocks ordinary ingest on schema 0.1, gives the concise upgrade direction, and performs no mutation.",
       "expectations": [
-        "schema_version: 0.1 is preserved.",
-        "No vertical_contracts marker is added.",
-        "Only the required legacy vertical navigation is added."
+        "The old schema is recognized as a migration source rather than a current runtime target.",
+        "The response directs the user to upgrade vault latest.",
+        "No vertical area, contract marker, backup, or page is created by ordinary ingest."
       ],
       "files": []
     },
     {
       "id": 58,
-      "prompt": "A synthetic schema 0.2 vault has an applied Writing contract at version 0 while the repository advertises Writing version 1. Review the documented migration path, determine whether any evidence is affected, and report a successful no-change outcome if none is affected. Do not automatically migrate the contract.",
-      "expected_output": "An older applied contract is valid and reviewable; the update is assessed through documented migrations and can result in no meaningful change.",
+      "prompt": "A synthetic schema 0.2 vault has an applied Writing contract at version 0 while the repository advertises Writing version 1. Review the documented migration path, explain that current Writing semantics require upgrade, and do not reinterpret or silently downgrade the contract.",
+      "expected_output": "An older applied contract is an upgrade source and current semantic operation is blocked until its documented contract path completes.",
       "expectations": [
-        "Older contract is not treated as structural corruption.",
-        "Documented migrations are reviewed before proposing changes.",
-        "No automatic version bump occurs.",
-        "No affected evidence produces no meaningful change."
+        "The older contract is recognized without deleting its raw value.",
+        "Current Writing operations direct the user to upgrade vault latest.",
+        "No automatic version bump, semantic reinterpretation, or downgrade occurs.",
+        "A missing documented migration remains a compatibility blocker rather than a false current result."
       ],
       "files": []
     },
@@ -661,13 +662,13 @@
     },
     {
       "id": 60,
-      "prompt": "A synthetic schema 0.2 vault has an older applied Career contract. Review the documented migration and find no affected evidence. Report No meaningful Career update, preserve the older contract, and do not rewrite pages, indexes, or contract markers automatically.",
-      "expected_output": "A contract update can be a successful no-change review when documented migrations affect no evidence.",
+      "prompt": "A synthetic schema 0.2 vault has an older applied Career contract. Review the documented migration, keep ambiguous or unsupported contract work unresolved, and do not run current Career semantics until the contract is current.",
+      "expected_output": "The older contract remains preserved as an upgrade source, while normal Career operation is blocked or routed through its documented migration.",
       "expectations": [
-        "The older applied contract remains supported and unchanged.",
+        "The older applied contract remains preserved for migration.",
         "The documented migration is reviewed rather than guessed.",
-        "No affected evidence produces an explicit No meaningful Career update.",
-        "No automatic contract or page mutation occurs."
+        "No automatic semantic reinterpretation or downgrade occurs.",
+        "The result does not claim the vault is fully current while the contract is stale."
       ],
       "files": []
     },
@@ -1093,12 +1094,12 @@
     },
     {
       "id": 98,
-      "prompt": "In a synthetic schema 0.1 vault, explicitly ingest meaningful Ventures context. Preserve schema_version: 0.1, add only the needed legacy ventures area, index, and root link, and do not add vertical_contracts or silently migrate the vault.",
-      "expected_output": "Schema 0.1 keeps legacy first-use behavior while allowing Ventures to participate without a contract marker.",
+      "prompt": "In a synthetic schema 0.1 vault, explicitly ingest meaningful Ventures context. Do not activate Ventures through legacy semantics or silently migrate the vault; explain that upgrade vault latest must run first and leave the old vault unchanged.",
+      "expected_output": "Current SelfContext requires upgrade before Ventures activation and does not mutate a schema 0.1 vault during ordinary ingest.",
       "expectations": [
         "schema_version: 0.1 remains unchanged.",
-        "No vertical_contracts section or ventures@1 marker is added by ordinary use.",
-        "Only the required legacy Ventures navigation is created."
+        "The response directs the user to upgrade vault latest.",
+        "No legacy Ventures area, contract marker, page, or backup is created by ordinary use."
       ],
       "files": []
     },
@@ -1324,6 +1325,39 @@
         "The request is not narrowed to schema migration merely because it says current.",
         "The upgrade assessment checks contracts, selective adoption, semantic triggers, indexes, and validation.",
         "A fully current vault returns the no-op result without mutation."
+      ],
+      "files": []
+    },
+    {
+      "id": 119,
+      "prompt": "What do I know about React? My copied SelfContext vault still declares schema 0.1. Answer without silently upgrading or running old ingest/query semantics.",
+      "expected_output": "The current runtime reports that the vault is an older upgrade source and directs the user to `upgrade vault latest` without mutating it.",
+      "expectations": [
+        "The old schema is detected before modern retrieval semantics.",
+        "The response is concise and names `upgrade vault latest`.",
+        "No structural or semantic mutation occurs during the query."
+      ],
+      "files": []
+    },
+    {
+      "id": 120,
+      "prompt": "Run a current SelfContext operation against synthetic vaults with a future schema, malformed schema, older applied contract, and future applied contract.",
+      "expected_output": "Each unsafe state is classified conservatively: old state requires upgrade, future state blocks without downgrade, and malformed state uses recovery/diagnosis.",
+      "expectations": [
+        "Future schema and future contract states are not guessed or downgraded.",
+        "Malformed/unversioned state is not treated as current.",
+        "An older applied contract blocks current semantics until its documented upgrade path completes."
+      ],
+      "files": []
+    },
+    {
+      "id": 121,
+      "prompt": "Run a current operation on a synthetic schema 0.2 vault with current Career and Learning contracts, while keeping Media disabled.",
+      "expected_output": "The current runtime proceeds normally and preserves selective vertical activation.",
+      "expectations": [
+        "Current schema and applied contracts pass the shared gate.",
+        "The operation does not enable the disabled Media vertical.",
+        "No legacy compatibility branch is required for the current operation."
       ],
       "files": []
     }

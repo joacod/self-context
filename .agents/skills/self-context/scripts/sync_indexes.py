@@ -30,6 +30,8 @@ try:
         nearest_index,
         relative_label,
         safe_read_bytes,
+        runtime_compatibility,
+        runtime_compatibility_finding,
     )
 except ImportError:  # pragma: no cover - useful when imported as a package
     from .vault_utils import (  # type: ignore
@@ -39,6 +41,8 @@ except ImportError:  # pragma: no cover - useful when imported as a package
         nearest_index,
         relative_label,
         safe_read_bytes,
+        runtime_compatibility,
+        runtime_compatibility_finding,
     )
 
 
@@ -637,6 +641,18 @@ def synchronize(vault: Path, write: bool = False) -> Dict[str, Any]:
             ],
             "write": write,
         }
+
+    if write:
+        compatibility = runtime_compatibility(vault)
+        if not compatibility.get("ok"):
+            return {
+                "vault": str(vault.resolve()),
+                "status": str(compatibility.get("state") or "runtime-blocked"),
+                "changed": [],
+                "findings": [runtime_compatibility_finding(compatibility)],
+                "write": write,
+                "runtime_compatibility": compatibility,
+            }
 
     desired, findings = _page_entries(vault)
     indexes = _index_paths(vault)

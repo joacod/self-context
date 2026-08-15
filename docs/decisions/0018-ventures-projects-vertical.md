@@ -36,11 +36,13 @@ v1 contract, so no version bump or migration is introduced. Existing Career
 pages remain in place and ambiguous ownership remains a human review decision.
 
 Ventures is selectively activated. Availability does not enable it; read-only
-queries do not create it; schema 0.2 records exactly `ventures@1` only when a
-meaningful mutation or explicit adoption requires it; schema 0.1 keeps legacy
-first-use behavior without contract markers or silent migration. Activation
-creates only the required area, index, marker where applicable, and root link.
-No placeholder project pages or automatic Career relocation is performed.
+queries do not create it; the current schema records exactly `ventures@1` only
+when a meaningful mutation or explicit adoption requires it. Recognized schema
+0.1 vaults must use `upgrade vault latest` before this current activation
+semantics applies; migration preserves their historical structure without
+adding legacy runtime behavior. Activation creates only the required area,
+index, marker, and root link. No placeholder project pages or automatic Career
+relocation is performed.
 
 A `ventures-advisor` pack performs evidence-first comparison, prioritization,
 trade-off, adoption, collaboration, and next-step reasoning. It is not a

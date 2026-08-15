@@ -33,6 +33,14 @@ Search is only a retrieval aid: inspect provenance, freshness, assertion kind,
 review state, contradictions, and source links before answering. Deep-review
 reports and noncanonical state remain excluded.
 
+Before modern query semantics, require the shared latest-first runtime gate.
+A current schema with current applied contracts may be queried normally. An old
+recognized schema or stale applied contract must not receive a native modern
+query answer or silently upgrade; return a concise `upgrade vault latest`
+direction. Limited read-only orientation and migration planning may inspect
+control state and selected old pages solely to explain or perform the upgrade.
+Future, malformed, and unversioned state is a compatibility/recovery blocker.
+
 ## Deep-lint inventory versus search output
 
 Deep-lint JSON is a deterministic maintenance inventory, not a second evidence
@@ -62,12 +70,13 @@ provenance before relying on an entry. If a catalog is missing, drifted, or has
 invalid marker structure, treat it as an unreliable navigation aid and run
 `sync_indexes.py --check` as a read-only diagnostic. Do not manually edit
 managed entries. `sync_indexes.py --write` belongs only inside an authorized
-mutation workflow. For schema 0.2, an absent available vertical is empty; a
-read-only query must not create its area or contract marker. Schema 0.1 is
-likewise preserved during read-only retrieval. Use local lexical search as the
-fallback described above, not as a replacement for index orientation. Do not
-scan the entire vault for a narrow question unless orientation shows that the
-relevant path is unclear.
+current-model mutation workflow. For schema 0.2, an absent available vertical
+is empty; a read-only query must not create its area or contract marker. A
+schema 0.1 query is limited to orientation/diagnosis and must direct the user
+to upgrade rather than promise current retrieval semantics. Use local lexical
+search as the fallback described above, not as a replacement for index
+orientation. Do not scan the entire vault for a narrow question unless
+orientation shows that the relevant path is unclear.
 
 Start with `SCHEMA.md`, `index.md`, and recent log entries. Use category indexes,
 frontmatter, filenames, targeted text search, and links to locate relevant
