@@ -165,14 +165,16 @@ domain-specific and remains in its owning area. Advisor Packs provide optional
 reasoning for a vertical after this skill retrieves the relevant evidence.
 
 Current-schema vertical activation is canonical in
-[Initialization](references/initialization.md). A schema 0.2 first meaningful
-mutation requiring a vertical adds only that vertical, records its exact
-available `vertical@version`, and adds the root link before the operation's
-backup lifecycle completes. Read-only operations never create or enable
-verticals. A recognized schema 0.1 vault upgrades first; it receives no legacy
-first-use activation. Malformed or unknown schema state remains conservative.
-Use [Vault Schema](references/vault-schema.md) for the distinct
-available/enabled/applied states and version comparison rules.
+[Initialization](references/initialization.md). This rule applies only after
+the runtime gate confirms the latest schema and current contracts. A schema 0.2
+first meaningful mutation requiring a vertical adds only that vertical, records
+its exact available `vertical@version`, and adds the root link before the
+operation's backup lifecycle completes. Read-only operations never create or
+enable verticals. Recognized older schema or contract state must go through
+`upgrade vault latest` before normal operation; it never activates historical
+semantics. Malformed or unknown schema state remains conservative. Use [Vault
+Schema](references/vault-schema.md) for the distinct available/enabled/applied
+states and version comparison rules.
 
 | Area | Scope | Current reasoning owner |
 | --- | --- | --- |
@@ -321,9 +323,10 @@ source material when useful, update the smallest coherent set of concepts,
 add meaningful links, update affected managed catalogs, and log the operation.
 Never silently rewrite a conflicting claim; preserve the evidence and surface
 the conflict for review. A current schema 0.2 vault records only explicitly
-activated vertical contracts; a schema 0.1 vault remains unchanged by ordinary
-use and is sent through the explicit migration/upgrade path rather than
-preserving legacy runtime behavior.
+activated vertical contracts. Recognized older schemas and applied contracts
+remain migration/upgrade sources and are not mutated by ordinary use; route
+them through `upgrade vault latest` instead of continuing historical runtime
+semantics.
 
 End the response with a concise account of:
 
