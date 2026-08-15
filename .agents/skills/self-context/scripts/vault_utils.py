@@ -15,7 +15,7 @@ import os
 import re
 import unicodedata
 from pathlib import Path
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, Optional, Sequence, Tuple
 from urllib.parse import unquote
 
 
@@ -715,6 +715,255 @@ def infer_enabled_contracts(
                 }
             )
     return inferred, "inferred-legacy"
+
+
+def _migration_registry() -> Any:
+    """Load the migration registry lazily to keep helpers importable.
+
+    The migration registry remains the source of truth for the latest schema.
+    Lazy loading avoids a module cycle because the migration helper uses lint
+    and vault utilities while constructing staged states.
+    """
+
+    try:
+        import migrate_vault  # type: ignore
+    except ImportError:  # pragma: no cover - package-style import fallback
+        from . import migrate_vault  # type: ignore
+    return migrate_vault.default_migration_registry()
+
+
+def _schema_number(value: Any) -> Optional[Tuple[int, int]]:
+    if not isinstance(value, str):
+        return None
+    match = re.fullmatch(r"(\d+)\.(\d+)", value.strip())
+    if not match:
+        return None
+    return int(match.group(1)), int(match.group(2))
+
+
+def runtime_compatibility(
+    root: Path,
+    *,
+    registry: Optional[Any] = None,
+    catalog: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Inspect whether a vault is safe for current runtime operations.
+
+    Historical schemas and contract versions are intentionally still parsed so
+    migration and diagnostics can recognize them.  A result is ``current``
+    only when the schema is the registry's latest target and every applied
+    contract exactly matches the current catalog.  This is an orientation
+    boundary, not a second version field or a migration engine.
+    """
+
+    vault = root.expanduser()
+    result: Dict[str, Any] = {
+        "state": "malformed",
+        "ok": False,
+        "requires_upgrade": False,
+        "blocked": True,
+        "schema_state": "malformed",
+        "contract_state": "not-checked",
+        "schema_version": None,
+        "latest_supported_schema": None,
+        "applied_contracts": [],
+        "older_contracts": [],
+        "future_contracts": [],
+        "message": "",
+    }
+
+    if not vault.exists() or vault.is_symlink() or not vault.is_dir():
+        result["message"] = "This vault cannot be safely interpreted. Use the diagnostic or recovery path before normal use."
+        return result
+
+    try:
+        migration_registry = registry or _migration_registry()
+        latest = str(migration_registry.latest_supported_schema)
+        supported = {
+            str(value) for value in migration_registry.supported_versions
+        }
+        registry_findings = (
+            migration_registry.validation_findings()
+            if hasattr(migration_registry, "validation_findings")
+            else []
+        )
+    except Exception as error:
+        result["message"] = f"SelfContext compatibility metadata is unavailable: {error}"
+        return result
+
+    result["latest_supported_schema"] = latest
+    if registry_findings:
+        result["message"] = "SelfContext's migration registry is invalid; stop before mutating the vault."
+        return result
+
+    schema = parse_schema(vault)
+    schema_text = str(schema.get("text") or "")
+    declarations = SCHEMA_VERSION_PATTERN.findall(schema_text)
+    current = schema.get("version_text")
+    result["schema_version"] = current
+
+    if (
+        schema.get("error")
+        or len(declarations) != 1
+        or schema.get("version") is None
+        or not isinstance(current, str)
+    ):
+        result["schema_state"] = "malformed"
+        result["state"] = "malformed"
+        result["message"] = (
+            "This vault's SelfContext schema is malformed or unversioned. "
+            "Use the diagnostic or migration recovery path before normal use."
+        )
+        return result
+
+    if current == latest:
+        result["schema_state"] = "current"
+    else:
+        numeric_current = _schema_number(current)
+        numeric_latest = _schema_number(latest)
+        if numeric_current and numeric_latest and numeric_current > numeric_latest:
+            result["schema_state"] = "future"
+            result["state"] = "future-schema"
+            result["message"] = (
+                f"This vault uses schema {current}, newer than the supported "
+                f"SelfContext schema {latest}. Do not downgrade or mutate it. "
+                "Update SelfContext before continuing."
+            )
+            return result
+        if current in supported:
+            try:
+                path = migration_registry.resolve_path(current, "latest")
+            except Exception:
+                path = []
+            if path:
+                result["schema_state"] = "older-supported"
+                result["state"] = "older-supported-schema"
+                result["requires_upgrade"] = True
+                result["message"] = (
+                    "This vault uses an older SelfContext model. Run `upgrade vault latest` "
+                    "to bring it current before normal use."
+                )
+                return result
+
+        result["schema_state"] = "unsupported"
+        result["state"] = "unsupported-schema"
+        result["message"] = (
+            f"This vault uses unrecognized schema {current}. Do not guess or "
+            "mutate it; use the documented migration or recovery path."
+        )
+        return result
+
+    # The schema is current.  Contract markers are the second compatibility
+    # boundary; absent optional verticals remain valid and disabled.
+    try:
+        active_catalog = catalog or load_vertical_catalog()
+        records = {
+            str(record.get("id")): record
+            for record in catalog_records(active_catalog)
+            if isinstance(record, dict) and record.get("id") is not None
+        }
+    except (OSError, ValueError, json.JSONDecodeError):
+        result["contract_state"] = "malformed"
+        result["state"] = "malformed-contract"
+        result["message"] = "SelfContext's vertical catalog cannot be read safely; stop before normal use."
+        return result
+
+    if not schema.get("contract_section_present") or schema.get("contract_errors"):
+        result["contract_state"] = "malformed"
+        result["state"] = "malformed-contract"
+        result["message"] = (
+            "This vault's applied vertical contract state is malformed. "
+            "Repair it or run the documented upgrade/migration path before normal use."
+        )
+        return result
+
+    entries = list(schema.get("contract_entries") or [])
+    result["applied_contracts"] = [
+        str(item.get("raw") or f"{item.get('id')}@{item.get('version')}")
+        for item in entries
+    ]
+    seen: set[str] = set()
+    older: List[str] = []
+    future: List[str] = []
+    malformed = False
+    for entry in entries:
+        identifier = entry.get("id")
+        version = entry.get("version")
+        raw = str(entry.get("raw") or f"{identifier}@{version}")
+        if not isinstance(identifier, str) or not isinstance(version, int):
+            malformed = True
+            continue
+        if identifier in seen or identifier not in records:
+            malformed = True
+            continue
+        seen.add(identifier)
+        available = records[identifier].get("contract_version")
+        if not isinstance(available, int):
+            malformed = True
+        elif version > available:
+            future.append(raw)
+        elif version < available:
+            older.append(raw)
+
+    result["older_contracts"] = older
+    result["future_contracts"] = future
+    if malformed:
+        result["contract_state"] = "malformed"
+        result["state"] = "malformed-contract"
+        result["message"] = (
+            "This vault's applied vertical contract state is malformed or "
+            "unknown. Do not guess or downgrade it; use the documented upgrade path."
+        )
+        return result
+    if future:
+        result["contract_state"] = "future"
+        result["state"] = "future-contract"
+        result["message"] = (
+            "This vault uses a newer vertical contract than this repository "
+            "supports. Do not downgrade or reinterpret it; update SelfContext first."
+        )
+        return result
+    if older:
+        result["contract_state"] = "older-supported"
+        result["state"] = "older-contract"
+        result["requires_upgrade"] = True
+        result["message"] = (
+            "This vault uses an older SelfContext vertical contract. Run "
+            "`upgrade vault latest` to bring it current before normal use."
+        )
+        return result
+
+    result["contract_state"] = "current"
+    result["state"] = "current"
+    result["ok"] = True
+    result["blocked"] = False
+    result["message"] = "Vault schema and applied vertical contracts are current."
+    return result
+
+
+def runtime_compatibility_finding(
+    compatibility: Mapping[str, Any], path: str = "SCHEMA.md"
+) -> Dict[str, Any]:
+    """Render one stable validation finding for a non-current runtime state."""
+
+    state = str(compatibility.get("state") or "malformed")
+    classification = (
+        "runtime-contract"
+        if "contract" in state
+        else "runtime-schema"
+        if "schema" in state
+        else "runtime-compatibility"
+    )
+    return {
+        "severity": "error",
+        "classification": classification,
+        "path": path,
+        "message": str(compatibility.get("message") or "vault is not current"),
+        "state": state,
+        "schema_version": compatibility.get("schema_version"),
+        "latest_supported_schema": compatibility.get("latest_supported_schema"),
+        "requires_upgrade": bool(compatibility.get("requires_upgrade")),
+    }
 
 
 def canonical_inventory(root: Path) -> List[Dict[str, str]]:

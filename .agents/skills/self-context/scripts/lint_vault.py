@@ -51,6 +51,8 @@ try:
         snapshot_id,
         validate_vertical_catalog,
         load_vertical_catalog,
+        runtime_compatibility,
+        runtime_compatibility_finding,
     )
 except ImportError:  # pragma: no cover - useful when imported as a package
     from . import sync_indexes  # type: ignore
@@ -87,6 +89,8 @@ except ImportError:  # pragma: no cover - useful when imported as a package
         snapshot_id,
         validate_vertical_catalog,
         load_vertical_catalog,
+        runtime_compatibility,
+        runtime_compatibility_finding,
     )
 
 # Preserve the small helper API used by earlier callers and tests.
@@ -180,7 +184,12 @@ def _schema_findings(root: Path) -> List[Dict[str, Any]]:
     return []
 
 
-def _ordinary_findings(root: Path, today: date.date) -> List[Dict[str, Any]]:
+def _ordinary_findings(
+    root: Path,
+    today: date.date,
+    *,
+    allow_legacy_source: bool = False,
+) -> List[Dict[str, Any]]:
     findings: List[Dict[str, Any]] = []
     if not root.exists():
         return [_finding("error", "vault", f"vault does not exist: {root}")]
@@ -191,6 +200,10 @@ def _ordinary_findings(root: Path, today: date.date) -> List[Dict[str, Any]]:
         if not (root / required).is_file():
             findings.append(_finding("error", "control-file", f"missing required root file: {required}"))
     findings.extend(_schema_findings(root))
+    if not allow_legacy_source:
+        compatibility = runtime_compatibility(root)
+        if not compatibility.get("ok"):
+            findings.append(runtime_compatibility_finding(compatibility))
 
     # The ordinary path remains a structural pass over canonical Markdown.  It
     # now catches read failures as findings rather than allowing a traceback.
@@ -429,10 +442,17 @@ def _ordinary_findings(root: Path, today: date.date) -> List[Dict[str, Any]]:
     return findings
 
 
-def lint_vault(root: Path, today: date.date) -> Tuple[List[str], List[str]]:
-    """Backward-compatible ordinary lint API."""
+def lint_vault(
+    root: Path,
+    today: date.date,
+    *,
+    allow_legacy_source: bool = False,
+) -> Tuple[List[str], List[str]]:
+    """Validate a current vault, or explicitly validate a migration source."""
 
-    findings = _ordinary_findings(root.expanduser(), today)
+    findings = _ordinary_findings(
+        root.expanduser(), today, allow_legacy_source=allow_legacy_source
+    )
     errors = [_legacy(item) for item in findings if item["severity"] == "error"]
     warnings = [_legacy(item) for item in findings if item["severity"] == "warning"]
     return errors, warnings
@@ -731,9 +751,16 @@ def _source_graph_findings(records: List[Dict[str, Any]], root: Path) -> List[Di
     return findings
 
 
-def _deep_findings(root: Path, today: date.date) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
+def _deep_findings(
+    root: Path,
+    today: date.date,
+    *,
+    allow_legacy_source: bool = False,
+) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
     root = root.expanduser()
-    ordinary_findings = _ordinary_findings(root, today)
+    ordinary_findings = _ordinary_findings(
+        root, today, allow_legacy_source=allow_legacy_source
+    )
     # Unknown custom top-level areas are informational in deep lint. Preserve
     # ordinary findings for the known canonical contract, but do not validate a
     # user's custom taxonomy as if it were SelfContext-managed content.
@@ -759,6 +786,7 @@ def _deep_findings(root: Path, today: date.date) -> Tuple[List[Dict[str, Any]], 
             "pages": [],
             "links": [],
             "index_relationships": [],
+            "runtime_compatibility": runtime_compatibility(root),
         }
 
     if root.is_symlink():
@@ -1216,6 +1244,7 @@ def _deep_findings(root: Path, today: date.date) -> Tuple[List[Dict[str, Any]], 
     )
     metadata = {
         "schema_version": schema.get("version_text"),
+        "runtime_compatibility": runtime_compatibility(root),
         # Retain the historical field as an alias for explicit applied
         # contracts; legacy schema 0.1 area inference is exposed separately.
         "enabled_vertical_contracts": applied_contracts,
@@ -1234,8 +1263,15 @@ def _deep_findings(root: Path, today: date.date) -> Tuple[List[Dict[str, Any]], 
     return findings, metadata
 
 
-def deep_lint_vault(root: Path, today: date.date) -> Dict[str, Any]:
-    findings, metadata = _deep_findings(root.expanduser(), today)
+def deep_lint_vault(
+    root: Path,
+    today: date.date,
+    *,
+    allow_legacy_source: bool = False,
+) -> Dict[str, Any]:
+    findings, metadata = _deep_findings(
+        root.expanduser(), today, allow_legacy_source=allow_legacy_source
+    )
     counts = {"error": 0, "warning": 0, "info": 0}
     for item in findings:
         severity = item.get("severity")
@@ -1261,6 +1297,11 @@ def main() -> int:
     parser.add_argument("vault", nargs="?", default="vault", help="Path to the vault (default: ./vault)")
     parser.add_argument("--today", help="ISO date used for stale_after checks (default: today)")
     parser.add_argument("--deep", action="store_true", help="run deterministic deep maintenance lint")
+    parser.add_argument(
+        "--migration-source",
+        action="store_true",
+        help="validate a recognized historical vault as a migration source; do not treat it as current",
+    )
     parser.add_argument("--format", choices=("text", "json"), default="text")
     args = parser.parse_args()
 
@@ -1273,7 +1314,9 @@ def main() -> int:
             return 1
 
     if args.deep:
-        report = deep_lint_vault(Path(args.vault), today)
+        report = deep_lint_vault(
+            Path(args.vault), today, allow_legacy_source=args.migration_source
+        )
         if args.format == "json":
             print(json.dumps(report, indent=2, sort_keys=True))
         else:
@@ -1285,7 +1328,9 @@ def main() -> int:
             )
         return 1 if report["severity_counts"]["error"] else 0
 
-    errors, warnings = lint_vault(Path(args.vault), today)
+    errors, warnings = lint_vault(
+        Path(args.vault), today, allow_legacy_source=args.migration_source
+    )
     if args.format == "json":
         report = {
             "schema_version": parse_schema(Path(args.vault)).get("version_text"),

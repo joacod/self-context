@@ -252,7 +252,7 @@ class BackupVaultTests(unittest.TestCase):
             )
 
             result = subprocess.run(
-                [sys.executable, str(LINT_SCRIPT), str(vault)],
+                [sys.executable, str(LINT_SCRIPT), "--migration-source", str(vault)],
                 capture_output=True,
                 text=True,
                 check=False,
@@ -294,7 +294,7 @@ class BackupVaultTests(unittest.TestCase):
             )
 
             result = subprocess.run(
-                [sys.executable, str(LINT_SCRIPT), str(vault)],
+                [sys.executable, str(LINT_SCRIPT), "--migration-source", str(vault)],
                 capture_output=True,
                 text=True,
                 check=False,
@@ -332,7 +332,7 @@ stale_after: null
             )
 
             invalid = subprocess.run(
-                [sys.executable, str(LINT_SCRIPT), str(vault)],
+                [sys.executable, str(LINT_SCRIPT), "--migration-source", str(vault)],
                 capture_output=True,
                 text=True,
                 check=False,
@@ -352,7 +352,7 @@ stale_after: null
                 encoding="utf-8",
             )
             malformed = subprocess.run(
-                [sys.executable, str(LINT_SCRIPT), str(vault)],
+                [sys.executable, str(LINT_SCRIPT), "--migration-source", str(vault)],
                 capture_output=True,
                 text=True,
                 check=False,
@@ -369,7 +369,7 @@ stale_after: null
                 encoding="utf-8",
             )
             valid = subprocess.run(
-                [sys.executable, str(LINT_SCRIPT), str(vault)],
+                [sys.executable, str(LINT_SCRIPT), "--migration-source", str(vault)],
                 capture_output=True,
                 text=True,
                 check=False,

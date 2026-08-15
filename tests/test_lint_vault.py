@@ -42,7 +42,7 @@ class LintVaultTests(unittest.TestCase):
         self,
         root: Path,
         *,
-        schema: str = "0.1",
+        schema: str = "0.2",
         career: bool = False,
         contracts: list[str] | None = None,
         custom_area: bool = False,
@@ -101,12 +101,13 @@ class LintVaultTests(unittest.TestCase):
             timeout=10,
         )
 
-    def test_schema_01_ordinary_use_does_not_add_contract_markers(self) -> None:
+    def test_schema_01_current_runtime_requires_upgrade_without_mutating(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             vault = self.make_vault(Path(temporary), schema="0.1")
             before = (vault / "SCHEMA.md").read_text()
             result = self.run_lint(vault)
-            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("upgrade vault latest", result.stdout)
             self.assertEqual(before, (vault / "SCHEMA.md").read_text())
 
     def test_schema_01_legacy_verticals_are_reported_separately(self) -> None:
@@ -118,10 +119,10 @@ class LintVaultTests(unittest.TestCase):
             self.assertEqual(report["applied_vertical_contracts"], [])
             self.assertEqual(report["legacy_inferred_verticals"], ["career"])
 
-    def test_schema_01_remains_accepted_without_contract_migration(self) -> None:
+    def test_schema_01_migration_source_validation_preserves_legacy_control_text(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             vault = self.make_vault(Path(temporary), schema="0.1")
-            result = self.run_lint(vault)
+            result = self.run_lint(vault, "--migration-source")
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             schema_text = (vault / "SCHEMA.md").read_text()
             self.assertIn("schema_version: 0.1", schema_text)

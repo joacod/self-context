@@ -36,7 +36,12 @@ class SyncIndexesTests(unittest.TestCase):
         vault = root / "vault"
         for directory in ("core", "review", "sources", "derived"):
             (vault / directory).mkdir(parents=True)
-        (vault / "SCHEMA.md").write_text("# Schema\n\nschema_version: 0.1\n", encoding="utf-8")
+        (vault / "SCHEMA.md").write_text(
+            "# Schema\n\n"
+            "schema_version: 0.2\n"
+            "vertical_contracts:\n",
+            encoding="utf-8",
+        )
         (vault / "log.md").write_text("# Log\n", encoding="utf-8")
         (vault / "index.md").write_text(
             "# Root\n\nManual navigation survives.\n"

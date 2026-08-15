@@ -40,11 +40,21 @@ class VenturesVerticalTests(unittest.TestCase):
         for directory in ("core", "review", "sources", "derived", *areas):
             (vault / directory).mkdir(parents=True, exist_ok=True)
 
-        schema_text = f"# Synthetic Schema\n\nschema_version: {schema}\n"
+        requested_schema_text = f"# Synthetic Schema\n\nschema_version: {schema}\n"
         if schema == "0.2":
-            schema_text += "vertical_contracts:\n"
-            schema_text += "".join(f"  - {entry}\n" for entry in contracts)
-        (vault / "SCHEMA.md").write_text(schema_text, encoding="utf-8")
+            requested_schema_text += "vertical_contracts:\n"
+            requested_schema_text += "".join(f"  - {entry}\n" for entry in contracts)
+
+        # Fixture setup must use current control metadata because catalog
+        # writes are now runtime-gated.  Restore the requested historical or
+        # stale contract state after setup so those cases remain migration and
+        # diagnosis fixtures rather than legacy runtime writes.
+        setup_contracts = tuple(
+            f"{entry.split('@', 1)[0]}@1" for entry in contracts
+        )
+        setup_schema_text = "# Synthetic Schema\n\nschema_version: 0.2\nvertical_contracts:\n"
+        setup_schema_text += "".join(f"  - {entry}\n" for entry in setup_contracts)
+        (vault / "SCHEMA.md").write_text(setup_schema_text, encoding="utf-8")
 
         if root_links is None:
             root_links = areas
@@ -75,6 +85,7 @@ class VenturesVerticalTests(unittest.TestCase):
             any(item.get("severity") == "error" for item in synchronized["findings"]),
             synchronized,
         )
+        (vault / "SCHEMA.md").write_text(requested_schema_text, encoding="utf-8")
         return vault
 
     @staticmethod

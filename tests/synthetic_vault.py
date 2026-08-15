@@ -443,7 +443,11 @@ def build_synthetic_vault(
     vault = project_root / "vault"
     vault.mkdir()
     missing = set(missing_indexes)
-    _write(vault / "SCHEMA.md", _schema_text(schema_version, ENABLED_VERTICALS))
+    # Build managed catalogs while the fixture is current, then downgrade only
+    # the control metadata for legacy migration-source cases.  Real runtime
+    # writers must never compile or mutate catalogs on an old vault.
+    setup_schema = "0.2" if schema_version == "0.1" else schema_version
+    _write(vault / "SCHEMA.md", _schema_text(setup_schema, ENABLED_VERTICALS))
     _write(vault / "index.md", _root_index(ENABLED_VERTICALS))
     _write(
         vault / "log.md",
@@ -482,6 +486,8 @@ def build_synthetic_vault(
         end = root_text.index(CATALOG_END, start) + len(CATALOG_END)
         root_text = root_text[:start] + CATALOG_START + "\n" + CATALOG_END + root_text[end:]
         (vault / "index.md").write_text(root_text, encoding="utf-8")
+    if schema_version == "0.1":
+        _write(vault / "SCHEMA.md", _schema_text("0.1", ENABLED_VERTICALS))
     return vault
 
 
