@@ -9,10 +9,10 @@ description: >
   resumes, profiles,
   authored writing, recollections, or other durable sources that should become
   context; and vault initialization, copying, restoring, backing up, exporting,
-  or migration. Recognize `migrate vault latest`, `deep review vault`, `deep
-  update vault`, and `migrate self-context latest`. Do not use it for generic
-  resume writing, Obsidian organization, Git-ignore questions, or unrelated
-  advice.
+  or migration. Recognize `upgrade vault latest`, “bring my SelfContext vault
+  fully up to date,” `migrate vault latest`, `deep review vault`, `deep update
+  vault`, and `migrate self-context latest`. Do not use it for generic resume
+  writing, Obsidian organization, Git-ignore questions, or unrelated advice.
 compatibility: Requires local filesystem access from the repository root. Uses standard Markdown, YAML frontmatter, relative Markdown links, and optional Python 3 for deterministic linting.
 ---
 
@@ -96,12 +96,17 @@ Infer the operation from natural language:
 - **Lint:** validate deterministic structural and metadata integrity.
 - **Deep lint:** run the deterministic broad maintenance validator without
   deciding whether claims are true. Deep lint never migrates.
-- **Migrate vault:** assess or apply deterministic schema migrations through the
-  canonical [migration procedure](references/migration.md). Recognize intent
-  such as “migrate my vault,” “upgrade my old vault,” “bring my vault up to
-  date,” “use the latest SelfContext format,” “apply all supported vault
-  migrations,” or the canonical shorthand `migrate vault latest`. The older
-  `migrate self-context latest` shorthand remains a backward-compatible alias.
+- **Upgrade vault latest:** bring an existing vault to the current SelfContext
+  model through the canonical [upgrade procedure](references/upgrade.md). Use
+  it for `upgrade vault latest` and general requests to bring the vault fully
+  up to date, including safe schema, contract, adoption, semantic, index, and
+  validation work. It is the normal user-facing maintenance path.
+- **Migrate vault:** assess or apply deterministic schema/format migrations only
+  through the canonical [migration procedure](references/migration.md). Use
+  schema-specific requests such as “migrate my vault,” “upgrade this vault to
+  the latest schema,” “apply the required schema migrations,” `migrate vault
+  latest`, or the backward-compatible `migrate self-context latest` alias. Do
+  not route a general current-model upgrade here.
 - **Deep review:** perform the explicit, read-only full-vault maintenance
   protocol; the canonical shorthand is `deep review vault`. It needs no backup,
   never applies migration, and creates no report unless retention is asked.
@@ -257,7 +262,10 @@ confirmation question instead of silently using it as current.
      ordinary/deep deterministic validation.
    - [Migration](references/migration.md) for first-class schema migration
      assessment, target resolution, authorization, transaction, rollback, and
-     reporting.
+     reporting. `upgrade vault latest` delegates schema work here.
+   - [Upgrade](references/upgrade.md) for latest-first orchestration across
+     schema, contracts, selective adoption, bounded semantic maintenance,
+     synchronization, validation, no-op behavior, and reporting.
    - [Deep maintenance](references/deep-maintenance.md) for deep lint, read-only
      deep review, explicit deep update, vertical adoption/contract changes, and
      task context packets.

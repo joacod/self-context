@@ -10,7 +10,7 @@ SelfContext is not a hosted app or a separate AI runtime. It provides
 project-local skills for an existing AI tool that supports Agent Skills; the
 local `vault/` remains the source of truth.
 
-The core vault lifecycle and six optional areas are implemented and available.
+The core vault lifecycle and focused context areas are implemented.
 Future work is tracked as experiments in the [Roadmap](docs/ROADMAP.md), not
 promises.
 
@@ -36,6 +36,24 @@ help me position myself for a role based on my context
 On first use, SelfContext initializes a missing `vault/` automatically. If you
 already have a vault, place it at `vault/`; the skill will orient itself from
 the vault's own files. No custom CLI is required.
+
+## Keep Your Vault Current
+
+After updating SelfContext, update the repository and ask your AI tool:
+
+```bash
+git pull
+```
+
+```text
+upgrade vault latest
+```
+
+SelfContext checks your existing vault and applies only the updates it needs,
+including supported format changes, relevant context areas, and safe
+organization improvements. Existing evidence and history are preserved, and
+ambiguous decisions are left for review. If your vault is already current,
+nothing is changed.
 
 ## How It Works
 
@@ -64,17 +82,16 @@ Local Context Vault
 
 - **Portable storage:** ordinary Markdown, YAML frontmatter, and standard
   relative links.
-- **Natural-language workflows:** ingest, query, targeted review, and structural
-  validation.
+- **Natural-language workflows:** ingest, query, targeted review, structural
+  validation, and keeping an existing vault current.
 - **Trustworthy context:** provenance, freshness, unresolved items,
   contradictions, and explicit confirmation for important inferences.
-- **Optional areas:** Career, Learning, Writing, Relationships, Media / Taste, and Ventures / Projects.
-  Each can be enabled independently and follows the shared vault rules.
 
-### Available Verticals
+### Context Areas
 
-These areas are available independently; a vault enables only the areas it
-needs.
+SelfContext organizes durable context into focused areas such as Career,
+Learning, Writing, Relationships, Media / Taste, and Ventures / Projects. It
+uses the areas relevant to your context as needed.
 
 | Vertical | Vault area | Focus |
 | --- | --- | --- |
@@ -85,9 +102,6 @@ needs.
 | Media / Taste | `media/` | Reactions to cultural works and evolving taste |
 | Ventures / Projects | `ventures/` | Initiative lifecycle, decisions, commitments, evidence, and outcomes |
 
-- **Maintenance:** deterministic validation and explicit, backed-up vault
-  migrations. Advanced maintenance prompts include `migrate vault latest`,
-  `deep review vault`, and `deep update vault`.
 - **Obsidian:** use `vault/` as an Obsidian vault if you want a visual editor.
   Obsidian is optional.
 
@@ -119,7 +133,7 @@ From the repository root, run the canonical dependency-free validation:
 python3 scripts/validate_repo.py
 ```
 
-Detailed migration and deep-maintenance procedures live under
+Operational migration and maintenance procedures live under
 [the SelfContext skill references](.agents/skills/self-context/references/).
 
 Licensed under the [MIT License](LICENSE).

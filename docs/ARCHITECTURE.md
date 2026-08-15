@@ -279,6 +279,58 @@ integer versions such as `writing@1`; semantic-version strings and ranges are
 unsupported. Schema 0.1 has no contract markers and is not silently migrated. An explicit
 migration follows the canonical [Vault Migration procedure](../.agents/skills/self-context/references/migration.md): the helper detects the current and latest supported schema, resolves a validated registry path, creates a recovery backup, stages the complete final state, applies and validates one bounded transaction, creates a final-state backup, and rolls back when final validation or backup creation fails. It never rewrites personal evidence.
 
+## Latest-first upgrade orchestration
+
+The normal user-facing way to keep an existing vault current is
+`upgrade vault latest`. It hides lifecycle choices without collapsing the
+internal responsibilities that make each change safe:
+
+```text
+upgrade vault latest
+        |
+        v
+inspect state
+        |
+  +-----+-----------+----------------+
+  |                 |                |
+ schema          contracts       semantics
+  |                 |                |
+  v                 v                v
+migration       documented       deep maintenance
+registry        contract paths   review/update + adoption
+  |                 |                |
+  +-----------------+----------------+
+                    |
+                    v
+          managed indexes + validation
+                    |
+                    v
+             current vault
+```
+
+Schema migration, contract migration, vertical adoption, semantic maintenance,
+index synchronization, and validation remain separate internal primitives. The
+orchestrator delegates to the existing owner for each phase, re-orients after a
+schema transaction, and leaves genuinely ambiguous meaning unresolved. A new
+vertical is not a schema version and is adopted only when existing durable
+evidence gives it a concrete reason. Runtime-only improvements may require no
+vault change, and `latest` is derived from the current migration registry,
+vertical catalog, procedures, and validators rather than stored as another vault
+version field. The detailed lifecycle belongs to the canonical
+[upgrade procedure](../.agents/skills/self-context/references/upgrade.md).
+
+For maintainers, classify a meaningful change with this small rule:
+
+- **Runtime-only improvement:** existing durable data works unchanged -> no
+  upgrade step.
+- **Additive semantic capability:** historical data benefits from the new model
+  -> document how upgrade can assess and safely adopt, move, split, link, or
+  defer it.
+- **Vertical contract change:** ownership or meaning changed -> document a
+  contract migration and its safe/forbidden historical changes.
+- **Storage/schema change:** portable representation needs transformation -> add
+  a deterministic migration registry edge and let upgrade delegate to it.
+
 ## Core Operations
 
 The SelfContext skill recognizes natural-language intent and applies a lifecycle rather than a command vocabulary:
@@ -287,9 +339,10 @@ The SelfContext skill recognizes natural-language intent and applies a lifecycle
 2. **Query** through orientation, indexes, targeted file search, metadata, and link traversal. A trivial retrieval returns an answer without creating a page; a substantial reusable synthesis or explicitly retained future-use guidance may be stored under derived material after a duplicate, ownership, contradiction, and freshness check. Review status and freshness before using context as current.
 3. **Review** unresolved inferences, stale context, contradictions, ambiguous claims, missing provenance, and important changes needing attention.
 4. **Lint** structural and epistemic integrity, including frontmatter, links, indexes, duplicates, metadata consistency, freshness, and schema drift. Lint and deep lint never migrate.
-5. **Migrate** through the canonical migration procedure when the user requests an assessment or explicitly authorizes an upgrade. The natural-language workflow plans first and delegates the recovery/final backup lifecycle and transaction to the migration helper.
-6. **Advise** through an Advisor Pack that retrieves evidence from the core skill and applies a domain-specific reasoning framework.
-7. **Maintain** through ordinary lint, deterministic deep lint, read-only deep review, and explicitly authorized deep update. Deep review uses snapshots and bounded semantic passes but never writes by default. Deep update does not silently migrate an old schema.
+5. **Upgrade** an existing vault through the latest-first orchestration above. It assesses first, delegates schema work to migration, uses deep maintenance for documented contracts/adoption/semantic work, synchronizes managed controls, validates, and reports deferred decisions.
+6. **Migrate** through the canonical migration procedure for schema/format-only assessment or authorization. The natural-language workflow plans first and delegates the recovery/final backup lifecycle and transaction to the migration helper; `upgrade vault latest` may invoke it after its own assessment.
+7. **Advise** through an Advisor Pack that retrieves evidence from the core skill and applies a domain-specific reasoning framework.
+8. **Maintain** through ordinary lint, deterministic deep lint, read-only deep review, and explicitly authorized deep update. Deep review uses snapshots and bounded semantic passes but never writes by default. Deep update does not silently migrate an old schema.
 
 `sync_indexes.py` compiles deterministic managed catalog blocks from page
 metadata while preserving user-written text outside markers. It requires one
@@ -319,4 +372,4 @@ remains subordinate to the Markdown vault and does not replace semantic review.
 
 These exclusions keep the durable asset portable, local, inspectable, and replaceable. Future disposable search indexes or user-controlled off-device copies can be considered only without changing the vault's canonical role.
 
-See the [architectural decisions](decisions/) for the reasoning behind these boundaries, including the [user-mode and project-maintenance separation](decisions/0007-user-mode-project-maintenance.md), the [selective confirmation and freshness policy](decisions/0008-selective-confirmation-and-freshness.md), the [backup lifecycle policy](decisions/0017-vault-backup-lifecycles.md), the [Writing vertical decision](decisions/0010-writing-vertical.md), the [query persistence triage decision](decisions/0011-query-persistence-triage.md), the [Learning vertical decision](decisions/0012-learning-vertical.md), the [Relationships vertical decision](decisions/0013-relationships-vertical.md), the [Media / Taste vertical decision](decisions/0014-media-taste-vertical.md), the [Ventures / Projects vertical decision](decisions/0018-ventures-projects-vertical.md), and the [Deep Maintenance and versioned vertical contracts decision](decisions/0015-deep-maintenance-and-versioned-vertical-contracts.md).
+See the [architectural decisions](decisions/) for the reasoning behind these boundaries, including the [user-mode and project-maintenance separation](decisions/0007-user-mode-project-maintenance.md), the [selective confirmation and freshness policy](decisions/0008-selective-confirmation-and-freshness.md), the [backup lifecycle policy](decisions/0017-vault-backup-lifecycles.md), the [Writing vertical decision](decisions/0010-writing-vertical.md), the [query persistence triage decision](decisions/0011-query-persistence-triage.md), the [Learning vertical decision](decisions/0012-learning-vertical.md), the [Relationships vertical decision](decisions/0013-relationships-vertical.md), the [Media / Taste vertical decision](decisions/0014-media-taste-vertical.md), the [Ventures / Projects vertical decision](decisions/0018-ventures-projects-vertical.md), the [Deep Maintenance and versioned vertical contracts decision](decisions/0015-deep-maintenance-and-versioned-vertical-contracts.md), and the [latest-first upgrade orchestration decision](decisions/0019-latest-first-vault-upgrade.md).

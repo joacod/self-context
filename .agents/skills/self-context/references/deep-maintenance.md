@@ -4,7 +4,12 @@ Deep maintenance is an explicit operational mode for a medium or large private
 Context Vault. It improves deterministic navigation and surfaces semantic
 questions without turning SelfContext into a generic knowledge base. The
 private `vault/` remains the source of truth; scripts are read-only or bounded,
-deterministic helpers.
+deterministic helpers. The advanced `deep review vault`, `deep update vault`,
+vertical-adoption, and contract procedures remain available directly; the
+latest-first [upgrade procedure](upgrade.md) may delegate bounded phases to
+this protocol without duplicating its machinery. Upgrade authorization covers
+safe, documented, unambiguous changes in those delegated phases; it does not
+silently approve a human semantic decision.
 
 ## Terms and authorization
 

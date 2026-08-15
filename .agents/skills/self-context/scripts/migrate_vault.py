@@ -703,8 +703,11 @@ def _preservation_report(
     }
 
 
-def _schema_contract_validation(root: Path) -> Dict[str, Any]:
+def _schema_contract_validation(
+    root: Path, *, allow_older: bool = False
+) -> Dict[str, Any]:
     errors: List[Dict[str, str]] = []
+    warnings: List[Dict[str, str]] = []
     try:
         schema = parse_schema(root)
         catalog = load_vertical_catalog()
@@ -712,6 +715,7 @@ def _schema_contract_validation(root: Path) -> Dict[str, Any]:
         return {
             "ok": False,
             "errors": [{"path": "SCHEMA.md", "message": str(error)}],
+            "warnings": [],
             "contracts": [],
         }
 
@@ -753,12 +757,14 @@ def _schema_contract_validation(root: Path) -> Dict[str, Any]:
             continue
         available = record.get("contract_version")
         if version != available:
-            errors.append(
-                {
-                    "path": "SCHEMA.md",
-                    "message": f"migration contract must use exact available version: {raw} (available {identifier}@{available})",
-                }
-            )
+            finding = {
+                "path": "SCHEMA.md",
+                "message": f"migration contract must use exact available version: {raw} (available {identifier}@{available})",
+            }
+            if allow_older and isinstance(available, int) and version < available:
+                warnings.append(finding)
+            else:
+                errors.append(finding)
         area = record.get("vault_area")
         index = record.get("index_path")
         if not isinstance(area, str) or not (root / area).is_dir():
@@ -781,6 +787,7 @@ def _schema_contract_validation(root: Path) -> Dict[str, Any]:
     return {
         "ok": not errors,
         "errors": errors,
+        "warnings": warnings,
         "contracts": _contract_strings(entries),
         "enabled_verticals": sorted(seen),
     }
@@ -1702,7 +1709,11 @@ def plan_migration(
         return _mark_blocked(plan)
 
     if schema.get("version") == (0, 2):
-        contract_validation = _schema_contract_validation(supplied)
+        # An older applied contract is valid, readable state for a schema-only
+        # migration. Deep maintenance/upgrade owns its documented contract
+        # migration; the schema helper must not turn that warning into a
+        # schema blocker or silently rewrite the contract itself.
+        contract_validation = _schema_contract_validation(supplied, allow_older=True)
         plan["current_schema_contract_validation"] = contract_validation
         for item in contract_validation.get("errors", []):
             plan["findings"].append(
@@ -1710,6 +1721,15 @@ def plan_migration(
                     "error",
                     str(item.get("path", "SCHEMA.md")),
                     str(item.get("message", "schema contract validation failed")),
+                    "schema-contract",
+                )
+            )
+        for item in contract_validation.get("warnings", []):
+            plan["findings"].append(
+                _finding(
+                    "warning",
+                    str(item.get("path", "SCHEMA.md")),
+                    str(item.get("message", "older applied contract remains readable")),
                     "schema-contract",
                 )
             )

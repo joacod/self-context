@@ -317,7 +317,14 @@ Learning update” rather than manufacturing a topic or trait.
 
 ## Contract migrations
 
-Version 1 has no prior migrations. If the repository later advertises a newer
+Version 1 has no prior migrations. When a future version changes Learning's
+ownership or meaning, document the historical-upgrade question before
+advertising it: where earlier evidence may be stranded in other areas, what
+can be safely moved, split, or linked, and what remains ambiguous. `upgrade
+vault latest` may apply only a complete documented safe path; it does not
+replace this procedure or infer competence, erase prior models, or decide
+ambiguous knowledge ownership.
+ If the repository later advertises a newer
 version, an older applied Learning contract remains readable and reviewable;
 read only the documented migrations before proposing an update. Future versions
 must identify affected Learning evidence, safe structural changes, semantic

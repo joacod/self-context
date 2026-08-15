@@ -466,5 +466,45 @@
   {
     "query": "Give me generic startup strategy for an invented business without using my context.",
     "should_trigger": false
+  },
+  {
+    "query": "upgrade vault latest",
+    "should_trigger": true
+  },
+  {
+    "query": "Bring my SelfContext vault fully up to date after I pulled the repository.",
+    "should_trigger": true
+  },
+  {
+    "query": "Make my existing vault current with this version of SelfContext.",
+    "should_trigger": true
+  },
+  {
+    "query": "Upgrade my existing SelfContext vault to everything supported now, preserving ambiguous history.",
+    "should_trigger": true
+  },
+  {
+    "query": "Upgrade this vault to the latest supported schema only.",
+    "should_trigger": true
+  },
+  {
+    "query": "Does my vault need a schema migration? Do not change anything.",
+    "should_trigger": true
+  },
+  {
+    "query": "Remember that I started a new fictional project and add the durable context.",
+    "should_trigger": true
+  },
+  {
+    "query": "Run upgrade vault latest on a generic web application database.",
+    "should_trigger": false
+  },
+  {
+    "query": "Bring this fictional documentation repository fully up to date without using my context.",
+    "should_trigger": false
+  },
+  {
+    "query": "Upgrade my npm dependencies to their latest versions.",
+    "should_trigger": false
   }
 ]

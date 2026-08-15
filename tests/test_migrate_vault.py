@@ -504,6 +504,32 @@ class MigrateVaultTests(unittest.TestCase):
             self.assertEqual(before, self.file_bytes(vault))
             self.assertEqual(self.backup_files(root), [])
 
+    def test_schema_only_migration_leaves_an_older_readable_contract_for_deep_maintenance(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            vault = self.make_current(root)
+            schema_path = vault / "SCHEMA.md"
+            schema_path.write_text(
+                schema_path.read_text(encoding="utf-8").replace("career@1", "career@0", 1),
+                encoding="utf-8",
+            )
+            before = self.file_bytes(vault)
+
+            check = self.run_migration(vault, "--check")
+            self.assertEqual(check.returncode, 0, check.stdout + check.stderr)
+            report = json.loads(check.stdout)
+            self.assertTrue(report["already_current"])
+            self.assertFalse(report["migration_needed"])
+            self.assertTrue(any(item["severity"] == "warning" for item in report["findings"]))
+            self.assertEqual(before, self.file_bytes(vault))
+            self.assertEqual(self.backup_files(root), [])
+
+            write = self.run_migration(vault, "--write")
+            self.assertEqual(write.returncode, 0, write.stdout + write.stderr)
+            self.assertEqual(json.loads(write.stdout)["status"], "already-migrated")
+            self.assertEqual(before, self.file_bytes(vault))
+            self.assertEqual(self.backup_files(root), [])
+
     def test_migration_helper_owns_recovery_and_final_backups(self) -> None:
         module = self.migration_module()
         with tempfile.TemporaryDirectory() as temporary:

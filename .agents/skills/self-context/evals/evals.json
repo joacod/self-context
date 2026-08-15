@@ -857,22 +857,22 @@
     {
       "id": 77,
       "prompt": "Upgrade my old vault.",
-      "expected_output": "The request is treated as an authorized latest-schema migration without requiring the user to name the current version, target version, script, backup, or lint commands.",
+      "expected_output": "The request is treated as a general latest-first vault upgrade: the agent determines whether schema, contracts, selective adoption, bounded semantic maintenance, indexes, or validation need work.",
       "expectations": [
-        "The agent detects the current schema and latest supported schema itself.",
-        "The supported migration path is resolved rather than guessed.",
-        "The helper owns the recovery and final backups plus the validation sequence."
+        "The request routes to the upgrade procedure rather than schema migration by default.",
+        "The existing migration, deep-maintenance, adoption, and validation mechanisms remain the delegated owners.",
+        "Ambiguous semantic decisions remain unresolved and are reported."
       ],
       "files": []
     },
     {
       "id": 78,
       "prompt": "Bring my vault up to date.",
-      "expected_output": "The phrase is recognized as explicit SelfContext migration authorization and is not confused with ordinary ingest, deep lint, or a semantic cleanup request.",
+      "expected_output": "The phrase is recognized as explicit latest-first SelfContext upgrade authorization and is not confused with ordinary ingest, deep lint, or a schema-only request.",
       "expectations": [
-        "Only deterministic versioned structural changes are in scope.",
-        "Personal prose, verification, contradictions, and inferences remain unchanged.",
-        "A blocked or ambiguous plan stops before backup and writes."
+        "General current-model intent routes to upgrade vault latest.",
+        "The orchestrator determines which internal mechanisms actually apply.",
+        "A current vault is a no-op without backup, log, report, or semantic churn."
       ],
       "files": []
     },
@@ -1154,6 +1154,176 @@
         "The explicit retention request is distinguished from a factual confirmation or decision.",
         "A retained result is marked derived_synthesis and links the Ventures/Core evidence it uses.",
         "The recommendation does not update lifecycle, goals, preferences, commitments, or verification automatically."
+      ],
+      "files": []
+    },
+    {
+      "id": 104,
+      "prompt": "upgrade vault latest",
+      "expected_output": "The canonical shorthand routes to the latest-first upgrade procedure, which assesses the vault and delegates each applicable internal mechanism without requiring the user to choose the sequence.",
+      "expectations": [
+        "The request routes to references/upgrade.md rather than directly to schema migration or deep update.",
+        "The operation is explicitly mutating but preserves semantic safety boundaries.",
+        "The result distinguishes applied updates from deferred human decisions."
+      ],
+      "files": []
+    },
+    {
+      "id": 105,
+      "prompt": "Bring my vault fully up to date with the current SelfContext model.",
+      "expected_output": "General latest-first language routes to the upgrade orchestrator, while schema-only and advanced maintenance commands remain distinct.",
+      "expectations": [
+        "General current-model intent routes to the upgrade procedure.",
+        "The agent does not make the user manually choose migration, adoption, contract, or deep-update steps.",
+        "Ordinary ingest and targeted review are not accidentally triggered."
+      ],
+      "files": []
+    },
+    {
+      "id": 106,
+      "prompt": "My vault is already current; check whether anything needs changing.",
+      "expected_output": "A read-only assessment finds no applicable work and returns the exact no-op result without a backup, log entry, report, or semantic rewrite.",
+      "expectations": [
+        "Current schema, contracts, selective adoption, semantic findings, and catalogs are assessed before declaring the no-op.",
+        "The response says: Your vault is already current. No files changed.",
+        "No backup, log entry, retained report, duplicate contract, or index churn is created."
+      ],
+      "files": []
+    },
+    {
+      "id": 107,
+      "prompt": "Upgrade a synthetic schema 0.1 vault with no semantic changes to everything supported by the current SelfContext repository.",
+      "expected_output": "The upgrade delegates schema work to the canonical migration helper, re-reads the migrated vault, skips unnecessary semantic writes, and reports the helper-owned recovery and final backups.",
+      "expectations": [
+        "Migration is planned and applied through the existing migration registry/helper.",
+        "The active vault is re-oriented after migration rather than using a stale pre-migration snapshot.",
+        "No deep semantic write occurs when no triggered semantic change exists.",
+        "Migration backup ownership is not duplicated by the orchestrator."
+      ],
+      "files": []
+    },
+    {
+      "id": 108,
+      "prompt": "Upgrade a synthetic current-schema vault with clearly relevant historical project lifecycle evidence that belongs in the newly available Ventures / Projects area.",
+      "expected_output": "The upgrade reuses the documented deep-maintenance adoption pass, selectively adopts Ventures, and safely reorganizes clearly owned project lifecycle context while preserving Career's professional view and provenance.",
+      "expectations": [
+        "No hard-coded Ventures detector or second adoption engine is introduced.",
+        "Ventures is adopted only because durable evidence gives it a concrete reason.",
+        "Clearly owned lifecycle material may be moved, split, or linked without copying facts unnecessarily.",
+        "Professional impact remains Career-owned and historical/provenance metadata is preserved."
+      ],
+      "files": []
+    },
+    {
+      "id": 109,
+      "prompt": "Upgrade a synthetic current-schema vault with no evidence for a newly available vertical.",
+      "expected_output": "The upgrade completes successfully while leaving the irrelevant vertical disabled and creating no placeholder area, contract marker, page, or false warning.",
+      "expectations": [
+        "Availability is not treated as a reason to activate a vertical.",
+        "No placeholder directory, index, contract entry, or personal page is created.",
+        "Vertical not needed is reported as a successful no-change outcome."
+      ],
+      "files": []
+    },
+    {
+      "id": 110,
+      "prompt": "Upgrade a synthetic schema 0.2 vault with an enabled older vertical contract that has a complete documented migration path.",
+      "expected_output": "The upgrade applies the documented contract migration under the existing deep-maintenance lifecycle, updates the exact applied version, and preserves evidence without a second authorization.",
+      "expectations": [
+        "The enabled contract is compared with the current catalog version.",
+        "Only the owning procedure's documented migration is applied.",
+        "Provenance, verification, assertion kind, and historical evidence are preserved.",
+        "A documented no-change migration remains a successful outcome when applicable."
+      ],
+      "files": []
+    },
+    {
+      "id": 111,
+      "prompt": "Upgrade a synthetic vault where a possible historical ownership move is genuinely ambiguous, but unrelated schema and index updates are safe.",
+      "expected_output": "Safe unrelated updates proceed, the ambiguous item remains intact and unresolved, and the result reports it under Needs review instead of guessing.",
+      "expectations": [
+        "Ambiguous ownership is not classified merely to make the upgrade finish.",
+        "The existing page and epistemic metadata remain intact.",
+        "Unrelated deterministic changes can proceed when their safety is independent.",
+        "The user-facing report counts the deferred human decision."
+      ],
+      "files": []
+    },
+    {
+      "id": 112,
+      "prompt": "Upgrade a synthetic schema 0.1 vault whose historical evidence makes a newly available vertical relevant.",
+      "expected_output": "Schema migration runs first, the active vault is re-read, and only then does current-schema adoption and historical organization run.",
+      "expectations": [
+        "The migration helper completes before vertical adoption is assessed for mutation.",
+        "No stale pre-migration snapshot or schema-0.1 contract assumption is reused.",
+        "The relevant vertical is adopted selectively after the vault is interpretable as the current schema."
+      ],
+      "files": []
+    },
+    {
+      "id": 113,
+      "prompt": "Upgrade a synthetic vault through schema migration, an older enabled contract, and a clearly relevant new vertical in one request.",
+      "expected_output": "The complete latest-first orchestration follows schema, contract, adoption, semantic, synchronization, and validation order while keeping the existing transaction and backup boundaries.",
+      "expectations": [
+        "Schema work delegates to migration before contract or semantic interpretation.",
+        "Contract work uses its documented migration before adoption and ownership maintenance.",
+        "The new vertical is adopted only for concrete durable evidence.",
+        "Final ordinary/deep/catalog validation is reported and unrelated verticals remain unchanged."
+      ],
+      "files": []
+    },
+    {
+      "id": 114,
+      "prompt": "Upgrade a synthetic vault whose SCHEMA.md is malformed or declares a future unsupported schema.",
+      "expected_output": "The upgrade stops before later phases and reports a clear hard blocker without mutation, backup, log entry, or semantic repair around the failed interpretation.",
+      "expectations": [
+        "The canonical migration planner detects the blocker.",
+        "No partial repair or guessed migration path is attempted.",
+        "No backup or semantic mutation occurs while the schema is unsafe to interpret."
+      ],
+      "files": []
+    },
+    {
+      "id": 115,
+      "prompt": "Upgrade a synthetic schema 0.2 vault containing a vertical contract version newer than the repository supports.",
+      "expected_output": "The upgrade refuses to downgrade or reinterpret the future contract and reports the unsafe contract blocker clearly.",
+      "expectations": [
+        "The future applied contract is distinguished from an older readable contract.",
+        "No contract downgrade, semantic rewrite, or forced adoption occurs.",
+        "The result does not claim the vault is fully current."
+      ],
+      "files": []
+    },
+    {
+      "id": 116,
+      "prompt": "Upgrade a synthetic schema 0.1 vault, but inject a migration validation failure.",
+      "expected_output": "The failed canonical migration prevents dependent contract, adoption, semantic, and index phases; the recovery result is reported without repairing around the failure.",
+      "expectations": [
+        "Dependent semantic phases are not attempted after migration failure.",
+        "The migration helper's rollback or recovery status is reported accurately.",
+        "No unsafe later mutation is performed."
+      ],
+      "files": []
+    },
+    {
+      "id": 117,
+      "prompt": "Upgrade this vault to the latest supported schema.",
+      "expected_output": "The schema-specific request routes directly to the canonical migration procedure rather than the full latest-first lifecycle.",
+      "expectations": [
+        "Schema-only wording selects migration assessment or application.",
+        "Contract adoption and broad semantic maintenance are not added implicitly.",
+        "The migration helper remains the owner of schema backups and transaction safety."
+      ],
+      "files": []
+    },
+    {
+      "id": 118,
+      "prompt": "Make my vault current with this version of SelfContext.",
+      "expected_output": "General current-model language routes to upgrade vault latest and lets the orchestrator determine which existing mechanisms apply.",
+      "expectations": [
+        "The request is not narrowed to schema migration merely because it says current.",
+        "The upgrade assessment checks contracts, selective adoption, semantic triggers, indexes, and validation.",
+        "A fully current vault returns the no-op result without mutation."
       ],
       "files": []
     }

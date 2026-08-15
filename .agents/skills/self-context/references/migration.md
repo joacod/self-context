@@ -3,7 +3,9 @@
 This is the canonical user-mode procedure for deterministic SelfContext vault
 schema migration. Resolve this file relative to the installed
 `.agents/skills/self-context/` skill; do not substitute a project-local
-`.swe-forge/` tree or another harness store.
+`.swe-forge/` tree or another harness store. It may be invoked directly for
+schema-specific requests or delegated to by the latest-first
+[upgrade procedure](upgrade.md).
 
 ## What migration means
 
@@ -66,8 +68,7 @@ blockers and the smallest safe next action.
 Requests such as these explicitly authorize the deterministic migration:
 
 - “Migrate my SelfContext vault.”
-- “Upgrade my vault to the latest supported schema.”
-- “Bring my old vault up to date.”
+- “Upgrade this vault to the latest supported schema.”
 - “Apply the required schema migrations.”
 - “Use the latest SelfContext format.”
 - `migrate vault latest` (the canonical shorthand form of the same authorized request).
@@ -77,7 +78,9 @@ Do not ask for a second confirmation merely because migration writes
 `SCHEMA.md`, indexes, or other control files. The request already authorizes
 this bounded structural operation. In the shorthand form, `latest` resolves at
 runtime to the latest target exposed by the repository migration registry; do
-not hard-code a schema version in the natural-language routing.
+not hard-code a schema version in the natural-language routing. A general
+request to make the whole vault current belongs to `upgrade vault latest`,
+which delegates schema work here and then re-orients before other phases.
 
 For an authorized request:
 
@@ -203,6 +206,10 @@ If the plan says the vault is already on the latest supported schema:
 - append no migration log entry;
 - report that no migration is needed;
 - optionally report deterministic lint warnings separately.
+
+An older but readable applied vertical contract is a deep-maintenance/upgrade
+finding, not a reason for this schema-only operation to rewrite the contract.
+Leave it unchanged and report the warning for the owning contract procedure.
 
 If the request was assessment-only, stop after reporting the plan. Do not
 create a backup or retain a report unless retention was explicitly requested.
