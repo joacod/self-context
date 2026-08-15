@@ -299,8 +299,9 @@ gate and upgrade before this activation semantics applies.
 In schema 0.2, **available** means present in the repository catalog, **enabled**
 means recorded in `SCHEMA.md` with its area, index, and root link, and **applied**
 means the exact recorded version. Equal applied/available versions are current;
-an older applied version is a migration/upgrade finding rather than a normal
-runtime mode; a newer applied version is an unsafe blocker. Unknown IDs, invalid
+an older applied version requires its documented contract migration through
+`upgrade vault latest` and blocks normal semantic operation until that path is
+applied; a newer applied version is an unsafe blocker. Unknown IDs, invalid
 versions, and duplicate entries for one ID are errors. The small parser accepts
 only non-negative integer versions such as `writing@1`; semantic-version strings
 and ranges are unsupported. Schema 0.1 has no contract markers and remains a
@@ -341,15 +342,27 @@ registry        contract paths   review/update + adoption
              current vault
 ```
 
-Schema migration, contract migration, vertical adoption, semantic maintenance,
-index synchronization, and validation remain separate internal primitives. The
-orchestrator delegates to the existing owner for each phase, re-orients after a
-schema transaction, and leaves genuinely ambiguous meaning unresolved. A new
-vertical is not a schema version and is adopted only when existing durable
-evidence gives it a concrete reason. Runtime-only improvements may require no
-vault change, and `latest` is derived from the current migration registry,
-vertical catalog, procedures, and validators rather than stored as another vault
-version field. The detailed lifecycle belongs to the canonical
+The architecture keeps these responsibilities separate:
+
+- **Schema migration:** deterministic structural transformation of a historical
+  vault into the latest schema.
+- **Vertical contract migration:** semantic ownership and contract evolution
+  for an enabled vertical; older applied contracts are upgrade inputs, not
+  ongoing runtime modes.
+- **New vertical adoption:** selective adoption and backfill when relevant
+  durable evidence gives a disabled vertical a concrete reason to exist.
+- **`upgrade vault latest`:** the user-facing orchestration layer over those
+  mechanisms, including final synchronization and validation.
+
+Together, these rules mean historical schemas and contracts move forward
+through documented migration paths, while the latest schema and current
+contracts remain the only normal runtime target. The orchestrator re-orients
+after a schema transaction and leaves genuinely ambiguous meaning unresolved.
+A new vertical is not a schema version and is adopted only when existing
+durable evidence gives it a concrete reason. Runtime-only improvements may
+require no vault change, and `latest` is derived from the current migration
+registry, vertical catalog, procedures, and validators rather than stored as
+another vault version field. The detailed lifecycle belongs to the canonical
 [upgrade procedure](../.agents/skills/self-context/references/upgrade.md).
 
 For maintainers, classify a meaningful change with this small rule:
