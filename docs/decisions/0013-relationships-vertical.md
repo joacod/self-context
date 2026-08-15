@@ -49,10 +49,10 @@ Add Relationships as a first-class, on-demand vertical:
 
 - A copied vault remains inspectable without a relationship database, social
   graph, provider integration, or dedicated runtime.
-- At the time of this decision, existing v0.1 vaults could remain operational.
-  ADR 0020 supersedes that runtime policy: current SelfContext directs
-  recognized older vaults through `upgrade vault latest` before normal
-  Relationships operations, while migration still preserves the old vault.
+- This decision predates the latest-first runtime policy in ADR 0020. Current
+  SelfContext treats recognized older vaults as upgrade sources and directs
+  them through `upgrade vault latest` before normal Relationships operations,
+  while migration still preserves the old vault.
 - Career can retain professional evidence and Relationships can retain the
   ongoing human relationship when both have distinct purposes; links prevent
   uncontrolled duplication.

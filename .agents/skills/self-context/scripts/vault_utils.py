@@ -769,6 +769,8 @@ def runtime_compatibility(
         "applied_contracts": [],
         "older_contracts": [],
         "future_contracts": [],
+        "upgrade_source": False,
+        "migration_path_available": None,
         "message": "",
     }
 
@@ -835,15 +837,26 @@ def runtime_compatibility(
                 path = migration_registry.resolve_path(current, "latest")
             except Exception:
                 path = []
+            result["schema_state"] = "older-supported"
+            result["state"] = "older-supported-schema"
+            result["requires_upgrade"] = True
+            result["upgrade_source"] = True
+            result["migration_path_available"] = bool(path)
             if path:
-                result["schema_state"] = "older-supported"
-                result["state"] = "older-supported-schema"
-                result["requires_upgrade"] = True
                 result["message"] = (
-                    "This vault uses an older SelfContext model. Run `upgrade vault latest` "
-                    "to bring it current before normal use."
+                    f"Legacy SelfContext schema detected: {current}. "
+                    f"Current runtime schema: {latest}. This recognized schema is "
+                    "a migration source, not a normal runtime target. Run "
+                    "`upgrade vault latest` before normal use."
                 )
-                return result
+            else:
+                result["message"] = (
+                    f"Recognized SelfContext schema {current} has no complete "
+                    f"migration path to current schema {latest}. Run "
+                    "`upgrade vault latest` after the supported upgrade path is "
+                    "available; normal use is currently blocked."
+                )
+            return result
 
         result["schema_state"] = "unsupported"
         result["state"] = "unsupported-schema"
@@ -927,9 +940,11 @@ def runtime_compatibility(
         result["contract_state"] = "older-supported"
         result["state"] = "older-contract"
         result["requires_upgrade"] = True
+        result["upgrade_source"] = True
         result["message"] = (
-            "This vault uses an older SelfContext vertical contract. Run "
-            "`upgrade vault latest` to bring it current before normal use."
+            "Older SelfContext vertical contract detected: "
+            f"{', '.join(older)}. Current runtime semantics require the current "
+            "applied contract. Run `upgrade vault latest` before normal use."
         )
         return result
 
@@ -963,6 +978,7 @@ def runtime_compatibility_finding(
         "schema_version": compatibility.get("schema_version"),
         "latest_supported_schema": compatibility.get("latest_supported_schema"),
         "requires_upgrade": bool(compatibility.get("requires_upgrade")),
+        "upgrade_source": bool(compatibility.get("upgrade_source")),
     }
 
 

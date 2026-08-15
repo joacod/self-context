@@ -50,10 +50,10 @@ Add Media / Taste as a first-class, on-demand vertical:
 
 - A copied vault remains useful without a media provider, database, network
   integration, or recommendation engine.
-- At the time of this decision, existing v0.1 vaults could remain operational.
-  ADR 0020 supersedes that runtime policy: current SelfContext directs
-  recognized older vaults through `upgrade vault latest` before normal Media /
-  Taste operations, while migration still preserves the old vault.
+- This decision predates the latest-first runtime policy in ADR 0020. Current
+  SelfContext treats recognized older vaults as upgrade sources and directs
+  them through `upgrade vault latest` before normal Media / Taste operations,
+  while migration still preserves the old vault.
 - Recommendations can be explained by links to works and patterns while
   conflicts, exceptions, and freshness remain visible.
 - The vertical avoids thousands of meaningless consumption records by requiring

@@ -105,25 +105,58 @@ class LintVaultTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             vault = self.make_vault(Path(temporary), schema="0.1")
             before = (vault / "SCHEMA.md").read_text()
-            result = self.run_lint(vault)
+            result = self.run_lint(vault, "--format", "json")
+            report = json.loads(result.stdout)
             self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(report["validation_mode"], "current-runtime")
+            self.assertEqual(
+                report["runtime_compatibility"]["state"],
+                "older-supported-schema",
+            )
+            self.assertIn("Legacy SelfContext schema detected: 0.1", result.stdout)
+            self.assertIn("Current runtime schema: 0.2", result.stdout)
             self.assertIn("upgrade vault latest", result.stdout)
             self.assertEqual(before, (vault / "SCHEMA.md").read_text())
 
-    def test_schema_01_legacy_verticals_are_reported_separately(self) -> None:
+    def test_schema_01_legacy_verticals_are_migration_source_only(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             vault = self.make_vault(Path(temporary), schema="0.1", career=True)
-            report = json.loads(self.run_lint(vault, "--deep", "--format", "json").stdout)
+            before = (vault / "SCHEMA.md").read_text()
+            current = self.run_lint(vault, "--deep", "--format", "json")
+            current_report = json.loads(current.stdout)
+            source = self.run_lint(
+                vault,
+                "--migration-source",
+                "--deep",
+                "--format",
+                "json",
+            )
+            report = json.loads(source.stdout)
+            self.assertNotEqual(current.returncode, 0)
+            self.assertTrue(
+                any(item["classification"] == "runtime-schema" for item in current_report["findings"])
+            )
+            self.assertEqual(report["validation_mode"], "migration-source")
+            self.assertEqual(report["runtime_compatibility"]["state"], "older-supported-schema")
+            self.assertFalse(
+                any(item["classification"] == "runtime-schema" for item in report["findings"])
+            )
             self.assertEqual(report["enabled_vertical_contracts"], [])
             self.assertEqual(report["enabled_verticals"], [])
             self.assertEqual(report["applied_vertical_contracts"], [])
             self.assertEqual(report["legacy_inferred_verticals"], ["career"])
+            self.assertIn("migration-source inspection only", self.run_lint(vault, "--migration-source").stdout)
+            self.assertEqual(before, (vault / "SCHEMA.md").read_text())
 
     def test_schema_01_migration_source_validation_preserves_legacy_control_text(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             vault = self.make_vault(Path(temporary), schema="0.1")
-            result = self.run_lint(vault, "--migration-source")
+            result = self.run_lint(vault, "--migration-source", "--format", "json")
+            report = json.loads(result.stdout)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertEqual(report["validation_mode"], "migration-source")
+            self.assertEqual(report["runtime_compatibility"]["schema_version"], "0.1")
+            self.assertEqual(report["runtime_compatibility"]["latest_supported_schema"], "0.2")
             schema_text = (vault / "SCHEMA.md").read_text()
             self.assertIn("schema_version: 0.1", schema_text)
             self.assertNotIn("vertical_contracts:", schema_text)
@@ -173,15 +206,41 @@ class LintVaultTests(unittest.TestCase):
             self.assertEqual(report["enabled_verticals"], ["career"])
             self.assertEqual(report["applied_vertical_contracts"], ["career@1"])
 
-    def test_older_applied_contract_is_valid_but_update_is_available(self) -> None:
+    def test_older_applied_contract_requires_upgrade_but_is_inspectable(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             vault = self.make_vault(Path(temporary), schema="0.2", career=True, contracts=["career@0"])
-            report = json.loads(self.run_lint(vault, "--deep", "--format", "json").stdout)
-            findings = self.contract_findings(vault)
+            before = (vault / "SCHEMA.md").read_text()
+            current = self.run_lint(vault, "--deep", "--format", "json")
+            current_report = json.loads(current.stdout)
+            source = self.run_lint(
+                vault,
+                "--migration-source",
+                "--deep",
+                "--format",
+                "json",
+            )
+            report = json.loads(source.stdout)
+            findings = [
+                item
+                for item in report["findings"]
+                if item["classification"].startswith("vertical-contract")
+            ]
+            self.assertNotEqual(current.returncode, 0)
+            self.assertEqual(
+                current_report["runtime_compatibility"]["state"],
+                "older-contract",
+            )
+            self.assertTrue(
+                any(item["classification"] == "runtime-contract" for item in current_report["findings"])
+            )
             self.assertTrue(any(item["classification"] == "vertical-contract-update" for item in findings))
+            self.assertFalse(
+                any(item["classification"] == "runtime-contract" for item in report["findings"])
+            )
             self.assertEqual(report["enabled_verticals"], ["career"])
             self.assertEqual(report["applied_vertical_contracts"], ["career@0"])
             self.assertFalse(any(item["severity"] == "error" for item in findings))
+            self.assertEqual(before, (vault / "SCHEMA.md").read_text())
 
     def test_future_applied_contract_is_an_error(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

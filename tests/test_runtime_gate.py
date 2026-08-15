@@ -53,7 +53,7 @@ class RuntimeGateTests(unittest.TestCase):
             self.assertIn("upgrade vault latest", compatibility["message"])
 
             errors, _ = lint_vault.lint_vault(vault, date.date(2026, 8, 15))
-            self.assertTrue(any("older SelfContext model" in error for error in errors))
+            self.assertTrue(any("Legacy SelfContext schema detected: 0.1" in error for error in errors))
             search = search_vault.search_vault(vault, "Harbor Launch")
             self.assertEqual(search["results"], [])
             self.assertIn("upgrade vault latest", search["findings"][0])
@@ -132,7 +132,7 @@ class RuntimeGateTests(unittest.TestCase):
             errors, _ = lint_vault.lint_vault(
                 vault, date.date(2026, 8, 15), allow_legacy_source=True
             )
-            self.assertFalse(any("older SelfContext model" in error for error in errors))
+            self.assertFalse(any("Legacy SelfContext schema detected: 0.1" in error for error in errors))
             self.assertEqual(
                 vault_utils.runtime_compatibility(vault)["state"],
                 "older-supported-schema",

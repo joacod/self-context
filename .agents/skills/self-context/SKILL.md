@@ -101,8 +101,10 @@ inspect schema and applied contracts
 The latest schema is the only full runtime target. Older schemas and older
 applied vertical contracts remain readable enough for diagnosis, migration
 planning, and upgrade, but are not alternate live modes. Do not silently
-upgrade during an ordinary query or ingest. A concise normal-use response for
-an old vault is:
+upgrade during an ordinary query or ingest. Route a broad request to bring an
+existing vault current to [Upgrade](references/upgrade.md); use
+[Migration](references/migration.md) for schema/format-only work. A concise
+normal-use response for an old vault is:
 
 > This vault uses an older SelfContext model. Run `upgrade vault latest` to
 > bring it current before normal use.

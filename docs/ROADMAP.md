@@ -220,7 +220,9 @@ The main risks are duplicated concepts rather than incompatible storage:
 
 The implemented maintenance path is deliberately explicit:
 
-- ordinary lint remains the fast compatibility path;
+- ordinary lint is the fast current-runtime validation path; explicit
+  migration-source inspection preserves structural checks for recognized old
+  schemas and contracts;
 - deep lint inventories deterministic structural, navigation, contract, and
   freshness relationships without deciding truth;
 - deep review is read-only by default and targeted review remains ordinary;

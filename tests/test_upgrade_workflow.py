@@ -141,6 +141,13 @@ class UpgradeWorkflowTests(unittest.TestCase):
             ]
             self.assertTrue(migration["already_current"])
             self.assertTrue(contract_findings)
+            self.assertTrue(
+                any("Older SelfContext vertical contract detected" in error for error in assessment["ordinary_errors"])
+            )
+            self.assertEqual(
+                assessment["deep"]["runtime_compatibility"]["state"],
+                "older-contract",
+            )
             self.assertEqual(self.backup_paths(project), [])
             self.assertIn("Phase C: update enabled contracts", UPGRADE.read_text(encoding="utf-8"))
 

@@ -98,21 +98,34 @@ python3 .agents/skills/self-context/scripts/lint_vault.py --deep --format text v
 python3 .agents/skills/self-context/scripts/lint_vault.py --deep --format json vault
 ```
 
-Current-vault lint is the fast runtime-validity path and never migrates. An old
-recognized schema reports `upgrade required` instead of being accepted as fully
-current. Migration planning and staged migration validation may use the explicit
-read-only source mode when they need to inspect an old format:
+### Current-runtime validation
+
+Current-vault lint answers: “Is this vault ready for normal current SelfContext
+operation?” It is the fast runtime-validity path and never migrates. An older
+recognized schema or applied vertical contract returns `upgrade required`
+instead of being accepted as fully current. Future and malformed compatibility
+states remain blockers.
+
+### Migration-source inspection
+
+Migration-source inspection answers: “Is this older recognized vault
+structurally interpretable enough to assess or migrate safely?” It reuses the
+same deterministic parsing and structural checks, but it is explicitly
+read-only and never claims that the vault is runtime-ready. It can inspect an
+older schema or older applied contract for upgrade planning:
 
 ```bash
 python3 .agents/skills/self-context/scripts/lint_vault.py \
   --migration-source --deep --format json vault
 ```
 
-That mode recognizes historical structure without granting normal runtime
-support. Deep lint is deterministic and read-only; schema migration is a
-separate operation owned by the [Migration procedure](migration.md). JSON
-output contains schema version, runtime compatibility, available contracts,
-enabled verticals, applied contracts, a snapshot ID, compact page metadata,
+The source-only result identifies its mode and runtime compatibility state; a
+zero exit code means only that the historical structure was interpretable. It
+does not authorize normal operation or fabricate current contract markers.
+Deep lint is deterministic and read-only; schema migration is a separate
+operation owned by the [Migration procedure](migration.md). JSON output
+contains schema version, runtime compatibility, available contracts, enabled
+verticals, applied contracts, a snapshot ID, compact page metadata,
 link/index relationships, findings, and severity counts, never complete page
 bodies. Neither path produces a numeric vault-health score.
 

@@ -141,6 +141,13 @@ def _legacy(finding: Dict[str, Any]) -> str:
     return f"{path}: {message}" if path else message
 
 
+def _migration_source_notice(compatibility: Dict[str, Any]) -> Optional[str]:
+    if not compatibility.get("upgrade_source"):
+        return None
+    message = str(compatibility.get("message") or "recognized upgrade source")
+    return f"migration-source inspection only: {message}"
+
+
 def _read_error_classification(error: Optional[str]) -> str:
     return "utf8" if (error or "").startswith("UnicodeDecodeError") else "filesystem"
 
@@ -203,8 +210,7 @@ def _ordinary_findings(
     findings.extend(_schema_findings(root))
     compatibility = runtime_compatibility(root)
     if not compatibility.get("ok") and not (
-        allow_legacy_source
-        and compatibility.get("state") == "older-supported-schema"
+        allow_legacy_source and compatibility.get("upgrade_source")
     ):
         findings.append(runtime_compatibility_finding(compatibility))
 
@@ -451,7 +457,7 @@ def lint_vault(
     *,
     allow_legacy_source: bool = False,
 ) -> Tuple[List[str], List[str]]:
-    """Validate a current vault, or explicitly validate a migration source."""
+    """Validate a current vault, or explicitly inspect an upgrade source."""
 
     findings = _ordinary_findings(
         root.expanduser(), today, allow_legacy_source=allow_legacy_source
@@ -1318,13 +1324,26 @@ def main() -> int:
             print(f"ERROR: invalid --today date: {args.today}", file=sys.stderr)
             return 1
 
+    vault_path = Path(args.vault)
+    compatibility = runtime_compatibility(vault_path)
+
     if args.deep:
         report = deep_lint_vault(
-            Path(args.vault), today, allow_legacy_source=args.migration_source
+            vault_path, today, allow_legacy_source=args.migration_source
+        )
+        report["validation_mode"] = (
+            "migration-source" if args.migration_source else "current-runtime"
         )
         if args.format == "json":
             print(json.dumps(report, indent=2, sort_keys=True))
         else:
+            notice = (
+                _migration_source_notice(compatibility)
+                if args.migration_source
+                else None
+            )
+            if notice:
+                print(f"INFO: {notice}")
             _print_text_findings(report["findings"])
             counts = report["severity_counts"]
             print(
@@ -1334,17 +1353,28 @@ def main() -> int:
         return 1 if report["severity_counts"]["error"] else 0
 
     errors, warnings = lint_vault(
-        Path(args.vault), today, allow_legacy_source=args.migration_source
+        vault_path, today, allow_legacy_source=args.migration_source
     )
     if args.format == "json":
         report = {
-            "schema_version": parse_schema(Path(args.vault)).get("version_text"),
+            "schema_version": compatibility.get("schema_version"),
+            "runtime_compatibility": compatibility,
+            "validation_mode": (
+                "migration-source" if args.migration_source else "current-runtime"
+            ),
             "errors": errors,
             "warnings": warnings,
             "severity_counts": {"error": len(errors), "warning": len(warnings), "info": 0},
         }
         print(json.dumps(report, indent=2, sort_keys=True))
     else:
+        notice = (
+            _migration_source_notice(compatibility)
+            if args.migration_source
+            else None
+        )
+        if notice:
+            print(f"INFO: {notice}")
         for finding in errors:
             print(f"ERROR: {finding}")
         for finding in warnings:

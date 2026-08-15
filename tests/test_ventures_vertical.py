@@ -255,15 +255,29 @@ A fictional milestone is recorded without a claim about market success.
                 areas=("ventures",),
                 root_links=("ventures",),
             )
-            older_findings = self.deep_report(older)["findings"]
+            older_report = self.deep_report(older)
+            older_findings = older_report["findings"]
             self.assertTrue(
                 any(item["classification"] == "vertical-contract-update" for item in older_findings)
+            )
+            self.assertEqual(
+                older_report["runtime_compatibility"]["state"],
+                "older-contract",
+            )
+            ordinary_errors, _ = lint_vault.lint_vault(older, date.date(2026, 8, 14))
+            self.assertTrue(
+                any("Older SelfContext vertical contract detected" in error for error in ordinary_errors)
+            )
+            source_report = lint_vault.deep_lint_vault(
+                older,
+                date.date(2026, 8, 14),
+                allow_legacy_source=True,
             )
             self.assertFalse(
                 any(
                     item["severity"] == "error"
-                    and item["classification"] == "vertical-contract"
-                    for item in older_findings
+                    and item["classification"] == "runtime-contract"
+                    for item in source_report["findings"]
                 )
             )
 
