@@ -257,7 +257,14 @@ were intentionally unchanged.
 
 ## Contract migrations
 
-Version 1 has no prior migrations. If the repository later advertises a newer
+Version 1 has no prior migrations. When a future version changes Relationships'
+ownership or meaning, document the historical-upgrade question before
+advertising it: where earlier evidence may be stranded in other areas, what
+can be safely moved, split, or linked, and what remains ambiguous. `upgrade
+vault latest` may apply only a complete documented safe path; it does not
+replace this procedure or infer motives, sensitive third-party details, or
+ambiguous relationship meaning.
+ If the repository later advertises a newer
 version, an older applied Relationships contract remains readable and
 reviewable; read only the documented migrations before proposing an update.
 Future versions must identify affected relationship evidence, safe structural

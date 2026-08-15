@@ -232,7 +232,14 @@ An ambiguous page remains a review decision.
 
 ## Contract migrations
 
-Version 1 has no prior Ventures contract migration. If a later repository
+Version 1 has no prior Ventures contract migration. When a future version
+changes Ventures' ownership or meaning, document the historical-upgrade
+question before advertising it: where earlier project lifecycle evidence may be
+stranded in Career or another area, what can be safely moved, split, or linked,
+and what remains ambiguous. `upgrade vault latest` may apply only a complete
+documented safe path; it does not replace this procedure, move ambiguous Career
+pages, or invent initiative outcomes, authority, adoption, or commitments.
+ If a later repository
 version is advertised, an older applied `ventures@1` remains readable and
 structurally valid while the documented migration is reviewed. A future
 contract must identify affected evidence, safe structural changes, semantic

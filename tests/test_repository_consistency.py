@@ -93,7 +93,7 @@ class RepositoryConsistencyTests(unittest.TestCase):
 
     def test_intentionally_enumerated_vertical_tables_match_catalog(self) -> None:
         documentation_tables = (
-            (ROOT / "README.md", "### Available Verticals"),
+            (ROOT / "README.md", "### Context Areas"),
             (ROOT / "docs/ARCHITECTURE.md", "### Available Vertical Catalog"),
         )
         for path, heading in documentation_tables:
@@ -192,10 +192,12 @@ class RepositoryConsistencyTests(unittest.TestCase):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         self.assertTrue(procedure_path.is_file())
         self.assertIn("Migrate vault", skill)
-        for shortcut in ("migrate vault latest", "deep review vault", "deep update vault"):
-            self.assertIn(shortcut, skill.casefold())
-            self.assertIn(shortcut, readme.casefold())
+        self.assertIn("migrate vault latest", skill.casefold())
+        self.assertIn("deep review vault", skill.casefold())
+        self.assertIn("deep update vault", skill.casefold())
         self.assertIn("migrate self-context latest", skill.casefold())
+        self.assertIn("upgrade vault latest", readme.casefold())
+        self.assertNotIn("advanced maintenance prompts include", readme.casefold())
         self.assertIn("references/migration.md", skill)
         self.assertIn("provisional recovery backup", skill.casefold())
         self.assertIn("final backup", skill.casefold())
@@ -211,6 +213,26 @@ class RepositoryConsistencyTests(unittest.TestCase):
         self.assertIn("Deep update", procedure)
         self.assertIn("Vertical-contract update", procedure)
 
+    def test_upgrade_procedure_is_the_latest_first_routing_owner(self) -> None:
+        skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+        procedure_path = SKILL_ROOT / "references/upgrade.md"
+        procedure = procedure_path.read_text(encoding="utf-8")
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        architecture = (ROOT / "docs/ARCHITECTURE.md").read_text(encoding="utf-8")
+        self.assertTrue(procedure_path.is_file())
+        self.assertIn("upgrade vault latest", skill.casefold())
+        self.assertIn("references/upgrade.md", skill)
+        self.assertIn("upgrade vault latest", procedure.casefold())
+        self.assertIn("migrate vault latest", procedure.casefold())
+        self.assertIn("deep review vault", procedure.casefold())
+        self.assertIn("deep update vault", procedure.casefold())
+        self.assertIn("Your vault is already current. No files changed.", procedure)
+        self.assertIn("re-orient", procedure.casefold())
+        self.assertIn("existing deep-maintenance", procedure.casefold())
+        self.assertIn("upgrade vault latest", readme.casefold())
+        self.assertIn("latest-first upgrade orchestration", architecture.casefold())
+        self.assertIn("`latest` is derived", architecture.casefold())
+
     def test_migration_eval_corpus_covers_natural_language_boundaries(self) -> None:
         evals = json.loads(
             (SKILL_ROOT / "evals/evals.json").read_text(encoding="utf-8")
@@ -218,8 +240,7 @@ class RepositoryConsistencyTests(unittest.TestCase):
         prompts = {str(case["prompt"]) for case in evals}
         required = {
             "Migrate my SelfContext vault to the latest supported schema.",
-            "Upgrade my old vault.",
-            "Bring my vault up to date.",
+            "Upgrade this vault to the latest supported schema.",
             "Check whether my vault needs migration.",
             "Show me a migration plan for my old SelfContext vault, but do not change anything.",
             "Deep review my old vault.",
@@ -230,6 +251,33 @@ class RepositoryConsistencyTests(unittest.TestCase):
             "deep review vault",
             "deep update vault",
             "migrate self-context latest",
+        }
+        self.assertTrue(required.issubset(prompts))
+
+    def test_vertical_procedures_document_historical_upgrade_guidance(self) -> None:
+        for record in self.records:
+            procedure = (
+                SKILL_ROOT / str(record["procedure_path"])
+            ).read_text(encoding="utf-8").casefold()
+            self.assertIn("historical-upgrade", procedure, str(record["id"]))
+            self.assertIn("upgrade", procedure, str(record["id"]))
+            self.assertIn("ambiguous", procedure, str(record["id"]))
+
+    def test_upgrade_eval_corpus_covers_latest_first_boundaries(self) -> None:
+        evals = json.loads(
+            (SKILL_ROOT / "evals/evals.json").read_text(encoding="utf-8")
+        )["evals"]
+        prompts = {str(case["prompt"]) for case in evals}
+        required = {
+            "upgrade vault latest",
+            "Bring my vault fully up to date with the current SelfContext model.",
+            "Make my vault current with this version of SelfContext.",
+            "My vault is already current; check whether anything needs changing.",
+            "Upgrade a synthetic current-schema vault with clearly relevant historical project lifecycle evidence that belongs in the newly available Ventures / Projects area.",
+            "Upgrade a synthetic current-schema vault with no evidence for a newly available vertical.",
+            "Upgrade a synthetic vault where a possible historical ownership move is genuinely ambiguous, but unrelated schema and index updates are safe.",
+            "Upgrade a synthetic vault whose SCHEMA.md is malformed or declares a future unsupported schema.",
+            "Upgrade a synthetic schema 0.2 vault containing a vertical contract version newer than the repository supports.",
         }
         self.assertTrue(required.issubset(prompts))
 

@@ -34,6 +34,11 @@ not use the ignored real `vault/` as a mutation target.
   stop after the read-only plan, authorized requests continue only when the
   plan is write-ready, and deep review/deep lint/deep update/vertical-contract
   requests do not migrate implicitly.
+- [ ] Run the latest-first upgrade orchestration contract tests and confirm a
+  current synthetic vault is a no-op, schema work re-orients before adoption,
+  selective vertical adoption preserves ambiguity, and future schema/contract
+  states block before mutation:
+  `python3 -m unittest tests.test_upgrade_workflow`.
 - [ ] Run the catalog refresh/idempotence check and verify a repeated write
   produces no further changes.
 - [ ] Run representative search-ranking fixtures and confirm unrelated custom

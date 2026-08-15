@@ -38,7 +38,8 @@ outside that directory.
 ## Deep maintenance and migration
 
 For deep updates, schema migration, vertical adoption, and contract updates,
-retain both snapshots:
+retain both snapshots. `upgrade vault latest` delegates to these existing
+mutation owners and never adds an orchestration-level backup around them.
 
 1. Create and record a pre-write recovery backup.
 2. Apply the bounded maintenance transaction.
