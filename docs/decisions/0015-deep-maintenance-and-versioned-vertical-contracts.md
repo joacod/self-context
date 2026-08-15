@@ -67,14 +67,15 @@ A schema 0.2 vault has an **enabled vertical** only when it records exactly one
 `vertical@version` entry in `SCHEMA.md` and its area, index, and root link are
 present. The **applied contract version** is the version recorded by the vault.
 Availability does not mean enabled. Compare versions explicitly: equal is
-current and valid; older is valid but reports an available update without
-automatic migration; newer is an error because the repository cannot safely
-interpret a future contract. Unknown IDs, invalid versions, and duplicate
-entries keyed by one vertical ID are errors, with values preserved for
-reporting. A read-only query about an absent vertical treats it as empty and
-creates nothing. Adoption is explicit and adds only the necessary area, index,
-exact available contract marker, and root link; it does not copy facts or create
-placeholder personal pages.
+current and valid; older is a recognized upgrade source that blocks normal
+current semantic operation until
+`upgrade vault latest` applies its documented path; newer is an error because
+the repository cannot safely interpret a future contract. Unknown IDs, invalid
+versions, and duplicate entries keyed by one vertical ID are errors, with
+values preserved for reporting. A read-only query about an absent vertical
+treats it as empty and creates nothing. Adoption is explicit and adds only the
+necessary area, index, exact available contract marker, and root link; it does
+not copy facts or create placeholder personal pages.
 
 Schema 0.1 remains a legacy format without contract markers and is an
 upgrade/migration source only. Normal first-use activation and mutation target

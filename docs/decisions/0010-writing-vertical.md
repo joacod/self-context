@@ -54,10 +54,10 @@ Add Writing as a first-class vertical that reuses the existing vault contract:
 
 - A copied vault remains inspectable without a model, provider, or Writing
   Advisor.
-- At the time of this decision, existing v0.1 vaults were allowed to remain
-  operational. ADR 0020 supersedes that runtime policy: current SelfContext
-  directs recognized older vaults through `upgrade vault latest` before normal
-  Writing operations, while the v0.1 migration source remains supported.
+- This decision predates the latest-first runtime policy in ADR 0020. Current
+  SelfContext treats recognized older vaults as upgrade sources and directs
+  them through `upgrade vault latest` before normal Writing operations, while
+  the v0.1 migration source remains supported.
 - More sources can improve accuracy without requiring more durable traits.
 - Generic writing advice remains replaceable and is not confused with personal
   evidence.

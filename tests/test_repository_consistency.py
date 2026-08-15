@@ -297,6 +297,18 @@ class RepositoryConsistencyTests(unittest.TestCase):
         self.assertIn("silently", combined)
         self.assertIn("--migration-source", (SKILL_ROOT / "references/review-and-lint.md").read_text(encoding="utf-8"))
 
+    def test_latest_first_lint_docs_separate_runtime_and_source_inspection(self) -> None:
+        skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+        architecture = (ROOT / "docs/ARCHITECTURE.md").read_text(encoding="utf-8")
+        review_and_lint = (SKILL_ROOT / "references/review-and-lint.md").read_text(encoding="utf-8")
+        combined = "\n".join((skill, architecture, review_and_lint)).casefold()
+        self.assertIn("### current-runtime validation", review_and_lint.casefold())
+        self.assertIn("### migration-source inspection", review_and_lint.casefold())
+        self.assertIn("upgrade vault latest", combined)
+        self.assertIn("migration source", combined)
+        self.assertNotIn("schema 0.1 first meaningful mutation", combined)
+        self.assertNotIn("ordinary lint is the fast backward-compatible path", combined)
+
     def test_consistency_test_is_independent_of_a_real_vault(self) -> None:
         # This test does not open vault/; the actual ignored vault, when
         # present, is intentionally outside the consistency contract.
