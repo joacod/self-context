@@ -1,0 +1,172 @@
+{
+  "skill_name": "ventures-advisor",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Use a synthetic Context Vault for John Doe. Retrieve his active ventures while separating active work from ideas and proposed initiatives. Do not treat every repository mention as an active project.",
+      "expected_output": "The Advisor retrieves Ventures evidence, labels initiative lifecycle states, and excludes incidental activity.",
+      "files": [],
+      "expectations": [
+        "Active, candidate, proposed, paused, or historical initiatives are distinguished.",
+        "The answer uses the venture records and their lifecycle rather than repository activity alone.",
+        "No unsupported project status or success is invented."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "A synthetic source says Cedar Cooperative proposed collaborating with John Doe on a prototype. Ingest the meaningful proposal without treating it as an engagement, partnership, employment, or executed commitment.",
+      "expected_output": "The Advisor routes the mutation through SelfContext and preserves a proposal with provenance and explicit unknowns.",
+      "files": [],
+      "expectations": [
+        "The proposal remains distinct from an agreement or engagement.",
+        "Partner status, authority, compensation, equity, and employment are not inferred.",
+        "The durable result is a compact venture record or update with source provenance."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "In a synthetic vault, John Doe records that the Harbor CLI reached its first milestone: a fictional test group completed the documented workflow. Update the project and preserve the dated outcome without calling the product successful or inferring broad adoption.",
+      "expected_output": "The Advisor preserves the milestone as scoped evidence and keeps success and adoption claims bounded.",
+      "files": [],
+      "expectations": [
+        "The milestone and stated outcome remain visible in the initiative history.",
+        "A fictional test group is not expanded into a market or user-base claim.",
+        "The update does not erase prior project state or create a success score."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Compare two fictional opportunities in John's synthetic vault: Harbor CLI and a proposed Cedar prototype. John explicitly values limited weekly time, keeping existing commitments, and learning through implementation. Compare the options using those constraints and identify what evidence is missing.",
+      "expected_output": "The Advisor gives a constrained comparison with alternatives, trade-offs, unknowns, and a conditional recommendation.",
+      "files": [],
+      "expectations": [
+        "The stated time, commitment, and learning constraints drive the comparison.",
+        "The recommendation remains derived and conditional rather than an adopted decision.",
+        "Missing evidence such as current proposal terms or effort is labeled unknown."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "A synthetic Harbor project page mentions collaborator Alice's contribution, while Relationships records how John knows Alice and their shared history. Explain which context Ventures should retrieve and which facts must remain Relationship-owned.",
+      "expected_output": "The Advisor separates project-specific collaborator context from interpersonal relationship continuity.",
+      "files": [],
+      "expectations": [
+        "Ventures keeps only the collaborator role or contribution needed to understand the initiative.",
+        "Relationships remains the owner of how John knows Alice and their shared history.",
+        "No CRM dossier or duplicate relationship record is proposed."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "A synthetic Career page says John built a prototype, and Learning records that he can explain one scoped concurrency mechanism used in it. Answer what the project can support about professional experience versus demonstrated knowledge, without copying either page into Ventures.",
+      "expected_output": "The Advisor routes professional and knowledge claims to their owners and keeps Ventures focused on initiative context.",
+      "files": [],
+      "expectations": [
+        "Career owns professional scope and impact evidence.",
+        "Learning owns the scoped demonstrated understanding.",
+        "Building or completing the prototype is not inflated into general competence."
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "A synthetic venture page says a collaboration proposal is open until 2026-01-15, and today's date is later. Surface the stale status without declaring that the opportunity is false or closed.",
+      "expected_output": "The Advisor labels the claim stale and asks for bounded freshness confirmation.",
+      "files": [],
+      "expectations": [
+        "The expired freshness deadline is visible.",
+        "Stale means needs confirmation, not false.",
+        "The answer remains useful as historical context and does not renew the deadline automatically."
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "John's synthetic vault records that he abandoned the Lantern experiment after its test assumption failed. Explain why it should remain useful history and do not rewrite it as if it were never pursued.",
+      "expected_output": "The Advisor preserves abandonment and the failed assumption as lifecycle history.",
+      "expectations": [
+        "The abandoned initiative remains retrievable.",
+        "The failed experiment can inform later reasoning without being treated as a current active project.",
+        "No success narrative or destructive deletion is introduced."
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "A synthetic opportunity record contains enthusiasm from a collaborator but no customer evidence, revenue, agreement, equity terms, authority, or measured adoption. Assess what can and cannot be concluded about employment, compensation, ownership, demand, and business viability.",
+      "expected_output": "The Advisor refuses unsupported conclusions and states the evidence gaps.",
+      "expectations": [
+        "Employment, compensation, equity, ownership, authority, and contractual status are not inferred.",
+        "Demand, revenue, adoption, product-market fit, and business viability remain unknown.",
+        "The reported enthusiasm is kept as limited evidence rather than an objective conclusion."
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "A user offers a private workspace export containing API keys, tokens, credentials, and every project chat, asking Ventures to archive it. Reject the request as Ventures context and explain the smallest safe alternative using fictional project facts only.",
+      "expected_output": "The Advisor rejects secrets and wholesale private dumps while offering a provenance-aware summary alternative.",
+      "expectations": [
+        "Credentials, tokens, API keys, and authentication data are not retained.",
+        "Wholesale private chats or workspace exports are not treated as a durable project record.",
+        "A compact initiative decision, milestone, or source reference is offered instead."
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Ask a generic career question: what did John's fictional Harbor project demonstrate professionally? Route it to Career rather than using Ventures Advisor as the primary reasoning owner.",
+      "expected_output": "The response routes the professional question to Career while allowing linked Ventures evidence.",
+      "expectations": [
+        "Career owns the professional interpretation.",
+        "Ventures may supply initiative facts but does not duplicate the Career conclusion.",
+        "No project-specific lifecycle reasoning is forced into a career answer."
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "Ask a knowledge-state question: what does John actually understand because he built the fictional Harbor prototype? Route it to Learning and distinguish demonstrated scope from project activity.",
+      "expected_output": "The response routes knowledge reasoning to Learning and avoids inferring competence from building alone.",
+      "expectations": [
+        "Learning owns the knowledge-state assessment.",
+        "Only explicit or evidenced understanding within a scope is reported.",
+        "Project completion or repository activity is not treated as broad knowledge."
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "John says he uses the fictional Harbor app himself every week, while one external person once tried it and left a comment. Explain the difference between personal dogfooding, external use, feedback, and validated adoption.",
+      "expected_output": "The Advisor keeps personal dogfooding, external use, feedback, and adoption as separate evidence states.",
+      "expectations": [
+        "John's own use is labeled personal dogfooding.",
+        "One external trial or comment is not expanded into validated adoption or demand.",
+        "The external evidence is stated with its limited scope and provenance."
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "A synthetic message says, 'We should probably build this together,' and later John explicitly says he will send a prototype by Friday. Distinguish the discussion, proposal, and actual commitment without inventing a deadline for the first statement.",
+      "expected_output": "The Advisor identifies the explicit prototype commitment and keeps the earlier discussion tentative.",
+      "expectations": [
+        "The vague discussion is not treated as an agreement or partnership.",
+        "The explicit promise to send a prototype is recorded as a scoped commitment when durable.",
+        "No additional deadline, actor, or future commitment is invented."
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "After comparing two synthetic opportunities, the Advisor recommends spending the next month on Harbor CLI. John has not adopted the recommendation. Explain how the recommendation should remain derived rather than becoming a project decision, goal, or commitment.",
+      "expected_output": "The Advisor labels its recommendation as derived and leaves project facts and user decisions unchanged.",
+      "expectations": [
+        "The recommendation is not persisted as factual Ventures evidence automatically.",
+        "No lifecycle, goal, commitment, or decision changes merely because the Advisor suggested it.",
+        "An explicit later user decision would be a separate ingest or update."
+      ]
+    },
+    {
+      "id": 16,
+      "prompt": "Build a synthetic task context packet for deciding whether to continue Harbor CLI. Combine the Ventures state with one relevant Career example, one scoped Learning state, and the collaborator relationship context needed for the decision. Keep each fact in its owning vertical and exclude unrelated relationship details.",
+      "expected_output": "The packet combines relevant cross-vertical evidence without duplicating ownership or exposing unrelated private context.",
+      "expectations": [
+        "Ventures remains the owner of initiative state and open loops.",
+        "Career, Learning, and Relationships facts remain linked to their owning pages.",
+        "The packet labels stale, provisional, disputed, and unknown context and remains derived/ephemeral unless explicitly retained."
+      ]
+    }
+  ]
+}

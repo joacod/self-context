@@ -22,7 +22,7 @@ class VerticalCatalogTests(unittest.TestCase):
         self.assertEqual(catalog["catalog_version"], 1)
         self.assertEqual(
             [record["id"] for record in records],
-            ["career", "learning", "writing", "relationships", "media"],
+            ["career", "learning", "writing", "relationships", "media", "ventures"],
         )
         self.assertEqual(self.vault_utils.validate_vertical_catalog(), [])
 
@@ -44,7 +44,7 @@ class VerticalCatalogTests(unittest.TestCase):
 
     def test_public_documentation_names_available_verticals_consistently(self) -> None:
         text = (ROOT / "README.md").read_text(encoding="utf-8") + (ROOT / "docs/ARCHITECTURE.md").read_text(encoding="utf-8")
-        for display_name in ("Career", "Learning", "Writing", "Relationships", "Media / Taste"):
+        for display_name in ("Career", "Learning", "Writing", "Relationships", "Media / Taste", "Ventures / Projects"):
             self.assertIn(display_name, text)
 
     def test_duplicate_catalog_records_are_rejected(self) -> None:

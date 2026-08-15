@@ -105,7 +105,8 @@ vault/
 |-- learning/       # optional enabled Learning area
 |-- writing/        # optional enabled Writing area
 |-- relationships/  # optional enabled Relationships area
-`-- media/          # optional enabled Media / Taste area
+|-- media/          # optional enabled Media / Taste area
+`-- ventures/       # optional enabled Ventures / Projects area
 ```
 
 Schema 0.2 initializes only universal areas. The SelfContext skill may create
@@ -164,11 +165,12 @@ may enable only a subset; availability does not create an area:
 
 | Vertical | Vault area | Scope | Advisor Pack |
 | --- | --- | --- | --- |
-| Career | `career/` | Roles, history, projects, skills, achievements, leadership examples, mentoring, public work, and professional goals | Career Advisor |
+| Career | `career/` | Roles, history, project participation as professional evidence, skills, achievements, leadership examples, mentoring, public work, and professional goals | Career Advisor |
 | Learning | `learning/` | Topics and concepts, qualitative knowledge states, meaningful gaps, misconceptions, corrections, mental models, prerequisites, and progression evidence | Learning Advisor |
 | Writing | `writing/` | Observable communication behavior, reasoning-through-writing, reader awareness, editorial preferences, anti-patterns, and evidenced modes | Writing Advisor |
 | Relationships | `relationships/` | The user's relationship with people: shared history, meaningful interactions, commitments, open loops, and dated evolution | Relationships Advisor |
 | Media / Taste | `media/` | Reactions to experienced works, explainable taste patterns, exceptions, and dated taste evolution | Media Advisor |
+| Ventures / Projects | `ventures/` | Initiative lifecycle, project-specific decisions, commitments, milestones, evidence, outcomes, dogfooding, adoption, and evolution | Ventures Advisor |
 
 Learning does not own generic notes, bookmarks, course records, or source
 summaries. It records what the person understands and how that state changes;
@@ -187,8 +189,8 @@ facts about that person. It keeps sparse pages for shared history, meaningful
 interactions, commitments, open loops, and dated evolution. Reported statements,
 source-derived facts, user observations, and agent inferences remain distinct;
 sensitive third-party characteristics and unsupported motives or personality
-judgments are not inferred. Career, Writing, Learning, and Media pages remain
-the owners of their distinct claims and are linked rather than copied.
+judgments are not inferred. Career, Ventures, Writing, Learning, and Media pages
+remain the owners of their distinct claims and are linked rather than copied.
 
 Media / Taste centers the user's reaction to individual cultural works rather
 than a complete consumption history or external catalog. Work pages are sparse,
@@ -196,6 +198,16 @@ and patterns must explain their supporting reactions, scope, exceptions, and
 dates. Consumption is not preference, generated reviews are not evidence, and
 recommendations remain derived. Neither vertical adds a competing schema,
 confidence database, runtime, or cross-domain dependency.
+
+Ventures / Projects centers the living lifecycle of meaningful initiatives,
+experiments, opportunities, proposals, collaborations, and projects. Its sparse
+records preserve purpose, origin, lifecycle, current state, role, decisions,
+commitments, milestones, evidence, outcomes, dogfooding or adoption, unknowns,
+and dated evolution. Initiative lifecycle remains readable body content rather
+than a second status machine. Ventures does not become a task manager, CRM,
+repository catalog, generic business system, or source archive; Career owns what
+participation demonstrates professionally, Learning owns knowledge state,
+Relationships owns interpersonal continuity, and recommendations remain derived.
 
 Additional verticals should consume the same shared lifecycle rather than create
 competing formats. To add one, define its scope, give it a separate area and
@@ -307,4 +319,4 @@ remains subordinate to the Markdown vault and does not replace semantic review.
 
 These exclusions keep the durable asset portable, local, inspectable, and replaceable. Future disposable search indexes or user-controlled off-device copies can be considered only without changing the vault's canonical role.
 
-See the [architectural decisions](decisions/) for the reasoning behind these boundaries, including the [user-mode and project-maintenance separation](decisions/0007-user-mode-project-maintenance.md), the [selective confirmation and freshness policy](decisions/0008-selective-confirmation-and-freshness.md), the [backup lifecycle policy](decisions/0017-vault-backup-lifecycles.md), the [Writing vertical decision](decisions/0010-writing-vertical.md), the [query persistence triage decision](decisions/0011-query-persistence-triage.md), the [Learning vertical decision](decisions/0012-learning-vertical.md), the [Relationships vertical decision](decisions/0013-relationships-vertical.md), the [Media / Taste vertical decision](decisions/0014-media-taste-vertical.md), and the [Deep Maintenance and versioned vertical contracts decision](decisions/0015-deep-maintenance-and-versioned-vertical-contracts.md).
+See the [architectural decisions](decisions/) for the reasoning behind these boundaries, including the [user-mode and project-maintenance separation](decisions/0007-user-mode-project-maintenance.md), the [selective confirmation and freshness policy](decisions/0008-selective-confirmation-and-freshness.md), the [backup lifecycle policy](decisions/0017-vault-backup-lifecycles.md), the [Writing vertical decision](decisions/0010-writing-vertical.md), the [query persistence triage decision](decisions/0011-query-persistence-triage.md), the [Learning vertical decision](decisions/0012-learning-vertical.md), the [Relationships vertical decision](decisions/0013-relationships-vertical.md), the [Media / Taste vertical decision](decisions/0014-media-taste-vertical.md), the [Ventures / Projects vertical decision](decisions/0018-ventures-projects-vertical.md), and the [Deep Maintenance and versioned vertical contracts decision](decisions/0015-deep-maintenance-and-versioned-vertical-contracts.md).

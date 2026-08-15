@@ -112,6 +112,16 @@ evidence. Explain recommendations through matches and conflicts in the user's
 actual reactions; keep the recommendation derived and do not update taste or
 `core/` automatically.
 
+For Ventures / Projects retrieval, read the relevant initiative records, lifecycle
+and current-state sections, decisions, commitments, milestones, outcomes,
+dogfooding/adoption evidence, evolution, review items, and linked sources. Keep
+ideas, candidates, proposals, engagements, discussions, agreements, decisions,
+and executed commitments distinct. Treat stale current state as needing
+freshness confirmation, not as false. Route professional meaning to Career,
+knowledge state to Learning, relationship continuity to Relationships, writing
+behavior to Writing, broad preferences to `core/`, and reusable recommendations
+to `derived/` without copying the initiative record into those owners.
+
 ## Verification and Freshness at Query Time
 
 Treat verification and freshness as separate dimensions:

@@ -12,7 +12,8 @@ objective:
 - mode, language, audience, and dated scope;
 - explicit user preferences or corrections;
 - meaningful human revisions of assisted drafts;
-- relevant core, career, project, belief, or knowledge pages owned elsewhere;
+- relevant Core, Career, Ventures/project, belief, or knowledge pages owned
+  elsewhere;
 - unresolved contradictions and review items; and
 - derived analyses only as labeled recommendations, never as independent
   evidence.

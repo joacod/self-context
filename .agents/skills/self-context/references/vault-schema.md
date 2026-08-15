@@ -90,9 +90,9 @@ creates the final backup, and discards the provisional only after success.
 
 Schema 0.1 vaults may have the historical default areas, custom areas, or only
 some verticals. Preserve their taxonomy. The current available verticals are
-Career, Learning, Writing, Relationships, and Media / Taste; detailed
-ownership/exclusion rules are canonical in the vertical procedures and the
-catalog.
+Career, Learning, Writing, Relationships, Media / Taste, and Ventures / Projects;
+detailed ownership/exclusion rules are canonical in the vertical procedures and
+the catalog.
 
 ## Durable page metadata
 

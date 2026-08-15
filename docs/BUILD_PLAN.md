@@ -9,9 +9,9 @@ The project is intentionally implemented one phase at a time. After each phase, 
 ## Current State
 
 - **Current phase:** Phase 5 - First-run dry run and v0.1 bootstrap complete; no later bootstrap phase is active.
-- **Repository state:** Tracked foundation documentation, the canonical SelfContext skill, and the Career, Learning, Writing, Relationships, and Media Advisor Packs are present alongside the original `LICENSE` and funding configuration.
+- **Repository state:** Tracked foundation documentation, the canonical SelfContext skill, and the Career, Learning, Writing, Relationships, Media / Taste, and Ventures / Projects Advisor Packs are present alongside the original `LICENSE` and funding configuration.
 - **Private vault state:** Any local `vault/` directory is private and ignored. A fresh clone must not depend on an ignored empty directory; the SelfContext skill initializes it on demand.
-- **Next experiment:** Dogfood the Career, Learning, Writing, Relationships, and Media / Taste workflows with real context only after explicit user direction. This is not another bootstrap phase.
+- **Next experiment:** Dogfood the Career, Learning, Writing, Relationships, Media / Taste, and Ventures / Projects workflows with real context only after explicit user direction. This is not another bootstrap phase.
 - **Operational maintenance:** Local provisional/final vault backups are implemented outside the bootstrap phases after explicit user direction; ordinary mutations discard the provisional after final success, maintenance retains both, and the root `backups/` directory retains the latest ten timestamped ZIPs beside `vault/`.
 
 ## Non-Negotiable Constraints
@@ -213,9 +213,24 @@ exceptions, evolution, recommendations, generated-reaction boundaries, privacy,
 and no-update outcomes. It keeps the user's reaction as the durable subject and
 leaves Learning, Relationships, Writing, Career, and `core/` ownership intact.
 
-Validation for both extensions is recorded in the final change review. The
-implementation uses fictional data only in tracked tests, evaluations, and
-documentation.
+### Post-bootstrap Extension - Ventures / Projects Vertical
+
+**Status:** Implemented as a focused operational extension after the Media /
+Taste vertical. It reuses the portable schema version and catalog-driven
+maintenance path; it does not add a task manager, CRM, repository inventory,
+database, external integration, or custom runtime.
+
+The Ventures / Projects extension adds an on-demand `ventures/` area, shared
+lifecycle guidance, a Ventures Advisor Pack, and synthetic evaluations for
+initiative continuity, selective activation, proposals versus commitments,
+stale opportunity state, dogfooding versus adoption, abandoned history,
+privacy, derived recommendations, and cross-vertical ownership. Career
+`career@1` remains valid and existing Career project pages are not moved or
+rewritten automatically.
+
+Validation for these post-bootstrap extensions is recorded in the final change
+review. The implementation uses fictional data only in tracked tests,
+evaluations, and documentation.
 
 ## Key Decisions
 
@@ -230,6 +245,7 @@ documentation.
 - [Learning is an evidence-backed, evolving knowledge vertical](decisions/0012-learning-vertical.md).
 - [Relationships is an evidence-backed, privacy-sensitive vertical](decisions/0013-relationships-vertical.md).
 - [Media / Taste is an evidence-backed reaction and preference vertical](decisions/0014-media-taste-vertical.md).
+- [Ventures / Projects owns meaningful initiative lifecycle and continuity](decisions/0018-ventures-projects-vertical.md).
 
 ## Phase Handoff Rules
 

@@ -148,6 +148,7 @@ class LintVaultTests(unittest.TestCase):
                 "writing@1",
                 "relationships@1",
                 "media@1",
+                "ventures@1",
             ])
             self.assertEqual(report["enabled_verticals"], [])
             self.assertEqual(report["applied_vertical_contracts"], [])
@@ -418,7 +419,10 @@ class LintVaultTests(unittest.TestCase):
 
         self.assertEqual(vault_utils.validate_vertical_catalog(), [])
         records = vault_utils.catalog_records(vault_utils.load_vertical_catalog())
-        self.assertEqual({record["id"] for record in records}, {"career", "learning", "writing", "relationships", "media"})
+        self.assertEqual(
+            {record["id"] for record in records},
+            {"career", "learning", "writing", "relationships", "media", "ventures"},
+        )
 
 
 if __name__ == "__main__":

@@ -55,6 +55,16 @@ contradictions, and generated-artifact boundaries remain visible. Check that
 recommendations stay derived and that taste pages do not infer sensitive
 identity, ideology, health, or personality.
 
+For Ventures / Projects, inspect whether records represent meaningful
+initiative continuity rather than tasks, repositories, meetings, or generic
+business notes. Check that idea/candidate/proposal/engagement/commitment states
+remain distinct; lifecycle is not overloaded into shared page status; current
+claims have appropriate freshness; milestones and outcomes remain evidenced;
+dogfooding is not called external adoption; and recommendations stay derived.
+Check project-specific collaborator context against Relationships ownership,
+professional relevance against Career, knowledge claims against Learning, and
+sensitive or unsupported business/third-party inferences for review or refusal.
+
 For a broad semantic review, sample recent meaningful ingests from `log.md` and
 check category coverage: explicit context useful across domains should not be
 stranded in a vertical, and vertical facts should not be duplicated into

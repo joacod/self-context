@@ -5,7 +5,8 @@ description: >
   organize, connect, query, retrieve, review, lint, validate, reconcile,
   migrate, upgrade, or inspect their SelfContext Vault or personal context—even
   without naming SelfContext or a vault. Also use it for evidence-backed career,
-  learning, writing, relationship, or media/taste advice; resumes, profiles,
+  learning, writing, relationship, media/taste, or ventures/project advice;
+  resumes, profiles,
   authored writing, recollections, or other durable sources that should become
   context; and vault initialization, copying, restoring, backing up, exporting,
   or migration. Recognize `migrate vault latest`, `deep review vault`, `deep
@@ -142,6 +143,7 @@ available/enabled/applied states and version comparison rules.
 | `writing/` | Observable communication and writing context | Writing Advisor |
 | `relationships/` | Intentional relationship context, shared history, commitments, and open loops | Relationships Advisor |
 | `media/` | Reactions to experienced cultural works and evidence-backed taste patterns | Media Advisor |
+| `ventures/` | Initiative lifecycle, project-specific decisions, commitments, milestones, evidence, outcomes, and evolution | Ventures Advisor |
 
 More verticals may be added without changing the core schema. Identify a
 vertical by its documented scope before writing, keep its pages in a separate
@@ -174,6 +176,13 @@ evolution request, read [the Media / Taste procedure](references/media-taste.md)
 in addition to the general procedure. Treat individual user reactions as the
 primary evidence, distinguish consumption from preference, and keep patterns
 explainable, scoped, and reviewable.
+
+For a venture, project, experiment, opportunity, proposal, collaboration,
+partnership, milestone, dogfooding, adoption, project-decision, or initiative-
+continuity request, read [the Ventures / Projects procedure](references/ventures.md)
+in addition to the general procedure. Keep initiative lifecycle separate from
+page status, route professional, knowledge, relationship, writing, core, source,
+and derived claims to their owners, and preserve unknowns.
 
 ## Attention and Confirmation
 
@@ -241,6 +250,9 @@ confirmation question instead of silently using it as current.
      context, shared history, commitments, privacy, and relationship evolution.
    - [Media / Taste vertical](references/media-taste.md) for work reactions,
      evidence-backed patterns, exceptions, and taste evolution.
+   - [Ventures / Projects vertical](references/ventures.md) for initiative
+     lifecycle, project decisions, commitments, milestones, evidence, outcomes,
+     adoption, unknowns, and evolution.
    - [Review and lint](references/review-and-lint.md) for targeted review and
      ordinary/deep deterministic validation.
    - [Migration](references/migration.md) for first-class schema migration

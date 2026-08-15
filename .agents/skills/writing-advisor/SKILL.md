@@ -50,9 +50,10 @@ is an available vertical and may be absent from a schema 0.2 vault; read-only
 work treats it as empty and does not create its area.
 
 A task context packet may use Writing context only when the communication task
-needs it. Keep the packet smallest, preserve Career or other vertical ownership,
-label stale/provisional context, and exclude unrelated sensitive details. It is
-derived output, not evidence, and stays ephemeral unless explicitly retained.
+needs it. Keep the packet smallest, preserve Career, Ventures, or other vertical
+ownership, label stale/provisional context, and exclude unrelated sensitive
+details. It is derived output, not evidence, and stays ephemeral unless
+explicitly retained.
 
 ## Evidence Discipline
 

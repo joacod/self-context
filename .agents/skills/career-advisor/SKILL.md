@@ -98,9 +98,11 @@ When a professional artifact also needs communication fit, retrieve relevant
 Writing context through SelfContext as a scoped style and audience input. When
 technical knowledge matters to a career question, Learning context may provide
 scoped evidence of understanding or demonstrated application; it does not
-replace Career evidence of professional impact. Do not treat a Writing or
-Learning observation as career evidence, duplicate it into `career/`, or let a
-generated draft become evidence about the user's career or voice.
+replace Career evidence of professional impact. Ventures context may provide
+initiative lifecycle and project evidence, but Career owns what participation
+demonstrates professionally. Do not treat a Writing, Learning, or Ventures
+observation as career evidence, duplicate it into `career/`, or let a generated
+draft become evidence about the user's career or voice.
 
 ## Reasoning Workflow
 

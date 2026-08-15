@@ -37,19 +37,20 @@ Relationships does not own:
   reminder system;
 - unrelated facts about a third party that do not help explain the user's
   relationship with them;
-- career roles, professional outcomes, mentoring evidence, or project history
-  when Career owns those claims;
+- career roles, professional outcomes, mentoring evidence, or initiative
+  lifecycle and project history when Career or Ventures owns those claims;
 - the user's general values, boundaries, communication style, or social
   preferences when `core/` owns them; or
 - inferred diagnoses, medical information, sexuality, religion, political
   beliefs, ethnicity, criminal history, financial condition, personality
   labels, motives, or psychological profiles about third parties.
 
-A person may appear in Career, Writing, Learning, or Media context for a
-separate purpose. Link to the owning page rather than copying its facts into a
-relationship page. Relationships can still preserve the human continuity that
-makes an interaction meaningful when that context has a distinct relationship
-purpose.
+A person may appear in Career, Ventures, Writing, Learning, or Media context
+for a separate purpose. Link to the owning page rather than copying its facts
+into a relationship page. Ventures may retain the collaborator's project role
+when it is needed to understand an initiative; Relationships owns how the user
+knows them and the shared human continuity that makes an interaction
+meaningful.
 
 ## Storage and page choices
 
@@ -194,8 +195,8 @@ After the normal SelfContext orientation and before a mutation:
    signal.
 2. Separate the user's statement, a reported statement, a retained source, an
    observable interaction, and any agent interpretation.
-3. Find the existing relationship page and linked Career, Writing, Learning, or
-   Media pages before creating anything. Update the smallest matching page
+3. Find the existing relationship page and linked Career, Ventures, Writing,
+   Learning, or Media pages before creating anything. Update the smallest matching page
    rather than creating a duplicate person record.
 4. Retain only high-signal interactions. Prefer a durable relationship fact,
    commitment, or open-loop entry over a transcript or complete event log.

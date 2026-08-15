@@ -10,15 +10,17 @@ advisor_skill: career-advisor
 ## Scope and ownership
 
 Career owns evidence and concepts about the user's professional history and
-future work: roles, projects, technical and organizational decisions,
-skills demonstrated in context, achievements, leadership and mentoring
-examples, public work, and explicitly stated professional goals.
+future work: roles, project participation as professional evidence, technical
+and organizational decisions, skills demonstrated in context, achievements,
+leadership and mentoring examples, public work, and explicitly stated
+professional goals.
 
 Career does not own cross-domain values, communication patterns, learning states,
-relationship continuity, media reactions, or recommendations produced by an
-Advisor. Link to those owning areas instead of copying their claims. A role or
-project remains career context even when it is useful in a writing, learning, or
-relationship task.
+relationship continuity, media reactions, initiative lifecycle, or
+recommendations produced by an Advisor. Link to those owning areas instead of
+copying their claims. A project can remain Career context when the question is
+about professional scope, impact, or relevance; Ventures owns the initiative's
+purpose, lifecycle, current state, decisions, commitments, and outcomes.
 
 ## Storage and evidence
 
@@ -78,6 +80,18 @@ paths against scope, outcomes, influence, technical decisions, people
 leadership, communication, preferences, and missing evidence. Career Advisor
 owns the reasoning output; SelfContext remains responsible for retrieval,
 provenance, persistence, and mutation safety.
+
+## Ventures compatibility
+
+Career contract `career@1` remains valid. Its existing project language is
+interpreted as the professional view of participation: what the work
+demonstrates, its impact, scope, leadership or technical evidence, stories, and
+career relevance. Ventures / Projects owns the living initiative lifecycle.
+This is a boundary clarification and cross-linking rule, not a material
+removal from Career's v1 contract, so no Career version bump is required.
+Existing Career project pages remain readable and in place. Do not move,
+rewrite, or bulk-split them automatically; ambiguous ownership is a review
+decision.
 
 ## Contract migrations
 

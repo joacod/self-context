@@ -137,8 +137,9 @@ corrections, and review observations.
   context. Treat an agent interpretation of an exercise, repeated question, or
   misconception as reviewable until the user confirms it or the evidence is
   otherwise explicit.
-- Keep Career projects and Writing artifacts in their owning areas and link them
-  as evidence rather than copying their facts into `learning/`.
+- Keep Career projects, Ventures initiative records, and Writing artifacts in
+  their owning areas and link them as evidence rather than copying their facts
+  into `learning/`.
 - Preserve prior models and dated evidence when understanding changes. A new
   source that repeats a known state is a successful no-op, not a reason to add a
   duplicate concept.
@@ -168,8 +169,8 @@ subject as the user's relationship and analyze the smallest useful evidence:
 - Do not infer sensitive characteristics about third parties. Honor explicit
   delete, redact, archive, and retention requests and do not recreate removed
   details from old sources.
-- Keep Career, Writing, Learning, Media / Taste, and `core/` claims in their
-  owning areas and link them when the relationship context needs them.
+- Keep Career, Ventures, Writing, Learning, Media / Taste, and `core/` claims
+  in their owning areas and link them when the relationship context needs them.
 
 A Relationships impact report should state the pages or source records changed,
 shared context or commitments retained, privacy or redaction decisions,
@@ -206,7 +207,35 @@ patterns reinforced or left unchanged, exceptions or evolution, review items,
 cross-vertical links, and whether the result was meaningful or "No meaningful
 Media / Taste update."
 
-## 3e. Triage Attention Without Blocking Ingest
+## 3e. Ventures / Projects-specific comparison
+
+When supplied material describes a meaningful initiative, project, experiment,
+opportunity, proposal, collaboration, partnership, milestone, dogfooding,
+adoption, project decision, or project-specific commitment, apply the [Ventures
+/ Projects procedure](ventures.md) before changing the vault. Route by scope,
+not by importance:
+
+- distinguish an idea from an adopted project, a candidate from an active
+  initiative, an opportunity from an engagement, and a proposal from a
+  commitment;
+- preserve the initiative's purpose, origin, lifecycle, current state, role,
+  decisions, milestones, evidence, outcomes, unknowns, and evolution in one
+  flexible venture/project record when it has future value;
+- treat a prototype, repository activity, dogfooding, feedback, interest, or
+  stated outcome only as the limited evidence it actually provides; and
+- keep Career, Learning, Relationships, Writing, Core, Sources, Review, and
+  Derived claims in their owning areas, using links rather than duplicated
+  facts.
+
+Do not create a page for every coding task, repository, meeting, passing idea,
+vague maybe, or person/company mention. Search for an existing initiative
+first, preserve provenance, and keep sensitive data and wholesale workspace
+exports out of the vault. A Ventures impact report should state the lifecycle
+and evidence retained, decisions or open loops updated, cross-vertical links,
+unknowns, freshness choices, and whether the result was meaningful or "No
+meaningful Ventures update."
+
+## 3f. Triage Attention Without Blocking Ingest
 
 After normalizing the supplied material, decide whether a small number of items
 deserve immediate human attention. Keep ordinary ingestion smooth; do not ask a
@@ -241,7 +270,7 @@ Confirmation is page-scoped. If a page contains unrelated claims and the user
 confirms only some of them, split the concept or leave the page unverified; do
 not mark the whole page verified by implication.
 
-## 3f. Assign Freshness Conservatively
+## 3g. Assign Freshness Conservatively
 
 Keep `stale_after: null` unless a simple review deadline is useful. The default
 automatic deadline is 90 days, and it applies only when all of these are true:

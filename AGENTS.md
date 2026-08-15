@@ -18,6 +18,7 @@ Current vertical routing:
 | Writing | Evidence-backed communication and writing context | Writing Advisor |
 | Relationships | Intentional relationship context, shared history, commitments, and open loops | Relationships Advisor |
 | Media / Taste | Evidence-backed reactions to cultural works and evolving taste patterns | Media Advisor |
+| Ventures / Projects | Initiative lifecycle, project decisions, commitments, milestones, evidence, outcomes, and evolution | Ventures Advisor |
 
 - A future vertical must define its scope and storage area before its procedure
   or Advisor Pack is added. The canonical available-vertical catalog is
@@ -32,8 +33,8 @@ Do not invent a competing vault schema or lifecycle ad hoc. Follow the SelfConte
 ## Operating Modes
 
 Normal vault use is **user mode**. Ingest, query, targeted review, ordinary
-lint, career, learning, writing, relationships, and media/taste advice operate
-on the private vault and the user's response only. Deep review is explicitly
+lint, career, learning, writing, relationships, media/taste, and ventures/project
+advice operate on the private vault and the user's response only. Deep review is explicitly
 read-only; deep update, vertical adoption, contract updates, and schema
 migration are explicitly authorized project operations. They must not
 modify skills, schemas, architecture, documentation, evals, scripts,
