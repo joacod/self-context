@@ -49,8 +49,10 @@ git pull
 upgrade vault latest
 ```
 
-SelfContext checks your existing vault and applies only the updates it needs,
-including supported format changes, relevant context areas, and safe
+SelfContext is latest-first. After updating the repository, run
+`upgrade vault latest` to bring an existing vault to the current model before
+normal use. The upgrade checks your existing vault and applies only the updates
+it needs, including supported format changes, relevant context areas, and safe
 organization improvements. Existing evidence and history are preserved, and
 ambiguous decisions are left for review. If your vault is already current,
 nothing is changed.

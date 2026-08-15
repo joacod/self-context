@@ -17,9 +17,10 @@ second memory store.
 
 ## Scope and Ownership
 
-Use the schema-specific activation rule in [Initialization](initialization.md);
+Use the current-schema activation rule in [Initialization](initialization.md);
 this procedure does not redefine vertical enablement, contract markers, or
-schema migration.
+schema migration. A recognized older schema must be upgraded before Writing
+activation or normal Writing operations.
 
 Use the existing vault contract:
 
@@ -372,10 +373,9 @@ can be safely moved, split, or linked, and what remains ambiguous. `upgrade
 vault latest` may apply only a complete documented safe path; it does not
 replace this procedure or turn generated prose into evidence or resolve
 ambiguous authorship.
- If the repository later advertises a newer
-version, an older applied Writing contract remains readable and reviewable; read
-only the documented migrations before proposing an update. Future versions must
-identify affected Writing evidence, safe structural changes, semantic review
-requirements, and forbidden automatic changes. A contract update never treats
-generated prose as primary evidence, changes authorship, resolves a
-contradiction, or removes historical writing context automatically.
+ Older applied Writing contracts are migration sources, not permanent runtime
+modes. Future versions must identify affected Writing evidence, safe structural
+changes, semantic review requirements, and forbidden automatic changes. A
+contract update never treats generated prose as primary evidence, changes
+authorship, resolves a contradiction, or removes historical writing context
+automatically.

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Deterministic ordinary and deep validation for a SelfContext vault.
 
-Ordinary lint intentionally stays fast and backward-compatible.  Deep lint is
+Current-vault lint intentionally stays fast and latest-first.  Deep lint is
 also deterministic, but adds inventory, catalog, reachability, contract, and
-maintenance checks without judging whether a personal claim is true.
+maintenance checks without judging whether a personal claim is true. An
+explicit migration-source mode preserves old-format validation for upgrades.
 """
 
 from __future__ import annotations
@@ -200,10 +201,12 @@ def _ordinary_findings(
         if not (root / required).is_file():
             findings.append(_finding("error", "control-file", f"missing required root file: {required}"))
     findings.extend(_schema_findings(root))
-    if not allow_legacy_source:
-        compatibility = runtime_compatibility(root)
-        if not compatibility.get("ok"):
-            findings.append(runtime_compatibility_finding(compatibility))
+    compatibility = runtime_compatibility(root)
+    if not compatibility.get("ok") and not (
+        allow_legacy_source
+        and compatibility.get("state") == "older-supported-schema"
+    ):
+        findings.append(runtime_compatibility_finding(compatibility))
 
     # The ordinary path remains a structural pass over canonical Markdown.  It
     # now catches read failures as findings rather than allowing a traceback.
@@ -1089,8 +1092,9 @@ def _deep_findings(
         if path in reachable and not contextual_inbound.get(path):
             findings.append(_finding("warning", "weak-connectivity", "page is reachable only through an index and has no contextual inbound links", path))
 
-    # Enabled/applied contract checks are deliberately version-aware. Legacy
-    # 0.1 vaults get an inferred report but no migration finding.
+    # Enabled/applied contract checks remain version-aware. Legacy 0.1 vaults
+    # expose inferred migration-source structure separately; the runtime gate
+    # above blocks them from being reported as current.
     schema = parse_schema(root)
     enabled, enabled_source = infer_enabled_contracts(root, catalog)
     records_by_id = _contract_map(catalog)
@@ -1102,7 +1106,8 @@ def _deep_findings(
             findings.append(_finding("error", "vertical-contract", str(error), "SCHEMA.md"))
 
     # Contract validity is keyed by vertical ID. A contract can be current,
-    # older-but-readable, or future-and-unsafe; currency is not validity.
+    # older-but-migratable, or future-and-unsafe; current runtime currency is
+    # enforced by the shared gate while deep lint retains detailed findings.
     # Schema 0.1 area inference is legacy structure, not an applied contract,
     # so version comparison is only performed for explicit schema 0.2 entries.
     seen_ids: Set[str] = set()
@@ -1134,7 +1139,7 @@ def _deep_findings(
         if version > available_version:
             findings.append(_finding("error", "vertical-contract", f"applied contract is newer than available version: {raw} (available {identifier}@{available_version})", "SCHEMA.md"))
         elif version < available_version:
-            findings.append(_finding("warning", "vertical-contract-update", f"contract update available: {raw} -> {identifier}@{available_version}; no automatic migration performed", "SCHEMA.md"))
+            findings.append(_finding("warning", "vertical-contract-update", f"contract upgrade required: {raw} -> {identifier}@{available_version}; no automatic migration performed", "SCHEMA.md"))
 
         area = str(record.get("vault_area"))
         index_path = str(record.get("index_path"))

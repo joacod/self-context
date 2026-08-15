@@ -8,7 +8,7 @@ when its behavior is validated and documented; Git records the change history.
 The current system provides:
 
 - a portable Markdown vault with YAML frontmatter and standard links;
-- schema 0.1 compatibility plus an explicit schema 0.2 maintenance path with selective vertical contracts;
+- a latest-first schema 0.2 runtime with schema 0.1 retained as an explicit migration source and selective vertical contracts;
 - deterministic ordinary/deep lint, managed index catalogs, and disposable local lexical search;
 - first-run initialization and orientation of existing vaults;
 - natural-language ingest, query, review, and lint workflows;
@@ -227,8 +227,9 @@ The implemented maintenance path is deliberately explicit:
 - deep update is explicitly authorized, snapshot-checked, backed up once, and
   bounded to safe structural changes plus approved semantic proposals;
 - available Career, Learning, Writing, Relationships, Media / Taste, and
-  Ventures / Projects verticals are selectively enabled in schema 0.2, with
-  schema-specific first use and explicit contract comparison; and
+  Ventures / Projects verticals are selectively enabled in the current schema
+  0.2 runtime, with explicit contract comparison; recognized older schemas are
+  upgraded before deep maintenance and normal use; and
 - managed catalogs and local lexical search are disposable navigation aids, not
   evidence or a second store.
 

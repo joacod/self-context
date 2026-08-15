@@ -84,18 +84,50 @@ examples into tracked operational files. Vault evidence may appear in the
 user-facing answer when relevant, but it must not enter skills, docs, evals,
 tests, scripts, or architecture decisions.
 
+## Latest-first runtime gate
+
+Before any normal current SelfContext operation, orient the active vault through
+the shared compatibility boundary:
+
+```text
+inspect schema and applied contracts
+        |
+        +-- current schema + current contracts -> continue normally
+        +-- older recognized state -> stop and recommend `upgrade vault latest`
+        +-- future state -> safe compatibility blocker
+        +-- malformed/unversioned state -> recovery/diagnostic path
+```
+
+The latest schema is the only full runtime target. Older schemas and older
+applied vertical contracts remain readable enough for diagnosis, migration
+planning, and upgrade, but are not alternate live modes. Do not silently
+upgrade during an ordinary query or ingest. A concise normal-use response for
+an old vault is:
+
+> This vault uses an older SelfContext model. Run `upgrade vault latest` to
+> bring it current before normal use.
+
+Future schema or contract state must not be downgraded or guessed. A disabled
+vertical in a current vault is still simply absent; latest-first never means
+enable every catalog entry.
+
 ## Select the Operation
 
 Infer the operation from natural language:
 
-- **Ingest:** add supplied information or update existing context.
-- **Query:** retrieve or synthesize existing context.
+- **Ingest:** add supplied information or update existing context, but only
+  after the current-runtime gate succeeds.
+- **Query:** retrieve or synthesize existing context when the vault is current;
+  an older vault receives upgrade guidance rather than a native modern query.
 - **Review:** surface stale, unresolved, contradictory, ambiguous, or
   insufficiently sourced context for human attention. Ordinary review remains
-  targeted.
-- **Lint:** validate deterministic structural and metadata integrity.
+  targeted and current-model only.
+- **Lint:** validate deterministic structural and metadata integrity for the
+  current vault; use migration-source mode only for old-format diagnosis or
+  migration validation.
 - **Deep lint:** run the deterministic broad maintenance validator without
-  deciding whether claims are true. Deep lint never migrates.
+  deciding whether claims are true. Deep lint never migrates and does not turn
+  an older schema into a normal runtime target.
 - **Upgrade vault latest:** bring an existing vault to the current SelfContext
   model through the canonical [upgrade procedure](references/upgrade.md). Use
   it for `upgrade vault latest` and general requests to bring the vault fully
@@ -130,14 +162,14 @@ SelfContext owns the shared vault contract and lifecycle. Vertical context is
 domain-specific and remains in its owning area. Advisor Packs provide optional
 reasoning for a vertical after this skill retrieves the relevant evidence.
 
-Schema-specific vertical activation is canonical in
-[Initialization](references/initialization.md). In short: schema 0.1 first
-meaningful mutation may add only the needed legacy area/index/root link and
-never adds contract markers; schema 0.2 first meaningful mutation requiring a
-vertical adds only that vertical, records its exact available `vertical@version`,
-and adds the root link before the operation's backup lifecycle completes.
-Read-only operations never create or enable verticals, and malformed or unknown
-schema state remains conservative. Use [Vault Schema](references/vault-schema.md) for the distinct
+Current-schema vertical activation is canonical in
+[Initialization](references/initialization.md). A schema 0.2 first meaningful
+mutation requiring a vertical adds only that vertical, records its exact
+available `vertical@version`, and adds the root link before the operation's
+backup lifecycle completes. Read-only operations never create or enable
+verticals. A recognized schema 0.1 vault upgrades first; it receives no legacy
+first-use activation. Malformed or unknown schema state remains conservative.
+Use [Vault Schema](references/vault-schema.md) for the distinct
 available/enabled/applied states and version comparison rules.
 
 | Area | Scope | Current reasoning owner |
@@ -221,10 +253,14 @@ confirmation question instead of silently using it as current.
 1. Resolve the repository root and use only `<repository-root>/vault/` as the
    default Context Vault. Do not silently use a provider memory, another
    directory, or a harness-specific store.
-2. If `vault/` does not exist and the request requires it, initialize it
+2. If the vault exists, inspect its schema and applied contracts through the
+   latest-first runtime gate before choosing a current operation. Older
+   recognized state is an upgrade source, not a normal runtime mode; future or
+   malformed state remains blocked.
+3. If `vault/` does not exist and the request requires it, initialize it
    automatically using [the initialization procedure](references/initialization.md).
    Do not ask the user to create the taxonomy manually.
-3. If the vault exists, read `SCHEMA.md`, `index.md`, the most recent
+4. If the vault exists, read `SCHEMA.md`, `index.md`, the most recent
    entries in `log.md`, and enabled vertical indexes before a significant
    operation. Then search only the relevant indexes, metadata, filenames, and
    linked pages needed for the task. For a large or ambiguous vault, use the
@@ -232,13 +268,13 @@ confirmation question instead of silently using it as current.
    provenance, freshness, status, and source links before answering. Do not
    scan `.obsidian/` inside the vault or the project-root `backups/` directory;
    they are noncanonical operational state, not personal context.
-4. If an ordinary operation will mutate the vault, read [the backup procedure](references/backups.md)
+5. If an ordinary operation will mutate the vault, read [the backup procedure](references/backups.md)
    and create its provisional recovery backup before the first active write,
    then its final backup after mutation and validation; discard the provisional
    only after final success. For schema migration or deep maintenance, read the
    relevant procedure and retain both backups. If the operation is read-only, do
    not create a backup merely because the vault was inspected.
-5. Read the relevant reference procedure before writing or validating content:
+6. Read the relevant reference procedure before writing or validating content:
    - [Vault backups](references/backups.md) for provisional/final archives,
      guarded discard, and ten-archive retention.
    - [Vault schema](references/vault-schema.md) for paths, frontmatter, links,
@@ -271,7 +307,10 @@ confirmation question instead of silently using it as current.
      task context packets.
 
 For a trivial query, orientation can be brief and no page needs to be created.
-For lint, review, or an explicitly broad request, a wider scan is appropriate.
+A limited read-only diagnosis of an older vault may inspect enough control state
+to explain the required upgrade, but full modern retrieval and semantic
+behavior require the current model. For lint, review, or an explicitly broad
+request, a wider scan is appropriate.
 
 ## Write and Report
 
@@ -279,9 +318,10 @@ When changing the vault, follow the relevant procedure completely: preserve
 source material when useful, update the smallest coherent set of concepts,
 add meaningful links, update affected managed catalogs, and log the operation.
 Never silently rewrite a conflicting claim; preserve the evidence and surface
-the conflict for review. A schema 0.2 vault records only explicitly activated
-vertical contracts; a schema 0.1 vault remains untouched by ordinary contract
-migration and preserves its legacy schema behavior.
+the conflict for review. A current schema 0.2 vault records only explicitly
+activated vertical contracts; a schema 0.1 vault remains unchanged by ordinary
+use and is sent through the explicit migration/upgrade path rather than
+preserving legacy runtime behavior.
 
 End the response with a concise account of:
 

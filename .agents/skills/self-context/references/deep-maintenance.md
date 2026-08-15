@@ -13,8 +13,9 @@ silently approve a human semantic decision.
 
 ## Terms and authorization
 
-- **Lint** is the ordinary fast structural validator. It is deterministic and
-  backward-compatible with schema 0.1.
+- **Lint** is the ordinary fast structural validator for the current runtime.
+  Its explicit migration-source mode can inspect schema 0.1 without treating
+  it as current.
 - **Deep lint** is a deterministic, broader inventory and integrity pass. It
   checks links, catalogs, reachability, ownership, metadata compatibility,
   freshness relationships, and control metadata. It does not decide whether a
@@ -42,7 +43,10 @@ Read-only deep review is the default for “deep review my vault.” Natural
 language such as “deep lint,” “deep review,” “deep update,” “adopt the Learning
 vertical,” “assess whether my vault should adopt Media / Taste,” or “update my
 Writing vertical contract” selects the matching procedure. Ordinary targeted
-review remains targeted.
+review remains targeted. Direct deep lint/review/update requires the latest
+schema and current applied contracts for ordinary operation; an older schema or
+stale contract is reported and routed to `upgrade vault latest` rather than
+handled through a legacy branch.
 
 The canonical short forms are:
 
@@ -77,10 +81,11 @@ adoption.
 Compare an applied version with the catalog's available version as follows:
 
 - equal: structurally valid and current; no update finding;
-- older: structurally valid but emit an update-available warning; do not
-  automatically migrate, and let deep review inspect documented migrations;
+- older: a recognized upgrade source; inspect its documented migration, but
+  block ordinary current semantic operation until `upgrade vault latest`
+  applies a complete safe path;
 - newer: error because the current repository cannot safely interpret a future
-  contract.
+  contract and must not downgrade or guess.
 
 Unknown vertical IDs, invalid/unknown versions, and duplicate applied entries
 for one vertical ID are errors. Preserve their raw values for reporting rather
@@ -244,14 +249,10 @@ third-party details, or enable a vertical solely because it is available.
 
 Assessment is read-only. Adoption and contract updates are mutations and use
 the deep-update snapshot/backup rules. Adoption adds only the requested area,
-index, exact available contract marker, and root link. For schema 0.2 first use,
-ordinary mutation follows the same rule: create only the required vertical,
-record its exact available contract, add the root link, and continue the
-original operation after one normal recovery backup and before its final
-backup. For schema 0.1 first use,
-create only the legacy area/index/root link and preserve schema text without a
-contract marker or implicit migration. Unrecognized or malformed schema state
-stays conservative and does not guess.
+index, exact available contract marker, and root link in a current schema. A
+schema 0.1 vault must be migrated/upgraded before any vertical activation; no
+legacy area/index/root-link activation is performed. Unrecognized or malformed
+schema state stays conservative and does not guess.
 
 It identifies clearly owned existing pages; it moves pages only when ownership
 is unambiguous and links can be updated; it leaves ambiguous pages in place as
@@ -261,7 +262,8 @@ facts.
 A contract update applies only documented vertical-contract migrations after
 the currently recorded version. It preserves historical evidence, verification,
 provenance, and no-change migrations. A new contract never justifies invented
-context. This is not a schema migration; use [Migration](migration.md) for
+context, and an older contract is not kept as a permanent alternate runtime
+mode. This is not a schema migration; use [Migration](migration.md) for
 versioned vault-format changes.
 
 ## Task context packets

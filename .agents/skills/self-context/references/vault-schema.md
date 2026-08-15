@@ -7,14 +7,26 @@ disposable navigation and reports but never replace it.
 
 ## Schema versions and vertical contract states
 
-Schema 0.1 remains supported exactly as a legacy vault. Ordinary ingest, query,
-review, lint, and advice preserve its schema text and do not add contract
-markers or silently migrate it. A first meaningful mutation may create the
-required vertical area, index, and root link using the legacy layout. Only an
-explicit schema migration may upgrade it to schema 0.2.
+Schema 0.2 is the current supported runtime schema. Normal ingest, query,
+review, advice, lint, deep maintenance, vertical activation, and mutation
+assume that schema and the current applied contracts.
 
-Schema 0.2 is a backward-compatible maintenance upgrade. Its `SCHEMA.md`
-contains a selective enabled-contract section:
+Older recognized schemas, including schema 0.1, are first-party migration and
+upgrade inputs. They may be inspected for diagnosis, recovery, and migration
+planning, but they are not supported as deliberate ongoing operating modes.
+Normal current operations must direct the user to:
+
+```text
+upgrade vault latest
+```
+
+A future or otherwise unsupported schema is unsafe: do not downgrade, guess, or
+mutate it. A malformed or unversioned vault uses the existing recovery and
+diagnostic path until its state can be safely interpreted. This distinction is
+the compatibility promise: backward-compatible upgrades, not indefinite
+backward-compatible runtime behavior.
+
+Schema 0.2's `SCHEMA.md` contains a selective enabled-contract section:
 
 ```yaml
 schema_version: 0.2
@@ -28,17 +40,18 @@ Keep these states distinct:
 - **Available** means the repository catalog defines the vertical and its
   current contract version. Availability alone does not create files or make a
   vertical part of a vault.
-- **Enabled** means a schema 0.2 vault records one applied `vertical@version`
-  entry. The area, index, and root link are required structural companions;
-  missing companions are errors. A schema 0.1 vault has no contract markers;
-  its existing area/index/root-link evidence is reported as an inferred legacy
-  vertical for inspection only.
+- **Enabled** means a current schema vault records one applied
+  `vertical@version` entry. The area, index, and root link are required
+  structural companions; missing companions are errors. A schema 0.1 vault has
+  no contract markers; its existing area/index/root-link evidence is reported
+  as an inferred migration-source vertical for inspection and upgrade planning
+  only.
 - **Applied** is the exact version recorded in schema 0.2. Contract validity
-  and currency are separate: an older applied version remains structurally
-  valid and produces an update-available warning; the repository does not
-  migrate it automatically. A matching version produces no update finding. A
-  newer applied version is an error because this repository cannot safely
-  interpret a future contract.
+  and currency are separate: an older applied version is a migration/upgrade
+  source and blocks normal current semantic operation until its documented path
+  is applied. A matching version is current. A newer applied version is an
+  unsafe blocker because this repository cannot safely interpret a future
+  contract.
 
 The contract list is keyed by vertical ID. Unknown IDs, malformed versions, and
 more than one applied entry for the same ID are errors, and their values are
@@ -82,11 +95,12 @@ vault/
 
 Create a vertical directory and index only when a triggering mutation requires
 that vertical or the user explicitly adopts it. A read-only query about an
-absent vertical treats it as empty and creates no files. On first required use, follow [Initialization](initialization.md): schema 0.1
-adds only legacy area/index/root navigation without a contract marker; schema
-0.2 creates the provisional recovery backup, records its exact available
-contract, adds its root-index link, completes the operation in the same turn,
-creates the final backup, and discards the provisional only after success.
+absent vertical treats it as empty and creates no files. On first required use,
+a current schema 0.2 vault creates the provisional recovery backup, records its
+exact available contract, adds its root-index link, completes the operation in
+the same turn, creates the final backup, and discards the provisional only after
+success. A schema 0.1 vault upgrades first; it does not receive a legacy
+first-use activation.
 
 Schema 0.1 vaults may have the historical default areas, custom areas, or only
 some verticals. Preserve their taxonomy. The current available verticals are

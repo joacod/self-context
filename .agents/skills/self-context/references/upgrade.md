@@ -64,6 +64,8 @@ A vault is current when all applicable checks below are satisfied:
 - each enabled vertical has the current applicable catalog contract, or a
   documented no-change contract migration has established that no update is
   required;
+- the shared runtime gate classifies the schema and every applied contract as
+  current, so downstream normal operations can assume the current model;
 - an available-but-disabled vertical remains disabled unless existing durable
   evidence gives it a concrete, documented reason to be adopted;
 - safe, relevant historical ownership work triggered by the changes has been
@@ -133,7 +135,9 @@ Read only the control and evidence needed to choose the next phase:
    contract scope to narrow any later full-page reads.
 
 This phase is read-only. Do not create a backup, log entry, retained report, or
-maintenance queue while merely assessing. A future or malformed schema,
+maintenance queue while merely assessing. The shared runtime gate may report an
+older schema or contract as an upgrade-required source; it must not let normal
+current semantics continue on that state. A future or malformed schema,
 missing migration path, unsafe control state, or other blocker that prevents
 safe interpretation stops the upgrade before later semantic work.
 
@@ -168,9 +172,10 @@ backup, or rollback fails, stop before contract, adoption, or semantic writes.
 Report the blocker and recovery path; never repair around a failed migration.
 
 After a successful migration, re-read the active `SCHEMA.md`, root index, log,
-enabled indexes, and current deep-lint/catalog results. Re-orient from the
-migrated active vault rather than reusing the pre-migration inventory. The
-migration's control-file changes and backups remain part of the final summary.
+enabled indexes, and current deep-lint/catalog results. Re-run the shared
+runtime gate and re-orient from the migrated active vault rather than reusing
+the pre-migration inventory. The migration's control-file changes and backups
+remain part of the final summary.
 If the planner says the schema is already current, do not invoke the write path
 and do not create migration backups.
 
@@ -180,9 +185,9 @@ After the vault is safely interpretable, compare every schema 0.2 applied
 `vertical@version` with the exact current catalog version.
 
 - Equal versions need no work.
-- An older applied version is readable but needs the owning procedure's
-  documented Contract migrations section. Read only the affected migration
-  path and evidence scope. Apply a complete safe path when it is unambiguous,
+- An older applied version is a readable upgrade source, not a normal current
+  semantic runtime. Read only the affected migration path and evidence scope
+  from the owning procedure. Apply a complete safe path when it is unambiguous,
   preserves history/provenance/verification, and is covered by this explicit
   upgrade authorization. A documented migration may validly produce no page
   change, but the exact applied contract still needs to be updated only when
@@ -195,10 +200,10 @@ After the vault is safely interpretable, compare every schema 0.2 applied
 Use the existing deep-maintenance contract/update rules for any mutation and
 its snapshot/backup lifecycle. Do not add contract conditionals to ordinary
 ingest, create a second contract engine, or rewrite a vertical merely because
-its catalog version changed. If a readable older contract has no complete
-documented migration, unrelated safe upgrade work may proceed only when the
-current repository can still interpret that evidence; report the contract as
-not fully current and distinguish it from deferred semantic decisions.
+its catalog version changed. If an older contract has no complete documented
+migration, the runtime gate remains blocked for that vertical: stop or report
+the vault as not fully current rather than keeping the old semantics live.
+Distinguish that compatibility blocker from deferred semantic decisions.
 
 ## Phase D: assess and apply selective adoption
 
@@ -309,7 +314,9 @@ than a stored upgrade version, provide this idempotence boundary.
 
 Hard blockers stop before unsafe later mutation:
 
-- malformed or future unsupported schema;
+- malformed, unversioned, or future unsupported schema;
+- an older schema or contract when the requested operation is ordinary current
+  runtime work and no explicit upgrade path is being executed;
 - no complete supported migration path;
 - failed required recovery backup, migration validation, or rollback;
 - future/unknown/duplicate/malformed applied contract state;

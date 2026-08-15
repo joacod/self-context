@@ -98,9 +98,20 @@ python3 .agents/skills/self-context/scripts/lint_vault.py --deep --format text v
 python3 .agents/skills/self-context/scripts/lint_vault.py --deep --format json vault
 ```
 
-Ordinary lint is the fast backward-compatible path and never migrates. Deep
-lint is deterministic and read-only; schema migration is a separate operation
-owned by the [Migration procedure](migration.md). JSON output contains schema version, available contracts,
+Current-vault lint is the fast runtime-validity path and never migrates. An old
+recognized schema reports `upgrade required` instead of being accepted as fully
+current. Migration planning and staged migration validation may use the explicit
+read-only source mode when they need to inspect an old format:
+
+```bash
+python3 .agents/skills/self-context/scripts/lint_vault.py \
+  --migration-source --deep --format json vault
+```
+
+That mode recognizes historical structure without granting normal runtime
+support. Deep lint is deterministic and read-only; schema migration is a
+separate operation owned by the [Migration procedure](migration.md). JSON
+output contains schema version, runtime compatibility, available contracts,
 enabled verticals, applied contracts, a snapshot ID, compact page metadata,
 link/index relationships, findings, and severity counts, never complete page
 bodies. Neither path produces a numeric vault-health score.
@@ -162,10 +173,12 @@ title/alias collisions, duplicate IDs/content, type/assertion/path
 compatibility, lifecycle and supersession links, source cycles, derived source
 chains, schema-specific vertical contract validity and currency, custom top-level
 areas, recent log links, and exclusion of `.obsidian/` and project-root backups.
-Older applied contracts produce an update-available warning; matching versions
-produce no currency finding; future versions, unknown IDs, invalid versions,
-and duplicate IDs are errors. A weakly connected page is a warning, not an
-automatic error.
+Older applied contracts are upgrade-required runtime blockers; matching
+versions produce no currency finding; future versions, unknown IDs, invalid
+versions, and duplicate IDs are unsafe errors. A weakly connected page is a
+warning, not an automatic error. Migration-source mode retains the old-format
+inventory needed to plan and verify upgrades without claiming the vault is
+current.
 
 The script is intentionally dependency-free and does not replace semantic
 review. It reports errors and warnings, returns a non-zero status for errors,

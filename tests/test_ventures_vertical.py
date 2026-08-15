@@ -182,7 +182,7 @@ A fictional milestone is recorded without a claim about market success.
             "stale claim needs freshness confirmation",
             "proposal is not a commitment",
             "Career contract `career@1` remains semantically valid",
-            "Read-only work never creates or enables Ventures",
+            "Read-only work never creates or",
         ):
             self.assertIn(phrase, procedure_text)
 

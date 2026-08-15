@@ -47,9 +47,10 @@ owned context is relevant; do not copy it into Media / Taste.
 
 ## Storage and page choices
 
-Use the schema-specific activation rule in [Initialization](initialization.md);
+Use the current-schema activation rule in [Initialization](initialization.md);
 this procedure does not redefine vertical enablement, contract markers, or
-schema migration.
+schema migration. A recognized older schema must be upgraded before Media /
+Taste activation or normal Media / Taste operations.
 
 - `media/index.md` is the navigation page for durable works and taste
   observations.
@@ -255,11 +256,9 @@ can be safely moved, split, or linked, and what remains ambiguous. `upgrade
 vault latest` may apply only a complete documented safe path; it does not
 replace this procedure or infer taste, sensitive identity, or ambiguous
 ownership from consumption.
- If the repository later advertises a newer
-version, an older applied Media / Taste contract remains readable and
-reviewable; read only the documented migrations before proposing an update.
-Future versions must identify affected Media / Taste evidence, safe structural
-changes, semantic review requirements, and forbidden automatic changes. A
-contract update never infers sensitive identity or personality, turns
+ Older applied Media / Taste contracts are migration sources, not permanent
+runtime modes. Future versions must identify affected Media / Taste evidence,
+safe structural changes, semantic review requirements, and forbidden automatic
+changes. A contract update never infers sensitive identity or personality, turns
 consumption into preference, removes an exception, or promotes generated
 reactions into evidence automatically.
