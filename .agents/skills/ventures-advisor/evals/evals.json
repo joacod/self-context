@@ -14,7 +14,7 @@
     },
     {
       "id": 2,
-      "prompt": "A synthetic source says Cedar Cooperative proposed collaborating with John Doe on a prototype. Ingest the meaningful proposal without treating it as an engagement, partnership, employment, or executed commitment.",
+      "prompt": "A synthetic source says MyContext Systems proposed collaborating with John Doe on a prototype. Ingest the meaningful proposal without treating it as an engagement, partnership, employment, or executed commitment.",
       "expected_output": "The Advisor routes the mutation through SelfContext and preserves a proposal with provenance and explicit unknowns.",
       "files": [],
       "expectations": [
@@ -36,7 +36,7 @@
     },
     {
       "id": 4,
-      "prompt": "Compare two fictional opportunities in John's synthetic vault: Harbor CLI and a proposed Cedar prototype. John explicitly values limited weekly time, keeping existing commitments, and learning through implementation. Compare the options using those constraints and identify what evidence is missing.",
+      "prompt": "Compare two fictional opportunities in John's synthetic vault: Harbor CLI and a proposed MyContext Systems prototype. John explicitly values limited weekly time, keeping existing commitments, and learning through implementation. Compare the options using those constraints and identify what evidence is missing.",
       "expected_output": "The Advisor gives a constrained comparison with alternatives, trade-offs, unknowns, and a conditional recommendation.",
       "files": [],
       "expectations": [

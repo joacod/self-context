@@ -229,16 +229,16 @@ database.
 Using fictional data, the lifecycle looks like this:
 
 ```text
-Nia Vale supplies a user-authored technical article
+John Doe supplies a user-authored technical article
   -> SelfContext retains a source_record with authorship, date, and mode
   -> local analysis finds concrete examples before abstraction
   -> comparison finds the pattern already established for technical articles
   -> source provenance is preserved; profile updates: 0
   -> result: No meaningful update
-  -> Nia later supplies a rough idea and a target reader
+  -> John later supplies a rough idea and a target reader
   -> Writing Advisor retrieves relevant Writing and project context, then helps
      develop the argument before drafting
-  -> Nia edits an AI-assisted draft by removing generic phrasing and adding an
+  -> John edits an AI-assisted draft by removing generic phrasing and adding an
      example
   -> the generated draft remains derived; the human delta is candidate revision
      evidence for a future selective refinement

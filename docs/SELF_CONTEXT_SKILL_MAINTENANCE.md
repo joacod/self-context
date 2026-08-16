@@ -19,7 +19,9 @@ Use the smallest canonical layer that owns the behavior:
 - **`scripts/`:** keep deterministic parsing, validation, backup, indexing, and
   search helpers here rather than asking the model to reproduce them.
 - **`evals/`:** preserve synthetic behavior and trigger coverage. Never use real
-  vault content in tracked evals or documentation.
+  vault content in tracked evals or documentation. Use `John Doe` (or `John`)
+  for the synthetic user and `MyContext Systems` when a company name is needed;
+  keep other named people only when a scenario genuinely needs them.
 
 `SKILL.md` should remain comfortably below 500 lines. Reference files may be
 larger, but files over roughly 300 lines should have a table of contents.
