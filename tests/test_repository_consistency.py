@@ -18,6 +18,7 @@ CATALOG_PATH = SKILL_ROOT / "references/verticals.json"
 LEGACY_SYNTHETIC_PLACEHOLDER_PATTERNS = (
     ("Nia", re.compile(r"\bNia(?:\s+Vale|'s)?\b")),
     ("Cedar Cooperative", re.compile(r"\bCedar Cooperative\b")),
+    ("generic company placeholder", re.compile(r"\bCompany [A-Z]\b")),
 )
 
 if str(ROOT / ".agents/skills/self-context/scripts") not in sys.path:
@@ -206,7 +207,12 @@ class RepositoryConsistencyTests(unittest.TestCase):
         self.assertIn("MyContext Systems", policy_text)
 
         paths = sorted(ROOT.glob(".agents/skills/*/evals/*.json"))
-        paths.append(ROOT / "docs/ARCHITECTURE.md")
+        paths.extend(
+            (
+                ROOT / "docs/ARCHITECTURE.md",
+                SKILL_ROOT / "references/ventures.md",
+            )
+        )
         for path in paths:
             text = path.read_text(encoding="utf-8")
             for label, pattern in LEGACY_SYNTHETIC_PLACEHOLDER_PATTERNS:
