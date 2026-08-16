@@ -48,7 +48,7 @@
     {
       "id": 5,
       "prompt": "Analyze a synthetic draft by John Doe from the likely reader's perspective. The reader is technically capable but unfamiliar with the background. Identify context gaps, reasoning jumps, repetition, overexplaining, the most interesting point, likely objections, and whether the conclusion adds value. Reconcile suggestions with his technical-writing preferences.",
-      "expected_output": "The advisor performs reader analysis rather than merely judging whether the draft sounds like Nia.",
+      "expected_output": "The advisor performs reader analysis rather than merely judging whether the draft sounds like John Doe.",
       "files": [],
       "expectations": [
         "The response identifies reader assumptions and missing background.",
@@ -62,7 +62,7 @@
       "expected_output": "The advisor provides useful generic critique while clearly stating that personal Writing evidence is unavailable.",
       "files": [],
       "expectations": [
-        "The generated article is not treated as evidence of Nia's writing.",
+        "The generated article is not treated as evidence of John Doe's writing.",
         "Generic writing expertise is separated from personal-context claims.",
         "No profile mutation or invented voice description occurs."
       ]

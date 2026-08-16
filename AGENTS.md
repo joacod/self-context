@@ -51,6 +51,11 @@ tracked skills, docs, evals, tests, scripts, ADRs, or other operational files.
 Personal vault evidence may be used to answer the user's request, but any
 operational reproduction must use fictional data.
 
+- For tracked synthetic examples and evals, use `John Doe` (or `John`) as the
+  synthetic user and `MyContext Systems` whenever a company name is needed.
+  Other named people remain acceptable only when a scenario genuinely needs
+  relationship participants; they are not alternate synthetic user identities.
+
 ## Boundaries
 
 - Treat `vault/` as private data. It is Git-ignored; never commit it or force-add files from it.

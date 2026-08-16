@@ -149,10 +149,10 @@ current plan or renew freshness merely because a page was read.
 
 Route meaningful initiative context from natural language, even when the user
 does not name Ventures. Examples include: “I am building X”; “we decided to
-pause X because ...”; “Company Y proposed collaborating on ...”; “I rejected
-this project because ...”; “I am dogfooding X”; “three people are now actually
-using it”; “we changed the scope”; “I may turn this experiment into ...”; and
-“I committed to sending them a prototype.” Apply the normal durability
+pause X because ...”; “MyContext Systems proposed collaborating on ...”; “I
+rejected this project because ...”; “I am dogfooding X”; “three people are now
+actually using it”; “we changed the scope”; “I may turn this experiment into
+...”; and “I committed to sending them a prototype.” Apply the normal durability
 threshold: do not create a page for every passing idea, coding task,
 repository mention, meeting, vague maybe, or company/person name.
 

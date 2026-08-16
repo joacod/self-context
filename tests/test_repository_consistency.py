@@ -12,6 +12,15 @@ ROOT = Path(__file__).resolve().parents[1]
 SKILL_ROOT = ROOT / ".agents/skills/self-context"
 CATALOG_PATH = SKILL_ROOT / "references/verticals.json"
 
+# Keep this guard deliberately narrow: it protects the known legacy fixture
+# aliases without prohibiting distinct people, works, or project names needed
+# by relationship and media scenarios.
+LEGACY_SYNTHETIC_PLACEHOLDER_PATTERNS = (
+    ("Nia", re.compile(r"\bNia(?:\s+Vale|'s)?\b")),
+    ("Cedar Cooperative", re.compile(r"\bCedar Cooperative\b")),
+    ("generic company placeholder", re.compile(r"\bCompany [A-Z]\b")),
+)
+
 if str(ROOT / ".agents/skills/self-context/scripts") not in sys.path:
     sys.path.insert(0, str(ROOT / ".agents/skills/self-context/scripts"))
 
@@ -184,6 +193,33 @@ class RepositoryConsistencyTests(unittest.TestCase):
                 else:
                     self.assertIsInstance(parsed, list)
         self.assertGreaterEqual(len(eval_paths), 2)
+
+    def test_synthetic_example_placeholders_follow_repository_convention(self) -> None:
+        policy_text = "\n".join(
+            (
+                (ROOT / "AGENTS.md").read_text(encoding="utf-8"),
+                (ROOT / "docs/SELF_CONTEXT_SKILL_MAINTENANCE.md").read_text(
+                    encoding="utf-8"
+                ),
+            )
+        )
+        self.assertIn("John Doe", policy_text)
+        self.assertIn("MyContext Systems", policy_text)
+
+        paths = sorted(ROOT.glob(".agents/skills/*/evals/*.json"))
+        paths.extend(
+            (
+                ROOT / "docs/ARCHITECTURE.md",
+                SKILL_ROOT / "references/ventures.md",
+            )
+        )
+        for path in paths:
+            text = path.read_text(encoding="utf-8")
+            for label, pattern in LEGACY_SYNTHETIC_PLACEHOLDER_PATTERNS:
+                self.assertIsNone(
+                    pattern.search(text),
+                    f"legacy synthetic placeholder {label!r} in {path.relative_to(ROOT)}",
+                )
 
     def test_migration_procedure_and_skill_routing_are_canonical(self) -> None:
         skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
