@@ -135,9 +135,11 @@ has future reuse value, the user can deliberately preserve it through the
 existing workflows; generated suggestions are not facts about the user and
 are not stored automatically.
 
-An on-demand context receipt can explain the relevant context, tradeoffs,
-uncertainty, and persistence outcome without creating a receipt file or
-exposing private chain-of-thought.
+Read-only Query/contextual thinking does not mutate pages, logs, indexes,
+backups, metadata, or generated artifacts by default. An on-demand context
+receipt can explain the relevant context, scope, coverage, freshness,
+tradeoffs, uncertainty, assertion kind, and persistence outcome without
+creating a receipt file or exposing private chain-of-thought.
 
 ## What It Supports
 

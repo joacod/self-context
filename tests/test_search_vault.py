@@ -28,6 +28,9 @@ class SearchVaultTests(unittest.TestCase):
         assertion: str = "user_stated_fact",
         tags: Iterable[str] = ("synthetic",),
         superseded_by: Optional[str] = None,
+        sources: Iterable[str] = (),
+        generated: str = "2026-08-12",
+        stale_after: str = "null",
     ) -> None:
         lines = ["---", f"type: {page_type}"]
         if identifier:
@@ -41,14 +44,23 @@ class SearchVaultTests(unittest.TestCase):
             ]
         )
         lines.extend(f"  - {tag}" for tag in tags)
+        source_values = list(sources)
         lines.extend(
             [
                 f"status: {status}",
-                "generated: 2026-08-12",
+                f"generated: {generated}",
                 "verified: null",
-                "sources: []",
+                "sources:",
+            ]
+        )
+        if source_values:
+            lines.extend(f"  - {source}" for source in source_values)
+        else:
+            lines[-1] = "sources: []"
+        lines.extend(
+            [
                 f"assertion_kind: {assertion}",
-                "stale_after: null",
+                f"stale_after: {stale_after}",
             ]
         )
         if superseded_by:
@@ -193,6 +205,7 @@ class SearchVaultTests(unittest.TestCase):
             body=(
                 "## Interview\n\nPrepare frontend leadership interview examples for the task."
             ),
+            sources=("../sources/frontend-source.md",),
         )
         self.write_page(
             vault,
@@ -382,6 +395,7 @@ class SearchVaultTests(unittest.TestCase):
             self.assertNotIn("Synthetic text that should not be emitted", json.dumps(report))
             expected = {
                 "path",
+                "type",
                 "title",
                 "description",
                 "status",
@@ -395,6 +409,11 @@ class SearchVaultTests(unittest.TestCase):
                 "query_term_count",
                 "phrase_fields",
                 "rank_score",
+                "generated",
+                "verified",
+                "stale_after",
+                "sources",
+                "linked_from",
             }
             for item in report["results"]:
                 self.assertEqual(set(item), expected)
@@ -483,6 +502,164 @@ class SearchVaultTests(unittest.TestCase):
                 writing["results"][0]["path"],
                 "writing/technical-project-explanation.md",
             )
+
+    def test_explicit_scope_keeps_contextual_retrieval_bounded(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.make_task_vault(Path(temporary))
+            self.write_page(
+                vault,
+                "core/project-decision.md",
+                title="Project Decision",
+                description="Harbor project decision and constraint context.",
+                body="## Decision\n\nHarbor project decision context.",
+            )
+            self.write_page(
+                vault,
+                "career/project-leadership.md",
+                title="Project Leadership",
+                description="Harbor project decision and leadership context.",
+                body="## Career\n\nHarbor project decision context.",
+            )
+            self.write_page(
+                vault,
+                "derived/project-analysis.md",
+                title="Project Analysis",
+                description="Harbor project decision analysis.",
+                body="## Derived\n\nHarbor project decision analysis.",
+                page_type="synthesis",
+                assertion="derived_synthesis",
+            )
+
+            broad = self.report(vault, "Harbor project decision")
+            broad_paths = [item["path"] for item in broad["results"]]
+            self.assertIn("core/project-decision.md", broad_paths)
+            self.assertIn("career/project-leadership.md", broad_paths)
+            self.assertIn("derived/project-analysis.md", broad_paths)
+
+            scoped = self.report(
+                vault,
+                "Harbor project decision",
+                "--scope",
+                "core",
+                "--contextual",
+            )
+            self.assertEqual(
+                [item["path"] for item in scoped["results"]],
+                ["core/project-decision.md"],
+            )
+            self.assertEqual(scoped["scope"], ["core"])
+
+            cross_scoped = self.report(
+                vault,
+                "Harbor project decision",
+                "--scope",
+                "core",
+                "--scope",
+                "career",
+                "--contextual",
+            )
+            cross_paths = [item["path"] for item in cross_scoped["results"]]
+            self.assertEqual(
+                sorted(cross_paths),
+                ["career/project-leadership.md", "core/project-decision.md"],
+            )
+            self.assertNotIn("derived/project-analysis.md", cross_paths)
+
+            with_derived = self.report(
+                vault,
+                "Harbor project decision",
+                "--scope",
+                "core",
+                "--scope",
+                "career",
+                "--scope",
+                "derived",
+                "--contextual",
+                "--include-derived",
+            )
+            self.assertIn(
+                "derived/project-analysis.md",
+                [item["path"] for item in with_derived["results"]],
+            )
+
+    def test_linked_source_expansion_adds_only_provenance_records(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.make_task_vault(Path(temporary))
+            report = self.report(
+                vault,
+                "prepare frontend leadership interview",
+                "--scope",
+                "career",
+                "--expand-linked-sources",
+            )
+            results = report["results"]
+            paths = [item["path"] for item in results]
+            self.assertIn("career/frontend-leadership.md", paths)
+            self.assertIn("sources/frontend-source.md", paths)
+            source = next(item for item in results if item["path"] == "sources/frontend-source.md")
+            self.assertEqual(source["match_type"], "linked_source")
+            self.assertEqual(source["linked_from"], "career/frontend-leadership.md")
+            self.assertEqual(source["assertion_kind"], "source_record")
+            self.assertEqual(report["scope"], ["career"])
+
+    def test_read_only_scoped_search_preserves_every_vault_file_and_log(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.make_task_vault(Path(temporary))
+            backups = vault.parent / "backups"
+            backups.mkdir()
+            (backups / "synthetic-recovery.zip").write_bytes(b"fixture")
+            before = {
+                path.relative_to(vault).as_posix(): path.read_bytes()
+                for path in vault.rglob("*")
+                if path.is_file()
+            }
+            before_backups = {
+                path.relative_to(backups).as_posix(): path.read_bytes()
+                for path in backups.rglob("*")
+                if path.is_file()
+            }
+            report = self.report(
+                vault,
+                "prepare frontend leadership interview",
+                "--scope",
+                "career",
+                "--expand-linked-sources",
+            )
+            self.assertTrue(report["results"])
+            after = {
+                path.relative_to(vault).as_posix(): path.read_bytes()
+                for path in vault.rglob("*")
+                if path.is_file()
+            }
+            after_backups = {
+                path.relative_to(backups).as_posix(): path.read_bytes()
+                for path in backups.rglob("*")
+                if path.is_file()
+            }
+            self.assertEqual(after, before)
+            self.assertEqual(after_backups, before_backups)
+            self.assertEqual((vault / "log.md").read_bytes(), before["log.md"])
+
+    def test_results_expose_freshness_and_provenance_metadata(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.make_vault(Path(temporary))
+            self.write_page(
+                vault,
+                "core/current-state.md",
+                title="Current State",
+                description="A current evidence anchor.",
+                body="## Evidence\n\nCurrent evidence.",
+                sources=("../sources/source.md",),
+                generated="2026-05-01",
+                stale_after="null",
+            )
+            result = self.report(vault, "current evidence", "--scope", "core")
+            item = result["results"][0]
+            self.assertEqual(item["path"], "core/current-state.md")
+            self.assertEqual(item["generated"], "2026-05-01")
+            self.assertIsNone(item["verified"])
+            self.assertIsNone(item["stale_after"])
+            self.assertEqual(item["sources"], ["../sources/source.md"])
 
     def test_ties_are_path_stable_across_repeated_searches(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

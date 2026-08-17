@@ -16,8 +16,9 @@ Use this procedure when the user says things such as:
 - “checkpoint this discussion” or “checkpoint this conversation”;
 - “save anything from this that is actually worth keeping”;
 - “what from this conversation should become context?”;
-- “update my context with the decisions we actually made”; or
-- “preserve the useful outcome of this discussion.”
+- “update my context with the decisions we actually made”;
+- “preserve the useful outcome of this discussion”; or
+- “preview/dry-run this checkpoint” or “show what would be retained without applying it.”
 
 Do not require a slash command. Treat the natural-language intention as the
 interface. If the user only asks for a recap or summary, use the ordinary
@@ -49,6 +50,23 @@ parallel checkpoint archive. A project decision belongs to its existing
 Ventures record, a relationship fact belongs to its relationship record, and a
 cross-domain preference belongs in `core/`; importance does not move a claim
 into a different owner.
+
+### Dry-run and preview behavior
+
+A checkpoint dry-run is a read-only candidate assessment. It may classify a
+candidate and identify the canonical owner and existing page that would be
+updated, but it must not call ingest or query persistence, append an operational
+log entry, create a backup, update an index, change metadata, or create a
+checkpoint artifact. Use it when the user asks for a preview or when an
+operational evaluation must prove ephemerality.
+
+Keep the outcome distinct from a normal no-op:
+
+- **Nothing durable identified:** no candidate met the persistence threshold.
+- **Durable candidate identified; not applied:** a candidate met the threshold,
+  but the dry-run or explicit safety boundary prevented the write.
+- **Durable change applied:** the owning operation completed its normal write,
+  validation, and backup lifecycle.
 
 ## 1. Inspect the conversation, not just its ending
 
@@ -168,8 +186,9 @@ lifecycle: create the provisional recovery backup before the first active write,
 apply the owning ingest or persistence procedure, validate, create the final
 backup, and discard the provisional only after final-backup success. A
 checkpoint must not create a second backup or bypass provenance, indexes,
-contradiction handling, confirmation, or logging. If no candidate is durable,
-there is no active write and no backup or log mutation solely for checkpoint.
+contradiction handling, confirmation, or logging. A dry-run never starts that
+lifecycle. If no candidate is durable, there is no active write and no backup or
+log mutation solely for checkpoint.
 
 A checkpoint can produce more than one normal update when the conversation
 contains distinct, supported changes, but prefer the smallest coherent set and
@@ -183,12 +202,18 @@ Finish with a concise report that separates durable results from discussion:
 
 ```text
 Checkpoint result
-- Retained: <what was kept, or “nothing durable”>
+- Mode: <applied | dry-run>
+- Outcome: <nothing durable identified | durable candidate identified; not applied | durable change applied>
+- Candidate: <durable candidate, or “none”>
+  - classification: <fact, decision, correction, synthesis, inference, or ephemeral>
+  - owner: <canonical owner>
+  - existing page: <page that would be updated/created, or “none”>
+  - confirmation: <required question, or “none”>
+  - persistence: <applied | not applied | not durable>
 - Locations: <canonical pages/areas, or “none”>
 - Updated: <existing pages, provenance, review state, indexes, or “none”>
 - Unresolved: <conflicts, inferences, unknowns, or “none”>
 - Not stored: <suggestions, rejected options, ephemeral reasoning, transcript, or other intentional exclusions>
-- Confirmation: <what still needs the user's confirmation, or “none”>
 ```
 
 If a normal ingest or persisted synthesis ran, include its ordinary backup and

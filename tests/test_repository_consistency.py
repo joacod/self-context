@@ -169,6 +169,27 @@ class RepositoryConsistencyTests(unittest.TestCase):
             checkpoint.casefold(),
         )
 
+    def test_contextual_query_checkpoint_and_receipt_boundaries_are_documented(self) -> None:
+        query = (SKILL_ROOT / "references/query.md").read_text(encoding="utf-8").casefold()
+        checkpoint = (SKILL_ROOT / "references/checkpoint.md").read_text(encoding="utf-8").casefold()
+        skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8").casefold()
+        for phrase in (
+            "contextual retrieval scope rules",
+            "--scope path",
+            "--expand-linked-sources",
+            "read-only by default",
+            "operational logs",
+            "no automatic stale horizon",
+            "coverage/as-of",
+            "assertion",
+            "scope used",
+            "dry-run",
+            "durable candidate identified; not applied",
+        ):
+            self.assertIn(phrase, query + "\n" + checkpoint + "\n" + skill, phrase)
+        self.assertIn("do not log by default", query)
+        self.assertIn("log entry, index write", skill)
+
     def test_natural_language_examples_cover_the_operational_loop(self) -> None:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         trigger_evals = json.loads(
@@ -377,6 +398,30 @@ class RepositoryConsistencyTests(unittest.TestCase):
         ):
             self.assertIn(phrase.casefold(), combined, phrase)
         for case in checkpoint_cases:
+            self.assertGreaterEqual(len(case.get("expectations", [])), 3)
+
+    def test_contextual_dogfood_eval_corpus_covers_scope_readonly_checkpoint_and_receipts(self) -> None:
+        evals = json.loads(
+            (SKILL_ROOT / "evals/evals.json").read_text(encoding="utf-8")
+        )["evals"]
+        cases = [case for case in evals if int(case["id"]) in range(146, 155)]
+        self.assertEqual([int(case["id"]) for case in cases], list(range(146, 155)))
+        combined = "\n".join(
+            str(case["prompt"]) + "\n" + str(case["expected_output"])
+            for case in cases
+        ).casefold()
+        for phrase in (
+            "narrowest relevant canonical scope",
+            "linked source records",
+            "every file before and after",
+            "operation log entry",
+            "checkpoint dry-run",
+            "nothing durable was identified",
+            "stale_after: null",
+            "compact context receipt",
+        ):
+            self.assertIn(phrase.casefold(), combined, phrase)
+        for case in cases:
             self.assertGreaterEqual(len(case.get("expectations", [])), 3)
 
     def test_vertical_procedures_document_historical_upgrade_guidance(self) -> None:

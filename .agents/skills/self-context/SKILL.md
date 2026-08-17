@@ -100,6 +100,10 @@ an inaccessible source was retrieved.
 - Treat contextual thinking as a mode of Query: retrieve only relevant context,
   then frame, explore, challenge, and conclude without turning generated
   reasoning into personal context.
+- Treat Query/contextual-thinking retrieval as read-only by default: it must not
+  mutate canonical pages, operational logs, indexes, backups, vertical markers,
+  frontmatter metadata, or generated persistent artifacts. An operation-log
+  write or durable persistence step requires a separate explicit request.
 - Offer a compact context receipt only when the user asks for the sources,
   basis, freshness, uncertainty, conflicts, tradeoffs, or persistence behind a
   Query or contextual-reasoning result. Receipts summarize evidence and
@@ -124,8 +128,10 @@ an inaccessible source was retrieved.
 
 ## User Mode Boundary
 
-Default to user mode. Normal ingest, query, review, lint, and evidence work may
-read or update the private vault according to this skill, but must not change
+Default to user mode. Normal ingest, review, lint, and evidence work may read
+or update the private vault according to this skill. Query and contextual
+thinking are read-only by default and do not update pages, logs, indexes,
+backups, metadata, or generated artifacts. User-mode operations must not change
 the project skills, schema instructions, docs, evals, scripts, or repository
 layout. Do not create a learning log or suggest an operational redesign as a
 side effect of ordinary use.
@@ -177,7 +183,9 @@ Infer the operation from natural language:
   after the current-runtime gate succeeds.
 - **Query:** retrieve or synthesize existing context when the vault is current;
   an older vault receives upgrade guidance rather than a native modern query.
-  Contextual thinking is a Query subtype, not a new operation: prompts such as
+  Query is read-only by default; explicit persistence or operation logging is a
+  separate mutation request. Contextual thinking is a Query subtype, not a new
+  operation: prompts such as
   “help me think through…”, “brainstorm this with me”, “help me decide…”,
   “compare these options”, “challenge this idea”, “what am I overlooking?”, or
   “what are the tradeoffs?” use the Query procedure's
@@ -186,8 +194,9 @@ Infer the operation from natural language:
   you base that on?”, “was any of this stale?”, or “did you save anything?”
   requests the optional Query receipt rather than a new storage operation.
 - **Checkpoint:** when the user asks what from the current conversation is worth
-  keeping, inspect candidate outcomes rather than summarizing the conversation.
-  Follow [Checkpoint](references/checkpoint.md), then route factual changes to
+  keeping, asks for a checkpoint preview/dry-run, or asks to preserve only the
+  useful outcome, inspect candidate outcomes rather than summarizing the
+  conversation. Follow [Checkpoint](references/checkpoint.md), then route factual changes to
   Ingest, retained syntheses to the existing Query persistence check, and
   unresolved inferences or contradictions to existing review semantics. Keep
   assistant suggestions, brainstorms, rejected options, and ephemeral discussion
@@ -349,7 +358,8 @@ confirmation question instead of silently using it as current.
    then its final backup after mutation and validation; discard the provisional
    only after final success. For schema migration or deep maintenance, read the
    relevant procedure and retain both backups. If the operation is read-only, do
-   not create a backup merely because the vault was inspected.
+   not create a backup, log entry, index write, metadata update, or generated
+   artifact merely because the vault was inspected.
 6. Read the relevant reference procedure before writing or validating content:
    - [Vault backups](references/backups.md) for provisional/final archives,
      guarded discard, and ten-archive retention.
