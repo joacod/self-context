@@ -3,16 +3,16 @@ name: self-context
 description: >
   Use this skill whenever a user asks to ingest, remember, add, update,
   organize, connect, query, retrieve, review, lint, validate, reconcile,
-  migrate, upgrade, or inspect their SelfContext Vault or personal context—even
-  without naming SelfContext or a vault. Also use it for evidence-backed career,
-  learning, writing, relationship, media/taste, or ventures/project advice;
-  resumes, profiles,
-  authored writing, recollections, or other durable sources that should become
-  context; and vault initialization, copying, restoring, backing up, exporting,
-  or migration. Recognize `upgrade vault latest`, “bring my SelfContext vault
-  fully up to date,” `migrate vault latest`, `deep review vault`, `deep update
-  vault`, and `migrate self-context latest`. Do not use it for generic resume
-  writing, Obsidian organization, Git-ignore questions, or unrelated advice.
+  migrate, upgrade, inspect, or reason from their SelfContext Vault or context—
+  even without naming SelfContext or a vault. Also use it for contextual
+  thinking, brainstorming, decisions, comparisons, tradeoffs, challenges, and
+  alternatives grounded in context; evidence-backed career, learning, writing,
+  relationship, media/taste, or ventures/project advice; resumes, profiles,
+  authored writing, recollections, and sources; vault setup, copies, restores,
+  backups, exports, or migration. Recognize `upgrade vault latest`, “bring vault
+  up to date,” `migrate vault latest`, `deep review vault`, `deep update vault`,
+  and `migrate self-context latest`. Do not use it for generic resume writing,
+  Obsidian organization, Git-ignore questions, or unrelated advice.
 compatibility: Requires local filesystem access from the repository root. Uses standard Markdown, YAML frontmatter, relative Markdown links, and optional Python 3 for deterministic linting.
 ---
 
@@ -75,6 +75,9 @@ an inaccessible source was retrieved.
 - Before persisting query-derived material, check for duplicates, ownership,
   contradictions, and freshness. Keep recommendations visibly derived and do
   not update facts or goals automatically.
+- Treat contextual thinking as a mode of Query: retrieve only relevant context,
+  then frame, explore, challenge, and conclude without turning generated
+  reasoning into personal context.
 - Never put personal vault content in tracked project files, and never force-add
   anything from `vault/`.
 - Treat `.obsidian/` and other viewer metadata as noncanonical vault state.
@@ -146,6 +149,11 @@ Infer the operation from natural language:
   after the current-runtime gate succeeds.
 - **Query:** retrieve or synthesize existing context when the vault is current;
   an older vault receives upgrade guidance rather than a native modern query.
+  Contextual thinking is a Query subtype, not a new operation: prompts such as
+  “help me think through…”, “brainstorm this with me”, “help me decide…”,
+  “compare these options”, “challenge this idea”, “what am I overlooking?”, or
+  “what are the tradeoffs?” use the Query procedure's
+  retrieve → frame → explore → challenge → conclude flow.
 - **Review:** surface stale, unresolved, contradictory, ambiguous, or
   insufficiently sourced context for human attention. Ordinary review remains
   targeted and current-model only.
@@ -312,8 +320,9 @@ confirmation question instead of silently using it as current.
      vault and schema-version handling.
    - [Ingest](references/ingest.md) for normalization, updates, provenance,
      linking, and logging.
-   - [Query](references/query.md) for targeted retrieval and the persistence
-     decision for reusable or explicitly retained syntheses.
+   - [Query](references/query.md) for targeted retrieval, contextual thinking,
+     and the persistence decision for reusable or explicitly retained
+     syntheses.
    - [Writing vertical](references/writing.md) for authorship, observations,
      modes, revisions, selective profile impact, and generated artifacts.
    - [Relationships vertical](references/relationships.md) for sparse person

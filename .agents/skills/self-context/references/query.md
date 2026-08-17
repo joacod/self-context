@@ -1,5 +1,16 @@
 # Query and Derived Material
 
+## Contents
+
+- [Deep-lint inventory versus search output](#deep-lint-inventory-versus-search-output)
+- [Contextual thinking as a Query mode](#contextual-thinking-as-a-query-mode)
+- [Targeted Retrieval](#targeted-retrieval)
+- [Verification and Freshness at Query Time](#verification-and-freshness-at-query-time)
+- [Persistence Decision](#persistence-decision)
+- [Derived Page Shape](#derived-page-shape)
+- [Task context packets](#task-context-packets)
+- [Log and Response](#log-and-response)
+
 Keep index-first retrieval as the primary workflow. Use the disposable local
 lexical helper only as a fallback when the index is ambiguous, aliases are
 likely to matter, the vault is medium or large, the task spans a few verticals,
@@ -60,6 +71,125 @@ points to evidence files; it does not replace reading the relevant page when
 content is needed.
 
 Use this procedure for retrieval, comparison, synthesis, or evidence gathering.
+
+## Contextual thinking as a Query mode
+
+Contextual thinking is a subtype of Query for problems that ask the model to
+reason with the user's existing context: brainstorming, decision support,
+comparisons, tradeoffs, challenges, alternatives, or overlooked considerations.
+It uses the same latest-first runtime gate, index-first retrieval, provenance,
+freshness, contradiction, ownership, and persistence rules as every other
+Query. It is not a new vertical, advisor, data model, runtime, CLI, or chat
+subsystem.
+
+Use this mode for prompts such as:
+
+- help me think through whether I should continue this project
+- challenge this idea using what you know about the project
+- compare these two options against my priorities
+- brainstorm approaches based on my existing goals and constraints
+- what am I overlooking here?
+- help me decide, explore alternatives based on my context, or argue against
+  this based on what you know
+
+Do not force this full flow onto a simple lookup. When the user is asking for
+contextual reasoning, move through the following sequence and keep the labels
+visible in the answer.
+
+### Retrieve
+
+Define the problem or decision narrowly, then retrieve only context that can
+change the reasoning. Potentially relevant material includes:
+
+- known facts and evidence;
+- goals, values, constraints, and preferences;
+- previous decisions, commitments, and their recorded rationale;
+- related projects, initiatives, or current-state records;
+- previous reusable derived conclusions, marked as derived rather than source
+  evidence;
+- contradictions, unresolved observations, and review items; and
+- stale or otherwise provisional information that could affect the answer.
+
+Find previous decisions wherever the existing vault records them and follow
+relevant links; do not invent a decision-specific storage model or replay the
+whole conversation history. Start from the relevant indexes and expand only to
+linked pages needed for the problem. For every important item, inspect its
+owner, assertion kind, status, provenance, and freshness before using it.
+Include multiple owning areas only when the problem requires them. Cross-area
+retrieval preserves each area's ownership; it does not copy facts between
+verticals. Never indiscriminately load the vault just because the request says
+"based on my context."
+
+### Frame
+
+Before proposing options, establish what the problem looks like from the
+retrieved evidence. Separate:
+
+- **Supported context:** user-stated or source-derived material, with its
+  evidence path and scope;
+- **Assumptions:** premises needed to proceed that the vault does not establish;
+- **Unknowns:** missing information that could change the result;
+- **Contradictions:** active or reviewable context that points in different
+  directions; and
+- **Stale or provisional context:** expired, dynamically untracked, or
+  `status: review` material that cannot be treated as settled current evidence.
+
+The frame is an explanation of the evidence, not a new durable fact. If a
+contradiction or stale item is decisive, keep the conclusion conditional and
+ask at most a bounded question when that is enough to resolve it.
+
+### Explore
+
+Generate meaningfully different possibilities rather than several phrasings
+of one recommendation. Options may differ in scope, mechanism, sequence,
+commitment, or reversibility, but each should connect to the retrieved goals,
+constraints, preferences, decisions, and evidence. Include a status-quo or
+pause option when it is a real alternative, not as a mandatory formality. Label
+brainstormed alternatives as generated possibilities, not as facts about the
+user or the project.
+
+### Challenge
+
+Evaluate serious options against the user's known goals, constraints, previous
+decisions, evidence, preferences, and relevant project or cross-vertical
+context. Surface conflicts, opportunity costs, reversibility, the strongest
+argument against each option, and the evidence gap that would most change the
+choice. Do not let a stale, provisional, or contradictory item silently decide
+between options. A model-generated recommendation remains derived and does
+not become a goal, decision, preference, or user fact automatically.
+
+### Conclude
+
+Separate the useful ending into whichever of these are relevant:
+
+- supported observations;
+- tradeoffs;
+- unknowns and freshness limits;
+- recommendations, clearly labeled as derived and conditional;
+- assumptions; and
+- questions worth resolving.
+
+A conclusion may recommend a next step, but it must not rewrite the user's
+goals, confirm a fact, or erase a contradiction. If the retrieved context is
+insufficient, say what is missing and provide a bounded question or conditional
+path instead of filling the gap with generic advice.
+
+### Persistence for contextual thinking
+
+A contextual thinking session is ephemeral by default. Do not persist generated
+ideas, brainstorm alternatives, discarded options, temporary reasoning, or
+speculative assistant conclusions merely because they appeared in the
+conversation. The existing [Persistence Decision](#persistence-decision)
+rules still apply: evaluate explicit retention or durable reuse, check for a
+matching home, preserve ownership and provenance, compare conflicts and
+freshness, and store only the smallest justified `derived/` synthesis. A
+retained synthesis remains `derived_synthesis`; it is not evidence for a new
+fact or goal, and its generated alternatives are not silently copied into
+`core/` or a vertical. A permitted query log entry does not change this
+boundary: it records the operation under existing logging rules, not generated
+alternatives or temporary reasoning. If the user later supplies a durable fact
+or decision, handle that separately through normal ingest and confirmation
+semantics.
 
 ## Targeted Retrieval
 
