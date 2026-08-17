@@ -151,20 +151,11 @@ exposing private chain-of-thought.
 
 ## Explicit Non-Goals
 
-SelfContext is not currently:
-
-- a standalone chatbot;
-- an AI harness;
-- a hosted SaaS memory service;
-- a generic second brain;
-- a transcript archive;
-- a prompt-template or export product;
-- a database or embeddings platform;
-- a system that automatically records everything; or
-- a Brainstorming vertical.
-
-These boundaries keep the product focused on durable context and the existing
-harness boundary. See the [Vision](docs/VISION.md) for the rationale.
+The current non-goals are defined in the
+[Vision](docs/VISION.md#explicit-non-goals). They include no standalone
+chatbot, AI harness, hosted service, transcript archive, automatic recorder, or
+Brainstorming vertical. These boundaries keep the product focused on durable
+context and the existing harness boundary.
 
 ### Context Areas
 
