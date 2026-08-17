@@ -1444,6 +1444,126 @@
         "The response preserves the distinction between existing evidence and assistant-generated exploration."
       ],
       "files": []
+    },
+    {
+      "id": 129,
+      "prompt": "Checkpoint this discussion. In a synthetic vault, John Doe explicitly decides to keep Harbor CLI in maintenance mode until three users return in separate weeks. Retain the decision in the existing Ventures record through normal ingest, preserve its rationale and provenance, and do not create a conversation page or transcript.",
+      "expected_output": "The checkpoint classifies the explicit decision as durable project context, updates the canonical Ventures concept through existing ingest semantics, and keeps the conversation itself ephemeral.",
+      "expectations": [
+        "The explicit decision is retained as user-stated project context rather than as a conversation summary.",
+        "The existing Ventures record is updated instead of creating a duplicate or new conversation page.",
+        "Existing provenance, contradiction, confirmation, indexing, logging, and backup rules are reused as applicable.",
+        "The transcript and assistant-generated discussion are not stored."
+      ],
+      "files": []
+    },
+    {
+      "id": 130,
+      "prompt": "Checkpoint this conversation. John Doe corrects existing synthetic Career context: his current role is Principal Engineer at MyContext Systems, not Staff Engineer. Update the matching canonical role page, preserve the previous source as historical or conflicting evidence, and do not create a duplicate page.",
+      "expected_output": "The checkpoint routes the changed factual context through the normal correction workflow and preserves the evidence boundary around the prior claim.",
+      "expectations": [
+        "The existing Career role concept is updated rather than duplicated.",
+        "The correction is distinguished from an assistant inference and keeps appropriate provenance.",
+        "The older source or conflicting history is not silently erased.",
+        "Normal confirmation and freshness rules remain in effect."
+      ],
+      "files": []
+    },
+    {
+      "id": 131,
+      "prompt": "Checkpoint this discussion. The assistant suggested that John Doe prefers async written decisions, but John never stated, confirmed, or adopted that suggestion. Reject it as evidence and do not update core or any vertical.",
+      "expected_output": "The checkpoint rejects assistant-generated material as personal evidence and makes no unsupported preference update.",
+      "expectations": [
+        "The assistant suggestion is explicitly treated as generated output, not a user preference.",
+        "No core preference or vertical fact is created or updated from the suggestion.",
+        "No verification, provenance, or confirmation is invented for the suggestion.",
+        "The report says the suggestion was intentionally not stored."
+      ],
+      "files": []
+    },
+    {
+      "id": 132,
+      "prompt": "Checkpoint this conversation. A brainstorm included enterprise expansion, and John Doe rejected it as an option during exploration but made no durable project decision. Do not store the rejected option as a fact, preference, goal, or project state, and do not create a conversation page.",
+      "expected_output": "The checkpoint keeps a rejected brainstorm option ephemeral unless the user independently made the rejection a durable decision.",
+      "expectations": [
+        "The rejected brainstorm option is not promoted into Ventures, core, or another owner.",
+        "The assistant's exploration remains distinct from John's durable context.",
+        "No page or transcript is created merely to preserve the brainstorm.",
+        "The report distinguishes the intentional non-storage from an unresolved confirmation."
+      ],
+      "files": []
+    },
+    {
+      "id": 133,
+      "prompt": "Checkpoint this discussion. John Doe explicitly asks to preserve and reuse an evidence-backed comparison of two synthetic Harbor CLI options. Store the smallest linked derived synthesis through the existing persistence rules, keep the recommendation visibly derived, and do not change his goals or project facts.",
+      "expected_output": "The checkpoint retains a justified reusable synthesis without promoting generated advice into factual or decision context.",
+      "expectations": [
+        "The explicit future-reuse request is recognized as a persistence signal.",
+        "An existing matching synthesis is updated or the smallest linked derived_synthesis is created under derived/.",
+        "Supporting evidence, uncertainty, ownership, and freshness are preserved through the Query persistence check.",
+        "Goals, preferences, project facts, and verification state are not changed by the recommendation."
+      ],
+      "files": []
+    },
+    {
+      "id": 134,
+      "prompt": "Checkpoint this conversation. The assistant inferred that John Doe is losing interest in Harbor CLI because he paused replies, but there is no user confirmation or valid source. This is worth revisiting before a future project decision, so keep it only as an unresolved reviewable inference with confirmation required; never store it as a settled project fact.",
+      "expected_output": "The checkpoint preserves the distinction between an agent inference and supported project context, retaining it only under existing review semantics with confirmation still required.",
+      "expectations": [
+        "The inference is not written as a user-stated or source-derived project fact.",
+        "The retained item uses the existing agent_inference and status: review semantics with verified: null.",
+        "The checkpoint reports the bounded confirmation still required rather than silently resolving the inference.",
+        "The review observation remains provisional and does not update project state, goals, or preferences."
+      ],
+      "files": []
+    },
+    {
+      "id": 135,
+      "prompt": "Checkpoint this discussion. One synthetic user statement says Harbor CLI is active, while a later supplied source says it is paused. Preserve both pieces of evidence under the existing Ventures concept, follow the existing contradiction and review semantics, and do not silently choose or verify one version.",
+      "expected_output": "The checkpoint routes the contradiction through existing conflict handling and leaves the project state visibly unresolved.",
+      "expectations": [
+        "Both conflicting claims and their provenance remain available for review.",
+        "The existing Ventures concept is updated or linked without creating a conversation page.",
+        "The contradiction remains status: review or otherwise explicitly unresolved and no version is silently selected.",
+        "No verification date, freshness renewal, or assistant resolution is invented."
+      ],
+      "files": []
+    },
+    {
+      "id": 136,
+      "prompt": "Checkpoint this conversation. It was hypothetical brainstorming with no explicit user fact, decision, preference, project change, reusable conclusion, or review-worthy unknown. Report that nothing durable was found and leave the synthetic vault, log, indexes, schema, backups, and transcript state unchanged.",
+      "expected_output": "The checkpoint is a successful no-op: it performs no durable mutation when the conversation contains nothing worth retaining.",
+      "expectations": [
+        "No page, index, schema, log, backup, or review item is created or changed.",
+        "The response clearly reports that nothing durable was retained.",
+        "The conversation is not serialized as a transcript or checkpoint record.",
+        "The no-op is distinguished from a durable item waiting for confirmation."
+      ],
+      "files": []
+    },
+    {
+      "id": 137,
+      "prompt": "Checkpoint this conversation. John Doe explicitly decided to pause the Harbor CLI in its existing Ventures record, and separately stated that written decision records help in both work and personal projects. Route the project decision to Ventures and the cross-domain preference to the existing core concept, without creating a conversation page or duplicating either claim.",
+      "expected_output": "The checkpoint routes distinct durable outcomes to their existing owners and preserves the separation between initiative lifecycle and cross-domain preference.",
+      "expectations": [
+        "The project decision updates the existing Ventures concept.",
+        "The cross-domain preference updates or links the existing core concept rather than being copied into Ventures.",
+        "Each claim retains its own assertion kind and provenance through normal ingest.",
+        "No generic conversation page, transcript, or duplicate concept is created."
+      ],
+      "files": []
+    },
+    {
+      "id": 138,
+      "prompt": "Checkpoint this discussion. Retain only John's explicit synthetic decision and one unresolved question that are worth future continuity. Do not save the whole chat, a transcript, a chat log, or a conversation page; preserve source material only when the existing ingest workflow says a bounded source record is needed.",
+      "expected_output": "The checkpoint stores only the smallest canonical updates and keeps transcript storage outside the SelfContext architecture.",
+      "expectations": [
+        "The explicit decision is routed to its existing canonical owner.",
+        "The unresolved question remains visibly unresolved or is routed to existing review semantics.",
+        "The complete conversation is not copied into a source, concept, derived page, or log entry.",
+        "Any retained source is bounded provenance selected by normal ingest rather than a transcript archive."
+      ],
+      "files": []
     }
   ]
 }

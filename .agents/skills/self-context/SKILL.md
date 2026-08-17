@@ -1,17 +1,17 @@
 ---
 name: self-context
 description: >
-  Use this skill whenever a user asks to ingest, remember, add, update,
-  organize, connect, query, retrieve, review, lint, validate, reconcile,
-  migrate, upgrade, inspect, or reason from their SelfContext Vault or context—
-  even without naming SelfContext or a vault. Also use it for contextual
-  thinking, brainstorming, decisions, comparisons, tradeoffs, challenges, and
-  alternatives grounded in context; evidence-backed career, learning, writing,
-  relationship, media/taste, or ventures/project advice; resumes, profiles,
-  authored writing, recollections, and sources; vault setup, copies, restores,
-  backups, exports, or migration. Recognize `upgrade vault latest`, “bring vault
-  up to date,” `migrate vault latest`, `deep review vault`, `deep update vault`,
-  and `migrate self-context latest`. Do not use it for generic resume writing,
+  Use this skill for SelfContext Vault requests to ingest, remember,
+  checkpoint/save, add/update, organize/connect, query/retrieve, review/lint/
+  validate, reconcile, migrate/upgrade, inspect, or reason from context—even
+  without naming SelfContext or a vault. Also use it for contextual thinking
+  and evidence-backed career, learning, writing, relationship, media/taste, or
+  ventures/project advice; resumes, profiles, authored writing, recollections,
+  sources; vault setup, backups, exports, and migration. Recognize checkpoint
+  phrases such as “checkpoint this discussion” and “what from this conversation
+  should become context?”, plus `upgrade vault latest`, “bring vault up to date,”
+  `migrate vault latest`, `deep review vault`, `deep update vault`, and
+  `migrate self-context latest`. Do not use it for generic resume writing,
   Obsidian organization, Git-ignore questions, or unrelated advice.
 compatibility: Requires local filesystem access from the repository root. Uses standard Markdown, YAML frontmatter, relative Markdown links, and optional Python 3 for deterministic linting.
 ---
@@ -154,6 +154,14 @@ Infer the operation from natural language:
   “compare these options”, “challenge this idea”, “what am I overlooking?”, or
   “what are the tradeoffs?” use the Query procedure's
   retrieve → frame → explore → challenge → conclude flow.
+- **Checkpoint:** when the user asks what from the current conversation is worth
+  keeping, inspect candidate outcomes rather than summarizing the conversation.
+  Follow [Checkpoint](references/checkpoint.md), then route factual changes to
+  Ingest, retained syntheses to the existing Query persistence check, and
+  unresolved inferences or contradictions to existing review semantics. Keep
+  assistant suggestions, brainstorms, rejected options, and ephemeral discussion
+  out of durable context unless the user's explicit decision independently
+  justifies retention.
 - **Review:** surface stale, unresolved, contradictory, ambiguous, or
   insufficiently sourced context for human attention. Ordinary review remains
   targeted and current-model only.
@@ -323,6 +331,9 @@ confirmation question instead of silently using it as current.
    - [Query](references/query.md) for targeted retrieval, contextual thinking,
      and the persistence decision for reusable or explicitly retained
      syntheses.
+   - [Checkpoint](references/checkpoint.md) for deciding what, if anything, in
+     the current conversation should become durable context without storing a
+     transcript.
    - [Writing vertical](references/writing.md) for authorship, observations,
      modes, revisions, selective profile impact, and generated artifacts.
    - [Relationships vertical](references/relationships.md) for sparse person
