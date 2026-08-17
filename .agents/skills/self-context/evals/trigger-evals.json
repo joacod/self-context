@@ -570,5 +570,21 @@
   {
     "query": "What was the last sentence in this chat?",
     "should_trigger": false
+  },
+  {
+    "query": "Why did you reach that recommendation? Show me the context and sources you used, any stale or conflicting inputs, and whether you saved anything.",
+    "should_trigger": true
+  },
+  {
+    "query": "Did you save anything from that brainstorming session? Give me a compact context receipt, not a transcript.",
+    "should_trigger": true
+  },
+  {
+    "query": "What did you base this answer on in my Context Vault, and is the recommendation direct evidence or derived?",
+    "should_trigger": true
+  },
+  {
+    "query": "Explain your private chain of thought for this generic math answer; I am not asking about personal context.",
+    "should_trigger": false
   }
 ]
