@@ -1,11 +1,11 @@
 ---
 name: self-context
 description: >
-  Use this skill for SelfContext Vault requests to ingest, remember,
-  checkpoint/save, add/update, organize/connect, query/retrieve, review/lint/
-  validate, reconcile, migrate/upgrade, inspect, or reason from context—even
-  without naming SelfContext or a vault. Also use it for contextual thinking
-  and evidence-backed career, learning, writing, relationship, media/taste, or
+  Use this skill for SelfContext Vault requests to ingest, checkpoint/save,
+  add/update, organize/connect, query/retrieve, review/lint/validate, reconcile,
+  migrate/upgrade, inspect, reason from context, or request a receipt—even without
+  naming SelfContext or a vault. Also use it for contextual thinking and
+  evidence-backed career, learning, writing, relationship, media/taste, or
   ventures/project advice; resumes, profiles, authored writing, recollections,
   sources; vault setup, backups, exports, and migration. Recognize checkpoint
   phrases such as “checkpoint this discussion” and “what from this conversation
@@ -78,6 +78,12 @@ an inaccessible source was retrieved.
 - Treat contextual thinking as a mode of Query: retrieve only relevant context,
   then frame, explore, challenge, and conclude without turning generated
   reasoning into personal context.
+- Offer a compact context receipt only when the user asks for the sources,
+  basis, freshness, uncertainty, conflicts, tradeoffs, or persistence behind a
+  Query or contextual-reasoning result. Receipts summarize evidence and
+  epistemic status without exposing hidden chain-of-thought, and never create
+  a receipt file or a new provenance system; follow [Query](references/query.md)
+  for the on-demand format and truthfulness rules.
 - Never put personal vault content in tracked project files, and never force-add
   anything from `vault/`.
 - Treat `.obsidian/` and other viewer metadata as noncanonical vault state.
@@ -153,7 +159,10 @@ Infer the operation from natural language:
   “help me think through…”, “brainstorm this with me”, “help me decide…”,
   “compare these options”, “challenge this idea”, “what am I overlooking?”, or
   “what are the tradeoffs?” use the Query procedure's
-  retrieve → frame → explore → challenge → conclude flow.
+  retrieve → frame → explore → challenge → conclude flow. A request such as
+  “why did you reach that conclusion?”, “what context did you use?”, “what did
+  you base that on?”, “was any of this stale?”, or “did you save anything?”
+  requests the optional Query receipt rather than a new storage operation.
 - **Checkpoint:** when the user asks what from the current conversation is worth
   keeping, inspect candidate outcomes rather than summarizing the conversation.
   Follow [Checkpoint](references/checkpoint.md), then route factual changes to

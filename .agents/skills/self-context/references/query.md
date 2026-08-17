@@ -4,6 +4,7 @@
 
 - [Deep-lint inventory versus search output](#deep-lint-inventory-versus-search-output)
 - [Contextual thinking as a Query mode](#contextual-thinking-as-a-query-mode)
+- [Optional Context Receipts](#optional-context-receipts)
 - [Targeted Retrieval](#targeted-retrieval)
 - [Verification and Freshness at Query Time](#verification-and-freshness-at-query-time)
 - [Persistence Decision](#persistence-decision)
@@ -190,6 +191,117 @@ boundary: it records the operation under existing logging rules, not generated
 alternatives or temporary reasoning. If the user later supplies a durable fact
 or decision, handle that separately through normal ingest and confirmation
 semantics.
+
+## Optional Context Receipts
+
+A context receipt is a compact, on-demand explanation of the evidence and
+epistemic status behind a Query answer. It is not an audit report, a transcript,
+or a private reasoning dump. Offer one when the user explicitly asks questions
+such as:
+
+- Why did you reach that conclusion?
+- What context or sources did you use?
+- Show me the context behind that recommendation.
+- What did you base that on?
+- Was any of this stale or contradictory?
+- Did you save anything from that?
+
+Treat these requests as a presentation mode for the existing Query result, not
+as a new operation or persistence signal. A receipt request must not create a
+receipt file, a logging database, a provenance system, or a vault mutation. If
+the underlying operation separately qualifies for the existing query-log or
+persistence lifecycle, report that outcome accurately rather than attributing
+it to the receipt request.
+
+### Receipt contents
+
+Match the surrounding response's communication style instead of forcing a rigid
+template. For an explicit receipt request, include the non-empty items that
+answer the request, using bounded labels such as:
+
+- **Context used:** relevant durable concepts or source paths, with their role
+  or provenance when useful. Identify only context that affected the answer;
+  do not dump the vault or reproduce full page bodies.
+- **Tradeoffs:** important competing goals, constraints, costs, or alternatives
+  that materially shaped a recommendation. Summarize the decision-relevant
+  comparison, not private token-by-token reasoning.
+- **Uncertain:** assumptions, unsupported gaps, or provisional material that
+  limits the result.
+- **Contradictory:** relevant unresolved claims or pages that point in different
+  directions, keeping their status or provenance visible.
+- **Stale:** relevant context beyond its freshness expectation, or dynamic
+  context whose currentness is unknown. Do not renew freshness merely by citing
+  it.
+- **Result:** classify the answer as a **direct answer**, **synthesis**,
+  **derived recommendation**, or **contextual reasoning**. A recommendation
+  built from evidence is derived output, not a direct fact from any source.
+- **Persistence:** say what durable update was made through the existing
+  lifecycle, or say that no durable context was persisted. Name the canonical
+  page or area when something was stored. If only the existing operation log was
+  written, say that no durable context update was made and distinguish the log
+  entry instead of claiming that no file changed.
+
+When the user asks specifically about stale or conflicting input, answer that
+category even when the answer is “none identified.” When the user asks why,
+include the relevant tradeoffs and uncertainty, but do not expose hidden
+chain-of-thought, internal prompts, token-by-token deliberation, or unrelated
+private context. The receipt identifies evidence and epistemic status; it does
+not claim that evidence is verified merely because it was retrieved.
+
+### Automatic behavior and persistence boundaries
+
+Do not append a full receipt to a routine lookup, ordinary advice answer, or
+normal contextual-thinking response. Continue to surface materially important
+contradictions, stale decisive context, uncertainty, and confirmation needs in
+ordinary responses even when no receipt was requested. If a checkpoint or
+mutation leaves persistence ambiguous, explicitly report what was and was not
+stored using its existing lifecycle report; do not create a second receipt
+artifact.
+
+Use “nothing persisted” only when the operation made no durable context or
+operational-log change. For an ephemeral brainstorm whose normal operation did
+not log anything, the accurate compact statement is: “Persistence: nothing
+persisted; no page, transcript, or derived synthesis was stored.” If an existing
+query log entry was permitted, say instead: “No durable context update; the
+query was logged under the existing logging rules.” A receipt request itself
+never changes that state.
+
+### Compact examples
+
+**Inspecting the sources behind a recommendation**
+
+John Doe asks whether to keep the Harbor CLI in maintenance mode at MyContext
+Systems. A useful receipt can say:
+
+```text
+Context used: the Ventures project page, the recorded repeat-adoption decision,
+and the core six-hour weekly constraint.
+Tradeoffs: expanding scope conflicts with the time constraint and the recorded
+adoption threshold; maintenance preserves reversibility but delays new scope.
+Result: derived recommendation — keep maintenance mode for now, not a recorded
+fact or new decision.
+Persistence: nothing persisted.
+```
+
+**Separating direct evidence from a derived recommendation**
+
+```text
+Context used: the existing Ventures decision records that expansion waits for
+repeat adoption. That is direct recorded context.
+Result: the suggestion to run a smaller reliability experiment is a derived
+recommendation from that decision and the time constraint; it is not itself a
+recorded decision.
+Persistence: nothing persisted.
+```
+
+**Confirming that brainstorming persisted nothing**
+
+```text
+Context used: John Doe's documented goal and time constraint.
+Result: contextual reasoning; the alternatives were generated for this session.
+Persistence: nothing persisted; no page, transcript, or derived synthesis was
+stored.
+```
 
 ## Targeted Retrieval
 

@@ -1564,6 +1564,90 @@
         "Any retained source is bounded provenance selected by normal ingest rather than a transcript archive."
       ],
       "files": []
+    },
+    {
+      "id": 139,
+      "prompt": "John Doe asks whether to keep Harbor CLI in maintenance mode at MyContext Systems. Use the synthetic vault's existing Ventures decision, repeat-adoption evidence, and core six-hour constraint. Give the recommendation, then show me the context behind it and the tradeoffs without dumping the vault or your private chain of thought.",
+      "expected_output": "The response gives the contextual recommendation and an optional compact receipt that identifies the relevant sources, tradeoffs, epistemic status, and persistence outcome without exposing hidden reasoning.",
+      "expectations": [
+        "The receipt names only the relevant durable concepts or source paths and explains their role or provenance.",
+        "The tradeoffs connect the recommendation to the repeat-adoption decision and time constraint.",
+        "The recommendation is labeled derived rather than presented as a direct fact or recorded decision.",
+        "The receipt does not dump page bodies, unrelated context, a transcript, or hidden chain-of-thought."
+      ],
+      "files": []
+    },
+    {
+      "id": 140,
+      "prompt": "The synthetic vault records that John Doe should not expand Harbor CLI until repeat adoption, but the assistant suggested a smaller reliability experiment. What did you base that on? Distinguish what is directly recorded from what is derived, and do not update the vault.",
+      "expected_output": "The receipt separates the recorded decision and evidence from the assistant's derived recommendation and reports that no context was persisted.",
+      "expectations": [
+        "Directly recorded context is identified as evidence with its source or concept.",
+        "The smaller experiment is explicitly labeled a derived recommendation, not a fact or decision.",
+        "The response preserves relevant assumptions or unknowns rather than overstating support.",
+        "The receipt request performs no vault mutation and reports the persistence outcome accurately."
+      ],
+      "files": []
+    },
+    {
+      "id": 141,
+      "prompt": "Help John Doe decide whether to make a current public commitment about Harbor CLI. The synthetic current-role page is past stale_after, the project status predates the latest trial, and a review observation conflicts with an active project page. Was any of this stale or contradictory? Show a compact context receipt and keep the uncertainty visible.",
+      "expected_output": "The receipt identifies the stale and conflicting inputs, keeps the conclusion conditional, and does not silently renew, resolve, or verify them.",
+      "expectations": [
+        "Relevant stale context is named and treated as needing freshness confirmation rather than false.",
+        "The conflicting active and reviewable project states are identified as unresolved contradiction.",
+        "The result remains conditional or asks one bounded confirmation question when currentness is decisive.",
+        "Reading the receipt does not renew freshness, resolve the contradiction, or mutate the vault."
+      ],
+      "files": []
+    },
+    {
+      "id": 142,
+      "prompt": "Run a simple read-only lookup for the employer recorded for John Doe. After the lookup is complete, show me the context receipt and compare the synthetic vault before and after this receipt-only follow-up: it must not create or change a page, log entry, index, schema, backup, or receipt file.",
+      "expected_output": "The direct lookup receipt identifies the relevant source and reports no durable update; the vault remains byte-for-byte unchanged by the receipt-only follow-up.",
+      "expectations": [
+        "The answer is classified as a direct answer and cites only the relevant source or concept.",
+        "The receipt request creates no persistent receipt artifact or new provenance structure.",
+        "The synthetic vault's pages, indexes, schema, log, and backups remain unchanged for this simple read-only lookup.",
+        "Persistence is reported as nothing persisted rather than implying that a recommendation was stored."
+      ],
+      "files": []
+    },
+    {
+      "id": 143,
+      "prompt": "Brainstorm three genuinely different ways John Doe could explore Harbor CLI using the synthetic vault's goals and constraints. Afterward ask: did you save anything from that? I want a compact receipt, not a transcript or hidden chain-of-thought.",
+      "expected_output": "The response confirms that the generated brainstorm remained ephemeral, distinguishes it from retrieved context, and accurately reports that nothing durable was persisted.",
+      "expectations": [
+        "The receipt identifies the goal and constraint as the context used, without treating generated alternatives as evidence.",
+        "The alternatives and recommendation are labeled generated or derived rather than user facts or decisions.",
+        "The persistence line accurately says no page, transcript, or derived synthesis was stored, while respecting existing logging semantics if applicable.",
+        "The response summarizes evidence and status without revealing private chain-of-thought."
+      ],
+      "files": []
+    },
+    {
+      "id": 144,
+      "prompt": "Why did you reach that conclusion about whether John Doe should continue Harbor CLI? Show me the context used, important uncertainties, and whether anything was saved, but do not show internal token-by-token reasoning or unrelated personal context.",
+      "expected_output": "The response provides an on-demand evidence receipt with bounded context, uncertainty, result type, and truthful persistence status while refusing to expose hidden chain-of-thought.",
+      "expectations": [
+        "The context list is relevant and bounded rather than a full-vault dump.",
+        "Uncertainty and any stale or contradictory inputs are surfaced when relevant.",
+        "The result distinguishes a direct answer or synthesis from a derived recommendation.",
+        "The response explains the evidence basis without exposing hidden chain-of-thought, internal prompts, or token-level deliberation."
+      ],
+      "files": []
+    },
+    {
+      "id": 145,
+      "prompt": "Help John Doe think through whether to continue Harbor CLI using the synthetic vault's goals, constraints, and adoption evidence. Do not show a receipt unless I ask for one; keep any materially important stale or contradictory input visible in the normal answer.",
+      "expected_output": "The response follows the ordinary contextual-thinking flow without appending a full receipt, while still surfacing relevant uncertainty, stale context, or contradictions.",
+      "expectations": [
+        "The normal answer retrieves and reasons from relevant context without an automatic audit-style receipt.",
+        "Any materially important uncertainty, stale context, contradiction, or confirmation need remains visible.",
+        "Generated options and recommendations remain derived and ephemeral unless separately retained.",
+        "No receipt file, logging database, or new provenance structure is introduced."
+      ],
+      "files": []
     }
   ]
 }
