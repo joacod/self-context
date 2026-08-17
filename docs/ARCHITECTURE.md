@@ -8,17 +8,21 @@ SelfContext has a replaceable execution layer above a durable file layer:
 user
   |
   v
-existing harness + selected model
-  |
-  +--> SelfContext skill
-  |
-   +--> optional Advisor Pack for a specific vertical
+existing AI harness + selected model
   |
   v
-Context Vault: Markdown + YAML frontmatter + standard Markdown links
+SelfContext project-local skills
+  |
+  v
+local Context Vault
+(Markdown + YAML frontmatter + standard Markdown links)
 ```
 
-The model and harness are already the agent. SelfContext does not ship a custom agent runtime or dedicated SelfContext subagents. Advisor Packs specialize how the current model reasons over retrieved context; they do not own a second memory format.
+The model and harness are already the agent. SelfContext does not ship a custom
+agent runtime or dedicated SelfContext subagents. Optional Advisor Packs are
+project-local specializations for a vertical; they help the current model
+reason over retrieved context but do not add a runtime or own a second memory
+format.
 
 Dependency direction is always:
 
@@ -27,6 +31,54 @@ operational skills -> vault
 ```
 
 The vault must never depend on a specific harness implementation.
+
+## Horizontal Contextual Workflows
+
+Contextual thinking and checkpoint run horizontally over this same architecture;
+they are not additional layers, verticals, or storage systems:
+
+```text
+durable context
+      |
+      v
+targeted retrieval across relevant existing owners
+      |
+      v
+contextual reasoning
+(brainstorming, decisions, comparisons, tradeoffs)
+      |
+      v
+ephemeral conversation
+      |
+      +--> optional checkpoint
+                 |
+                 v
+       smallest durable update
+       (existing ingest, query persistence, or review; or no mutation)
+                 |
+                 v
+       existing Context Vault
+```
+
+Targeted retrieval may draw on multiple existing areas when the question needs
+it. Each concept and vertical remains the canonical storage owner; cross-area
+retrieval does not create a cross-vertical owner or copy claims between areas.
+Brainstorming is not a vertical, and decision-making is not a vertical. They are
+modes of contextual reasoning over existing context.
+
+Generated reasoning, alternatives, and recommendations remain ephemeral unless
+they pass the normal persistence rules. A checkpoint is an optional inspection
+of the conversation that routes durable facts, decisions, and project changes
+through existing ingest semantics, reusable conclusions through existing query
+persistence, and unresolved items through existing review semantics. It is not a new storage system;
+it may legitimately result in no mutation.
+
+An optional context receipt provides bounded reasoning provenance—the relevant
+context, tradeoffs, uncertainty, and persistence outcome—without creating a
+receipt file, provenance system, or private reasoning transcript. All of these
+workflows use the existing harness, model, project-local skills, and local
+Markdown Context Vault; none requires a dedicated SelfContext runtime or
+replacement harness.
 
 ## Optional Source Acquisition
 
@@ -411,7 +463,7 @@ The SelfContext skill recognizes natural-language intent and applies a lifecycle
 
 1. **Ingest** or update information, preserve useful provenance, avoid duplicate concepts, connect meaningful links, update navigation, and log the operation. Triage only high-impact or unresolved items for a bounded, batched confirmation follow-up. Authored Writing sources use a local-analysis and impact-comparison step before durable profile updates; Learning evidence uses a local comparison to separate exposure, understanding, demonstration, gaps, and corrections; Relationships separates shared context from third-party profiling; and Media / Taste separates consumption from reaction and pattern evidence.
 2. **Query** through orientation, indexes, targeted file search, metadata, and link traversal. A trivial retrieval returns an answer without creating a page; a substantial reusable synthesis or explicitly retained future-use guidance may be stored under derived material after a duplicate, ownership, contradiction, and freshness check. Review status and freshness before using context as current.
-3. **Checkpoint** an explicit natural-language request by inspecting the current conversation for durable changes rather than summarizing or storing it. Classify supported facts, corrections, decisions, goals, preferences, project changes, derived conclusions, unresolved items, inferences, and ephemeral discussion; route each candidate through existing ingest, query-persistence, ownership, provenance, contradiction, confirmation, backup, and review semantics. Assistant suggestions, brainstorms, rejected options, and transcripts remain non-durable unless the user's explicit decision independently justifies retention. A checkpoint may successfully make no mutation.
+3. **Checkpoint** an explicit natural-language request by inspecting the current conversation for durable changes rather than summarizing or storing it. Classify supported facts, corrections, decisions, goals, preferences, project changes, derived conclusions, unresolved items, inferences, and ephemeral discussion; route each candidate through existing ingest, query persistence, ownership, provenance, contradiction, confirmation, backup, and review semantics. Assistant suggestions, brainstorms, rejected options, and transcripts remain non-durable unless the user's explicit decision independently justifies retention. A checkpoint may successfully make no mutation.
 4. **Review** unresolved inferences, stale context, contradictions, ambiguous claims, missing provenance, and important changes needing attention.
 5. **Lint** structural and epistemic integrity, including frontmatter, links, indexes, duplicates, metadata consistency, freshness, and schema drift. Current-vault lint requires the latest runtime state; migration-source validation can still inspect recognized old formats. Lint and deep lint never migrate.
 6. **Upgrade** an existing vault through the latest-first orchestration above. It assesses first, delegates schema work to migration, uses deep maintenance for documented contracts/adoption/semantic work, synchronizes managed controls, validates, and reports deferred decisions.

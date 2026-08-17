@@ -30,18 +30,26 @@ The conceptual lifecycle is:
 ```text
 durable context
       ↓
+targeted retrieval
+      ↓
 contextual reasoning
       ↓
-ephemeral exploration
+ephemeral conversation
       ↓
-deliberate durable update
+optional checkpoint
+      ↓
+smallest durable update
+      ↓
+existing Context Vault
 ```
 
-The current foundation provides local skills for ingest, query, review,
-validation, and maintenance. The full lifecycle is a product direction, not a
-claim that every transition is automatic: exploration is ephemeral by default,
-reasoning is not automatically durable context, and durable updates remain
-deliberate and user-correctable.
+The current foundation provides local skills for targeted retrieval, contextual
+reasoning, ingest, query, checkpoint, review, validation, maintenance, and
+optional context receipts. The lifecycle is not automatic: conversation and
+reasoning are ephemeral by default, checkpoint routes candidates through the
+existing persistence rules, and durable updates remain deliberate and
+user-correctable. Brainstorming and decision-making are horizontal workflows,
+not additional verticals or storage systems.
 
 The principles are:
 
