@@ -2,19 +2,30 @@
 
 > Think with context you own.
 
-Meaningful AI conversations often start from zero even when the underlying
-project, decision, goal, or problem does not. SelfContext helps you continue
-thinking instead of starting over: it keeps durable context worth carrying
-forward in portable Markdown you own and lets the AI tool or harness you
-already use reason from the relevant parts.
+Meaningful AI conversations repeatedly start from zero even though your
+projects, decisions, goals, constraints, and previous thinking already have
+history. SelfContext helps you **continue thinking instead of starting over**:
+it keeps durable context worth carrying forward in portable Markdown you own
+and lets the AI tool or harness you already use reason from the relevant parts.
 
-SelfContext is more than memory storage. It provides project-local skills and a
-local Markdown Context Vault; the existing AI harness and model remain the
-execution layer. Context has a lifecycle: a conversation is ephemeral by
-default, reasoning does not automatically become memory, and the aim is to
-preserve what can make a future conversation better—not to accumulate
-everything that happens. Durable updates remain inspectable and
-user-correctable.
+The technical thesis is simple: **context has a lifecycle.** A conversation is
+ephemeral by default. Reasoning is not automatically memory. Preserve what
+will make a future useful conversation better; do not record everything by
+default. Durable updates remain inspectable and user-correctable.
+
+SelfContext is a context format and lifecycle, not a standalone chatbot, AI
+harness, or provider-owned memory service. It provides project-local skills and
+a local Markdown Context Vault; the existing AI harness and model remain the
+execution layer. Its operational loop is:
+
+```text
+durable context
+→ targeted retrieval
+→ contextual reasoning
+→ ephemeral exploration
+→ optional checkpoint
+→ smallest durable update
+```
 
 The current foundation supports natural-language ingest, targeted retrieval,
 query, contextual thinking, checkpoint, targeted review, structural validation,
@@ -41,10 +52,14 @@ Open the repository root in your AI tool and use natural language:
 
 ```text
 ingest my resume into SelfContext
-what does my context say about a skill or experience?
+what does my context say about X?
+help me think through X using my context
+compare these options against my current goals
+challenge this idea based on what you know
+checkpoint this discussion
+what from this conversation is actually worth keeping?
+show me the context behind that recommendation
 review my context for stale or conflicting information
-checkpoint this discussion and keep only durable changes
-help me position myself for a role based on my context
 ```
 
 On first use, SelfContext initializes a missing `vault/` automatically. If you
@@ -74,16 +89,13 @@ nothing is changed.
 ## How It Works
 
 ```text
-You
+existing AI harness/model
  |
  v
-Existing AI harness + model
+SelfContext skills
  |
  v
-SelfContext project-local skills
- |
- v
-Local Markdown Context Vault
+local Markdown Context Vault
 (Markdown + YAML frontmatter + standard links)
 ```
 
@@ -105,22 +117,23 @@ remains the canonical context store.
 
 ## Thinking with Context
 
-SelfContext can support questions, brainstorming, decisions, comparisons, and
-challenges by retrieving relevant existing context across areas such as
-Career, Learning, Writing, Relationships, Media / Taste, and Ventures /
-Projects. The aim is continuity around a useful line of thought, not a replay
-of every prior conversation. The contextual-thinking Query mode provides this
-contextual reasoning over retrieved context rather than adding a new operation
-or area.
+SelfContext can support questions and contextual reasoning about
+brainstorming, decisions, comparisons, and challenges by retrieving relevant
+existing context across areas such as Career, Learning, Writing,
+Relationships, Media / Taste, and Ventures / Projects. The aim is continuity
+around a useful line of thought, not a replay of every prior conversation. The
+contextual-thinking Query mode provides this reasoning over retrieved context
+rather than adding a new operation or area.
 
-Brainstorming and decision-making are horizontal workflows, not additional
-verticals. Retrieval can span multiple existing areas when needed while each
-concept remains in its canonical owner. Exploration in a conversation remains
-ephemeral by default. An optional checkpoint routes explicit durable outcomes
-through the existing ingest, query persistence, or review semantics and may
-make no mutation. When information has future reuse value, the user can
-deliberately preserve it through the existing workflows; generated suggestions
-are not facts about the user and are not stored automatically.
+Brainstorming is an informal use case, not a product category or vertical.
+Decision-making is another horizontal workflow. Retrieval can span multiple
+existing areas when needed while each concept remains in its canonical owner.
+Exploration in a conversation remains ephemeral by default. An optional
+checkpoint routes explicit durable outcomes through the existing ingest, query
+persistence, or review semantics and may make no mutation. When information
+has future reuse value, the user can deliberately preserve it through the
+existing workflows; generated suggestions are not facts about the user and
+are not stored automatically.
 
 An on-demand context receipt can explain the relevant context, tradeoffs,
 uncertainty, and persistence outcome without creating a receipt file or
@@ -135,6 +148,23 @@ exposing private chain-of-thought.
   validation, and keeping an existing vault current.
 - **Trustworthy context:** provenance, freshness, unresolved items,
   contradictions, and explicit confirmation for important inferences.
+
+## Explicit Non-Goals
+
+SelfContext is not currently:
+
+- a standalone chatbot;
+- an AI harness;
+- a hosted SaaS memory service;
+- a generic second brain;
+- a transcript archive;
+- a prompt-template or export product;
+- a database or embeddings platform;
+- a system that automatically records everything; or
+- a Brainstorming vertical.
+
+These boundaries keep the product focused on durable context and the existing
+harness boundary. See the [Vision](docs/VISION.md) for the rationale.
 
 ### Context Areas
 
@@ -156,7 +186,8 @@ uses the areas relevant to your context as needed.
 
 ## Privacy and Portability
 
-- `vault/` is local and Git-ignored. Never commit it or force-add files from it.
+SelfContext is local-first: `vault/` is local and Git-ignored. Never commit it
+or force-add files from it.
 - The canonical format remains useful without SelfContext, a particular model,
   AI tool, search implementation, or Obsidian.
 - Git ignore helps prevent accidental commits, but it does not prevent a model
