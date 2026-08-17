@@ -40,8 +40,9 @@ promises.
 
 ## Quick Start
 
-SelfContext works with an AI tool that can load project-local Agent Skills. No
-server or dependency installation is needed for normal use.
+SelfContext works with an AI tool that can load project-local Agent Skills.
+The repository's `.agents/skills/` directory is the integration point. No server
+or dependency installation is needed for normal use.
 
 ```bash
 git clone https://github.com/joacod/self-context.git
@@ -62,13 +63,14 @@ show me the context behind that recommendation
 review my context for stale or conflicting information
 ```
 
-On first use, SelfContext initializes a missing `vault/` automatically. If you
-already have a vault, place it at `vault/`; the skill will orient itself from
-the vault's own files. No custom CLI is required.
+When an operation needs it, a missing `vault/` is initialized automatically,
+and you can inspect the result as ordinary Markdown. If you already have a
+vault, place it at `vault/`; the skill will orient itself from the vault's own
+files. No custom CLI is required.
 
-## Keep Your Vault Current
+## Update an Existing Vault
 
-After updating SelfContext, update the repository and ask your AI tool:
+When you update this repository, pull the latest changes and ask your AI tool:
 
 ```bash
 git pull
@@ -78,13 +80,13 @@ git pull
 upgrade vault latest
 ```
 
-SelfContext is latest-first. After updating the repository, run
-`upgrade vault latest` to bring an existing vault to the current model before
-normal use. The upgrade checks your existing vault and applies only the updates
-it needs, including supported format changes, relevant context areas, and safe
-organization improvements. Existing evidence and history are preserved, and
-ambiguous decisions are left for review. If your vault is already current,
-nothing is changed.
+`upgrade vault latest` is the normal user-facing path for bringing an existing
+vault fully up to date. It checks the latest schema and contracts, delegates
+schema migration and other applicable bounded maintenance to their owning
+procedures, synchronizes managed controls, and validates the result. Existing
+evidence and history are preserved; ambiguous decisions are left for review.
+If your vault is already current, nothing is changed. You do not need to choose
+or run the underlying migration and maintenance procedures for a normal upgrade.
 
 ## How It Works
 
@@ -117,29 +119,18 @@ remains the canonical context store.
 
 ## Thinking with Context
 
-SelfContext can support questions and contextual reasoning about
-brainstorming, decisions, comparisons, and challenges by retrieving relevant
-existing context across areas such as Career, Learning, Writing,
-Relationships, Media / Taste, and Ventures / Projects. The aim is continuity
-around a useful line of thought, not a replay of every prior conversation. The
-contextual-thinking Query mode provides this reasoning over retrieved context
-rather than adding a new operation or area.
+SelfContext retrieves relevant existing context to support brainstorming,
+decisions, comparisons, and challenges across areas such as Career, Learning,
+Writing, Relationships, Media / Taste, and Ventures / Projects. This is a
+Query mode, not a new area. Conversations remain ephemeral by default; an
+explicit checkpoint can preserve only a durable outcome when it earns the
+maintenance cost.
 
-Brainstorming is an informal use case, not a product category or vertical.
-Decision-making is another horizontal workflow. Retrieval can span multiple
-existing areas when needed while each concept remains in its canonical owner.
-Exploration in a conversation remains ephemeral by default. An optional
-checkpoint routes explicit durable outcomes through the existing ingest, query
-persistence, or review semantics and may make no mutation. When information
-has future reuse value, the user can deliberately preserve it through the
-existing workflows; generated suggestions are not facts about the user and
-are not stored automatically.
-
-Read-only Query/contextual thinking does not mutate pages, logs, indexes,
-backups, metadata, or generated artifacts by default. An on-demand context
-receipt can explain the relevant context, scope, coverage, freshness,
-tradeoffs, uncertainty, assertion kind, and persistence outcome without
-creating a receipt file or exposing private chain-of-thought.
+Query/contextual thinking is read-only by default. It does not update pages,
+logs, indexes, backups, metadata, or generated artifacts. When requested, a
+compact context receipt can explain scope, evidence coverage, freshness,
+uncertainty, assertion kind, and persistence without exposing private
+chain-of-thought.
 
 ## What It Supports
 
@@ -206,7 +197,9 @@ From the repository root, run the canonical dependency-free validation:
 python3 scripts/validate_repo.py
 ```
 
-Operational migration and maintenance procedures live under
-[the SelfContext skill references](.agents/skills/self-context/references/).
+For operational procedures, see the
+[upgrade procedure](.agents/skills/self-context/references/upgrade.md),
+[migration procedure](.agents/skills/self-context/references/migration.md), and
+[deep-maintenance procedure](.agents/skills/self-context/references/deep-maintenance.md).
 
 Licensed under the [MIT License](LICENSE).
