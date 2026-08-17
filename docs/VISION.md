@@ -18,6 +18,48 @@ Agents may organize the context, identify patterns, preserve provenance, and sur
 
 This is not an attempt to create a complete or objective personality profile. It is an evidence-grounded representation of the person's context, history, goals, patterns, preferences, and unresolved questions.
 
+## Continuity of Thought
+
+SelfContext exists to support continuity of useful reasoning. Durable context
+should help a person and their existing AI harness continue a line of thought
+without starting from zero, while the conversation itself remains temporary
+unless something earns a place in the vault.
+
+The conceptual lifecycle is:
+
+```text
+durable context
+      ↓
+contextual reasoning
+      ↓
+ephemeral exploration
+      ↓
+deliberate durable update
+```
+
+The current foundation provides local skills for ingest, query, review,
+validation, and maintenance. The full lifecycle is a product direction, not a
+claim that every transition is automatic: exploration is ephemeral by default,
+reasoning is not automatically durable context, and durable updates remain
+deliberate and user-correctable.
+
+The principles are:
+
+1. **Memory accumulation is not the goal.** A larger vault is not, by itself, a better one.
+2. **The purpose of context is to improve future reasoning.** Durable context earns its place by making later thinking more useful.
+3. **A conversation is ephemeral by default.** Conversation history is not the canonical vault.
+4. **Reasoning is not automatically memory.** Exploration and analysis do not become durable merely because they occurred.
+5. **Generated assistant suggestions are not facts about the user.** They remain suggestions or derived material unless the user deliberately confirms something as context.
+6. **Only information that earns future reuse value should become durable context.** Relevance and expected continuity matter more than completeness.
+7. **The user remains the final authority over durable context.** The user can inspect, correct, retain, or remove it.
+8. **Context should be inspectable, correctable, and portable.** Plain files and visible provenance keep those properties concrete.
+9. **The system should become better at deciding what NOT to store, not merely better at storing more.** Selectivity is a product capability, not a failure to remember.
+
+These principles extend the existing commitments to provenance, visible
+contradictions, explicit uncertainty, freshness, user ownership, and
+local-first storage. They do not replace the evidence and lifecycle rules that
+keep durable context trustworthy.
+
 ## Design Commitments
 
 - **User ownership:** The source of truth is a local directory the user can copy, inspect, edit, back up, or delete.
