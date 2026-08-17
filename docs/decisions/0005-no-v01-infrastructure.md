@@ -9,7 +9,14 @@ The first useful version can be made from Markdown, skills, references, and perh
 
 ## Decision
 
-v0.1 has no canonical database, graph database, vector database, embeddings, RAG framework, MCP server, API server, background service, sync service, authentication system, analytics, telemetry, or custom UI. Deterministic scripts are allowed only when they materially improve a fragile operation such as linting, and any generated indexes or caches remain disposable.
+v0.1 has no canonical database, graph database, vector database, embeddings,
+RAG framework, MCP server, API server, background service, sync service,
+authentication system, analytics, telemetry, or custom UI. A selected harness may
+use MCP tools or other retrieval capabilities to supply source material to
+normal ingest, but SelfContext does not provide or require those capabilities
+as infrastructure, a synchronization service, or a memory store. Deterministic
+scripts are allowed only when they materially improve a fragile operation such
+as linting, and any generated indexes or caches remain disposable.
 
 ## Consequences
 

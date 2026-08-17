@@ -60,7 +60,7 @@ operational reproduction must use fictional data.
 
 - Treat `vault/` as private data. It is Git-ignored; never commit it or force-add files from it.
 - Keep the vault independent of OpenCode, Claude Code, Codex, Hermes, Obsidian, or any other harness.
-- Do not introduce MCP, databases, embeddings, background services, dedicated runtime subagents, or another agent runtime without an explicit architectural decision.
+- Do not introduce MCP as SelfContext infrastructure, databases, embeddings, background services, dedicated runtime subagents, or another agent runtime without an explicit architectural decision. MCP tools or other retrieval capabilities already exposed by a user's harness may supply source material to normal ingest, but they are optional harness capabilities, not a required SelfContext runtime, synchronization layer, or memory store.
 - Keep ordinary Markdown, YAML frontmatter, and standard Markdown links as the portable contract.
 - Operate from the repository root and preserve the tracked operational/private-data separation.
 

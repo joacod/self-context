@@ -238,8 +238,10 @@ The implemented maintenance path is deliberately explicit:
 A future contract version must document migrations in its owning procedure,
 including affected evidence, safe structural changes, semantic review
 requirements, and forbidden automatic changes. No background maintenance,
-external enrichment, embeddings, database, MCP, sync layer, or custom runtime
-is planned.
+automatic external enrichment, embeddings, database, SelfContext-owned MCP or
+synchronization layer, or custom runtime is planned. A selected harness may
+still provide source material to normal ingest through capabilities it already
+exposes; those capabilities are not part of SelfContext's durable architecture.
 
 ## Near-Term Experiments
 

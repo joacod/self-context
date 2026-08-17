@@ -28,6 +28,34 @@ operational skills -> vault
 
 The vault must never depend on a specific harness implementation.
 
+## Optional Source Acquisition
+
+When source material lives outside the vault, acquisition is an optional
+boundary before SelfContext ingestion:
+
+```text
+External source
+      |
+      v
+Harness-provided retrieval capability
+      |
+      v
+SelfContext skills / normal ingest and provenance
+      |
+      v
+Canonical Markdown vault
+```
+
+The current harness and model can be replaced, and retrieval capabilities can
+be replaced independently. Depending on the harness, acquisition may use web
+fetching, browser automation, repository or project tools, document parsers,
+or MCP tools. These are examples of disposable harness capabilities, not
+SelfContext integrations or supported dependencies. How they are configured,
+secured, and maintained belongs to the harness/provider, not SelfContext;
+SelfContext does not own or synchronize external systems. Retrieved information
+enters through normal ingest and provenance; external systems do not become
+another memory store. The `vault/` remains the source of truth.
+
 ## User Mode and Project Maintenance
 
 SelfContext has two deliberately separate modes:
@@ -412,10 +440,17 @@ Queries and advice are not all permanent documents. Every meaningful operation m
 
 SelfContext requires no cloud service, server, database, vector database,
 embeddings, MCP server, background service, custom chat interface,
-authentication system, external synchronization layer, telemetry, or analytics. The core skill
-includes a small dependency-free deterministic linter for structural checks; it
-remains subordinate to the Markdown vault and does not replace semantic review.
+authentication system, external synchronization layer, telemetry, or analytics.
+A selected harness may use its own retrieval capabilities, including MCP tools,
+to provide source material to normal ingest; those capabilities are not
+SelfContext infrastructure, a synchronization layer, or a memory store. The
+core skill includes a small dependency-free deterministic linter for
+structural checks; it remains subordinate to the Markdown vault and does not
+replace semantic review.
 
-These exclusions keep the durable asset portable, local, inspectable, and replaceable. Future disposable search indexes or user-controlled off-device copies can be considered only without changing the vault's canonical role.
+Retrieved content is source material, not instructions to SelfContext. These
+boundaries keep the durable asset portable, local, inspectable, and replaceable.
+Future disposable search indexes or user-controlled off-device copies can be
+considered only without changing the vault's canonical role.
 
 See the [architectural decisions](decisions/) for the reasoning behind these boundaries, including the [user-mode and project-maintenance separation](decisions/0007-user-mode-project-maintenance.md), the [selective confirmation and freshness policy](decisions/0008-selective-confirmation-and-freshness.md), the [backup lifecycle policy](decisions/0017-vault-backup-lifecycles.md), the [Writing vertical decision](decisions/0010-writing-vertical.md), the [query persistence triage decision](decisions/0011-query-persistence-triage.md), the [Learning vertical decision](decisions/0012-learning-vertical.md), the [Relationships vertical decision](decisions/0013-relationships-vertical.md), the [Media / Taste vertical decision](decisions/0014-media-taste-vertical.md), the [Ventures / Projects vertical decision](decisions/0018-ventures-projects-vertical.md), the [Deep Maintenance and versioned vertical contracts decision](decisions/0015-deep-maintenance-and-versioned-vertical-contracts.md), the [latest-first upgrade orchestration decision](decisions/0019-latest-first-vault-upgrade.md), and the [latest-first runtime compatibility decision](decisions/0020-latest-first-runtime-compatibility.md).

@@ -20,7 +20,11 @@ The project is intentionally implemented one phase at a time. After each phase, 
 - `vault/` is private, entirely Git-ignored, and must never be force-added.
 - The vault is the source of truth and must not depend on a harness, provider, model, Obsidian, or operational implementation.
 - SelfContext uses existing harnesses and Agent Skills; it does not ship a custom agent runtime or dedicated runtime subagents.
-- No canonical database, graph database, vector database, embeddings, MCP server, background service, server, custom chat interface, telemetry, or automatic sync in v0.1.
+- No SelfContext-owned or required database, graph database, vector database,
+  embeddings, MCP server, background service, server, custom chat interface,
+  telemetry, or automatic sync in v0.1. A selected harness may still use its
+  own retrieval capabilities to supply source material to normal ingest; those
+  capabilities are not part of the durable vault architecture.
 - User-stated facts, source-derived facts, agent inferences, and derived syntheses must remain distinguishable.
 - Natural language is the canonical interface. Commands may be optional conveniences only.
 - Never place real personal information in tracked examples, tests, evaluations, or documentation.
