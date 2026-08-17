@@ -16,10 +16,11 @@ preserve what can make a future conversation better—not to accumulate
 everything that happens. Durable updates remain inspectable and
 user-correctable.
 
-The current foundation supports natural-language ingest, query, targeted
-review, structural validation, and vault maintenance. Broader continuity
-workflows remain a product direction; this repository does not add a separate
-assistant or runtime.
+The current foundation supports natural-language ingest, query, checkpoint,
+targeted review, structural validation, and vault maintenance. Checkpoint
+inspects a conversation for the smallest durable changes without storing a
+transcript. Broader continuity workflows remain a product direction; this
+repository does not add a separate assistant or runtime.
 
 The core vault lifecycle and focused context areas are implemented.
 Future work is tracked as experiments in the [Roadmap](docs/ROADMAP.md), not
@@ -41,6 +42,7 @@ Open the repository root in your AI tool and use natural language:
 ingest my resume into SelfContext
 what does my context say about a skill or experience?
 review my context for stale or conflicting information
+checkpoint this discussion and keep only durable changes
 help me position myself for a role based on my context
 ```
 
@@ -119,8 +121,8 @@ automatically.
 
 - **Portable storage:** ordinary Markdown, YAML frontmatter, and standard
   relative links.
-- **Natural-language workflows:** ingest, query, targeted review, structural
-  validation, and keeping an existing vault current.
+- **Natural-language workflows:** ingest, query, checkpoint, targeted review,
+  structural validation, and keeping an existing vault current.
 - **Trustworthy context:** provenance, freshness, unresolved items,
   contradictions, and explicit confirmation for important inferences.
 

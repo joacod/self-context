@@ -534,5 +534,41 @@
   {
     "query": "Compare two generic software designs without reading my personal context.",
     "should_trigger": false
+  },
+  {
+    "query": "Checkpoint this discussion and keep only the parts that are actually worth adding to my context.",
+    "should_trigger": true
+  },
+  {
+    "query": "At the end of this long conversation, check whether anything changed that is worth saving to my Context Vault; do not just summarize it.",
+    "should_trigger": true
+  },
+  {
+    "query": "What from this conversation should become context, and what should remain ephemeral?",
+    "should_trigger": true
+  },
+  {
+    "query": "Save anything from this that is actually worth keeping, but do not store the transcript.",
+    "should_trigger": true
+  },
+  {
+    "query": "Update my context with the decisions we actually made, not the alternatives we brainstormed.",
+    "should_trigger": true
+  },
+  {
+    "query": "Please preserve the useful outcome of this discussion using my existing context structure.",
+    "should_trigger": true
+  },
+  {
+    "query": "Summarize this generic brainstorming conversation for a colleague; do not read or change my personal context.",
+    "should_trigger": false
+  },
+  {
+    "query": "Create a complete transcript of this meeting for my records.",
+    "should_trigger": false
+  },
+  {
+    "query": "What was the last sentence in this chat?",
+    "should_trigger": false
   }
 ]

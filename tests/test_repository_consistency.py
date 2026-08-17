@@ -290,6 +290,37 @@ class RepositoryConsistencyTests(unittest.TestCase):
         }
         self.assertTrue(required.issubset(prompts))
 
+    def test_checkpoint_eval_corpus_covers_durable_conversation_boundaries(self) -> None:
+        evals = json.loads(
+            (SKILL_ROOT / "evals/evals.json").read_text(encoding="utf-8")
+        )["evals"]
+        checkpoint_cases = [
+            case for case in evals if int(case["id"]) in range(129, 139)
+        ]
+        self.assertEqual(
+            [int(case["id"]) for case in checkpoint_cases],
+            list(range(129, 139)),
+        )
+        combined = "\n".join(
+            str(case["prompt"]) + "\n" + str(case["expected_output"])
+            for case in checkpoint_cases
+        ).casefold()
+        for phrase in (
+            "explicitly decides",
+            "corrects existing",
+            "assistant suggested",
+            "rejected it as an option",
+            "preserve and reuse an evidence-backed comparison",
+            "inferred that john doe",
+            "contradiction and review semantics",
+            "nothing durable was found",
+            "existing core concept",
+            "do not save the whole chat",
+        ):
+            self.assertIn(phrase.casefold(), combined, phrase)
+        for case in checkpoint_cases:
+            self.assertGreaterEqual(len(case.get("expectations", [])), 3)
+
     def test_vertical_procedures_document_historical_upgrade_guidance(self) -> None:
         for record in self.records:
             procedure = (
