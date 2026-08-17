@@ -1,14 +1,25 @@
 # SelfContext
 
-> Portable personal context for AI tools, stored in plain Markdown files you own.
+> Think with context you own.
 
-People often repeat their history, preferences, goals, and constraints across AI
-tools and sessions. SelfContext keeps that context in a local, inspectable vault
-that you can edit, copy, back up, and carry between models.
+Meaningful AI conversations often start from zero even when the underlying
+project, decision, goal, or problem does not. SelfContext helps you continue
+thinking instead of starting over: it keeps durable context worth carrying
+forward in portable Markdown you own and lets the AI tool or harness you
+already use reason from the relevant parts.
 
-SelfContext is not a hosted app or a separate AI runtime. It provides
-project-local skills for an existing AI tool that supports Agent Skills; the
-local `vault/` remains the source of truth.
+SelfContext is more than memory storage. It provides project-local skills and a
+local Markdown Context Vault; the existing AI harness and model remain the
+execution layer. Context has a lifecycle: a conversation is ephemeral by
+default, reasoning does not automatically become memory, and the aim is to
+preserve what can make a future conversation better—not to accumulate
+everything that happens. Durable updates remain inspectable and
+user-correctable.
+
+The current foundation supports natural-language ingest, query, targeted
+review, structural validation, and vault maintenance. Broader continuity
+workflows remain a product direction; this repository does not add a separate
+assistant or runtime.
 
 The core vault lifecycle and focused context areas are implemented.
 Future work is tracked as experiments in the [Roadmap](docs/ROADMAP.md), not
@@ -63,7 +74,7 @@ nothing is changed.
 You
  |
  v
-Existing AI tool + model
+Existing AI harness + model
  |
  v
 SelfContext skills
@@ -75,8 +86,8 @@ Local Context Vault
 
 - The vault is the durable source of truth. You can inspect, edit, copy, and
   back it up independently.
-- The existing AI tool provides the model and execution. SelfContext provides
-  workflows for ingest, query, review, lint, advice, and maintenance.
+- The existing AI harness provides the model and execution. SelfContext
+  provides workflows for ingest, query, review, lint, advice, and maintenance.
 - User-stated facts, source-derived facts, agent inferences, and derived
   analyses remain distinguishable.
 
@@ -88,6 +99,21 @@ browser tools, repository access, document parsers, or MCP tools—to supply
 material to the normal ingest workflow. These capabilities are optional and
 disposable, not part of SelfContext's durable architecture. The Markdown vault
 remains the canonical context store.
+
+## Thinking with Context
+
+SelfContext can support questions, brainstorming, decisions, comparisons, and
+challenges by retrieving relevant existing context across areas such as
+Career, Learning, Writing, Relationships, Media / Taste, and Ventures /
+Projects. The aim is continuity around a useful line of thought, not a replay
+of every prior conversation.
+
+The current skills provide natural-language ingest, query, targeted review,
+validation, and maintenance over the local Context Vault. Exploration in a
+conversation remains ephemeral by default. When information has future reuse
+value, the user can deliberately preserve it through the existing workflows;
+generated suggestions are not facts about the user and are not stored
+automatically.
 
 ## What It Supports
 
