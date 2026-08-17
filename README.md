@@ -16,11 +16,12 @@ preserve what can make a future conversation better—not to accumulate
 everything that happens. Durable updates remain inspectable and
 user-correctable.
 
-The current foundation supports natural-language ingest, query, checkpoint,
-targeted review, structural validation, and vault maintenance. Checkpoint
-inspects a conversation for the smallest durable changes without storing a
-transcript. Broader continuity workflows remain a product direction; this
-repository does not add a separate assistant or runtime.
+The current foundation supports natural-language ingest, targeted retrieval,
+query, contextual thinking, checkpoint, targeted review, structural validation,
+and vault maintenance. Checkpoint inspects a conversation for the smallest
+durable changes without storing a transcript. These are horizontal workflows
+over existing context, not a separate assistant, runtime, storage system, or
+replacement harness.
 
 The core vault lifecycle and focused context areas are implemented.
 Future work is tracked as experiments in the [Roadmap](docs/ROADMAP.md), not
@@ -79,10 +80,10 @@ You
 Existing AI harness + model
  |
  v
-SelfContext skills
+SelfContext project-local skills
  |
  v
-Local Context Vault
+Local Markdown Context Vault
 (Markdown + YAML frontmatter + standard links)
 ```
 
@@ -108,21 +109,30 @@ SelfContext can support questions, brainstorming, decisions, comparisons, and
 challenges by retrieving relevant existing context across areas such as
 Career, Learning, Writing, Relationships, Media / Taste, and Ventures /
 Projects. The aim is continuity around a useful line of thought, not a replay
-of every prior conversation.
+of every prior conversation. The contextual-thinking Query mode provides this
+contextual reasoning over retrieved context rather than adding a new operation
+or area.
 
-The current skills provide natural-language ingest, query, targeted review,
-validation, and maintenance over the local Context Vault. Exploration in a
-conversation remains ephemeral by default. When information has future reuse
-value, the user can deliberately preserve it through the existing workflows;
-generated suggestions are not facts about the user and are not stored
-automatically.
+Brainstorming and decision-making are horizontal workflows, not additional
+verticals. Retrieval can span multiple existing areas when needed while each
+concept remains in its canonical owner. Exploration in a conversation remains
+ephemeral by default. An optional checkpoint routes explicit durable outcomes
+through the existing ingest, query persistence, or review semantics and may
+make no mutation. When information has future reuse value, the user can
+deliberately preserve it through the existing workflows; generated suggestions
+are not facts about the user and are not stored automatically.
+
+An on-demand context receipt can explain the relevant context, tradeoffs,
+uncertainty, and persistence outcome without creating a receipt file or
+exposing private chain-of-thought.
 
 ## What It Supports
 
 - **Portable storage:** ordinary Markdown, YAML frontmatter, and standard
   relative links.
-- **Natural-language workflows:** ingest, query, checkpoint, targeted review,
-  structural validation, and keeping an existing vault current.
+- **Natural-language workflows:** ingest, targeted retrieval, contextual
+  thinking, decision support, checkpoint, targeted review, structural
+  validation, and keeping an existing vault current.
 - **Trustworthy context:** provenance, freshness, unresolved items,
   contradictions, and explicit confirmation for important inferences.
 

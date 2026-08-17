@@ -11,8 +11,14 @@ The current system provides:
 - a latest-first schema 0.2 runtime with schema 0.1 retained as an explicit migration source and selective vertical contracts;
 - deterministic ordinary/deep lint, managed index catalogs, and disposable local lexical search;
 - first-run initialization and orientation of existing vaults;
-- natural-language ingest, query, review, and lint workflows;
+- natural-language ingest, targeted retrieval, query, contextual thinking,
+  checkpoint, review, and lint workflows;
+- contextual decisions, comparisons, brainstorming, and tradeoff reasoning over
+  relevant existing context;
 - shared provenance, lifecycle, freshness, review, and epistemic boundaries;
+- optional context receipts that expose bounded reasoning provenance without
+  creating a new store;
+- cross-vertical contextual reasoning evaluation coverage;
 - local provisional/final ZIP backups with retention of the latest ten archives;
 - Obsidian compatibility and multi-session continuity; and
 - separate Career, Learning, Writing, Relationships, Media / Taste, and
@@ -24,6 +30,53 @@ output into facts. Learning treats sources as evidence about the person's
 knowledge; Relationships treats third-party information as bounded relationship
 context; and Media / Taste treats consumption as evidence only when it helps
 explain the user's reaction.
+
+## High-Priority Shared / Horizontal Workflows
+
+The following workflows are implemented in the existing project-local skills.
+They operate over the existing Context Vault and may retrieve across multiple
+current areas without becoming new storage owners:
+
+- **Contextual thinking / brainstorming:** retrieves only relevant context and
+  supports exploration while keeping generated alternatives ephemeral by
+  default.
+- **Contextual decisions and tradeoff reasoning:** compares options against
+  existing goals, constraints, evidence, and prior decisions without creating a
+  decision-specific vertical or silently changing durable context.
+- **Checkpoint:** inspects a conversation for the smallest durable outcomes and
+  routes them through normal ingest, query persistence, or review semantics. A
+  successful checkpoint may result in no mutation.
+- **Context receipt / reasoning provenance:** provides an on-demand, bounded
+  explanation of the context used, tradeoffs, uncertainty, and persistence
+  outcome without exposing a transcript or hidden chain-of-thought.
+- **Cross-vertical contextual reasoning evals:** exercise retrieval and
+  reasoning across relevant owners while checking that ownership, provenance,
+  and persistence boundaries remain intact.
+
+### Next product-learning priority
+
+Deepen and dogfood these shared workflows before adding additional verticals.
+The next learning cycle should test whether they produce materially better,
+more selective continuity than generic answers while preserving the portable
+Markdown architecture and the existing harness boundary.
+
+### Future experiments
+
+The following are speculative future work, not commitments:
+
+- whether retrieved context is relevant enough to improve the answer;
+- whether the system asks too many freshness questions;
+- whether contextual reasoning is materially better than generic answers;
+- whether checkpoints store too much;
+- whether checkpoints store too little;
+- whether users understand the difference between conversation and durable
+  context;
+- whether cross-vertical retrieval introduces noise; and
+- whether useful derived conclusions are reconstructed too often.
+
+A standalone SelfContext product may be explored later, but it is not currently
+planned or required. The current project intentionally integrates with
+compatible existing AI harnesses rather than replacing them.
 
 ## Current Vertical Work
 
