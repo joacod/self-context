@@ -8,6 +8,42 @@
     "should_trigger": true
   },
   {
+    "query": "ingest my resume into SelfContext",
+    "should_trigger": true
+  },
+  {
+    "query": "what does my context say about X?",
+    "should_trigger": true
+  },
+  {
+    "query": "help me think through X using my context",
+    "should_trigger": true
+  },
+  {
+    "query": "compare these options against my current goals",
+    "should_trigger": true
+  },
+  {
+    "query": "challenge this idea based on what you know",
+    "should_trigger": true
+  },
+  {
+    "query": "checkpoint this discussion",
+    "should_trigger": true
+  },
+  {
+    "query": "what from this conversation is actually worth keeping?",
+    "should_trigger": true
+  },
+  {
+    "query": "show me the context behind that recommendation",
+    "should_trigger": true
+  },
+  {
+    "query": "review my context for stale or conflicting information",
+    "should_trigger": true
+  },
+  {
     "query": "What does my context say about examples of technical leadership, and which claims are actually supported by evidence?",
     "should_trigger": true
   },

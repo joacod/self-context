@@ -136,6 +136,65 @@ class RepositoryConsistencyTests(unittest.TestCase):
         checklist_text = checklist.read_text(encoding="utf-8")
         self.assertIn("python3 scripts/validate_repo.py", checklist_text)
 
+    def test_positioning_and_operational_ownership_are_documented(self) -> None:
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        vision = (ROOT / "docs/VISION.md").read_text(encoding="utf-8")
+        architecture = (ROOT / "docs/ARCHITECTURE.md").read_text(encoding="utf-8")
+        roadmap = (ROOT / "docs/ROADMAP.md").read_text(encoding="utf-8")
+        skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+        query = (SKILL_ROOT / "references/query.md").read_text(encoding="utf-8")
+        checkpoint = (SKILL_ROOT / "references/checkpoint.md").read_text(encoding="utf-8")
+        combined = "\\n".join(
+            (readme, vision, architecture, roadmap, skill, query, checkpoint)
+        ).casefold()
+
+        for phrase in (
+            "think with context you own",
+            "continue thinking instead of starting over",
+            "context has a lifecycle",
+            "a conversation is ephemeral by default",
+            "reasoning is not automatically memory",
+            "existing ai harness/model",
+            "local markdown context vault",
+            "brainstorming is an informal use case",
+        ):
+            self.assertIn(phrase, combined, phrase)
+
+        self.assertIn("selfcontext is not currently:", vision.casefold())
+        self.assertIn("- a brainstorming vertical.", vision.casefold())
+        self.assertNotIn("brainstorming companion", combined)
+        self.assertIn("references/query.md#task-context-packets", skill)
+        self.assertIn("canonical procedure for query", query.casefold())
+        self.assertIn(
+            "reuses the existing ingest, query persistence",
+            checkpoint.casefold(),
+        )
+
+    def test_natural_language_examples_cover_the_operational_loop(self) -> None:
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        trigger_evals = json.loads(
+            (SKILL_ROOT / "evals/trigger-evals.json").read_text(encoding="utf-8")
+        )
+        true_queries = {
+            str(item["query"])
+            for item in trigger_evals
+            if item.get("should_trigger") is True
+        }
+        examples = (
+            "ingest my resume into SelfContext",
+            "what does my context say about X?",
+            "help me think through X using my context",
+            "compare these options against my current goals",
+            "challenge this idea based on what you know",
+            "checkpoint this discussion",
+            "what from this conversation is actually worth keeping?",
+            "show me the context behind that recommendation",
+            "review my context for stale or conflicting information",
+        )
+        for example in examples:
+            self.assertIn(example, readme)
+            self.assertIn(example, true_queries)
+
     def test_initialization_preserves_schema_compatibility_and_selective_activation(self) -> None:
         text = (SKILL_ROOT / "references/initialization.md").read_text(encoding="utf-8")
         normalized = " ".join(text.casefold().split())
