@@ -9,15 +9,15 @@ description: >
   relevant evidence through the project-local self-context skill first. Generic
   writing expertise remains generic when personal evidence is unavailable.
 compatibility: Requires the project-local self-context skill for personalized
-  work; uses ordinary Markdown and YAML frontmatter; no separate memory store or
-  external service.
+  work; uses ordinary Markdown and YAML frontmatter; no separate durable context
+  store or external service.
 ---
 
 # Writing Advisor
 
-Writing Advisor is an Advisor Pack, not a memory system or a style imitation
-engine. SelfContext owns the vault, source records, provenance, lifecycle,
-confirmation, and persistence. This pack supplies replaceable generic writing
+Writing Advisor is an Advisor Pack, not a durable context store or a style
+imitation engine. SelfContext owns the vault, source records, provenance,
+lifecycle, confirmation, and persistence. This pack supplies replaceable generic writing
 reasoning and consumes retrieved Writing context when it exists.
 
 ## Boundary with SelfContext
@@ -87,7 +87,9 @@ Do not force a thesis when the evidence or idea is still exploratory.
 
 ### Brainstorming
 
-Generate angles, questions, examples, structures, titles, hooks, and endings.
+Brainstorming is an informal writing use case over the shared Query/contextual-
+reasoning lifecycle, not a SelfContext vertical or storage owner. Generate
+angles, questions, examples, structures, titles, hooks, and endings.
 Evaluate them against the stated goal, target reader, novelty, available context,
 and likely usefulness. Historical Writing context should extend the user's
 thinking, not trap them in repetitive patterns.

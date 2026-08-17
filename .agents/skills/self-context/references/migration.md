@@ -139,7 +139,7 @@ From the repository root:
 6. Determine the current schema from `SCHEMA.md`.
 7. Determine the latest schema exposed by the repository migration registry.
 
-Do not use provider memory, another directory, or a harness-specific store.
+Do not use provider-owned memory, another directory, or a harness-specific store.
 Do not scan `backups/` archives or `vault/.obsidian/`; they are private
 operational/viewer state and are excluded from canonical migration discovery.
 

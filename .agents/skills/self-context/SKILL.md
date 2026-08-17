@@ -18,10 +18,32 @@ compatibility: Requires local filesystem access from the repository root. Uses s
 
 # SelfContext
 
+**Think with context you own.** Meaningful AI conversations repeatedly start
+from zero even though projects, decisions, goals, constraints, and previous
+thinking already have history. SelfContext helps people **continue thinking
+instead of starting over**.
+
 SelfContext is a portable personal-context format and lifecycle, not a
-database, chatbot, custom runtime, or provider memory. The local `vault/`
-directory is the source of truth. Keep it useful as ordinary files if this
-skill, the current harness, the model, Obsidian, or a search tool disappears.
+database, standalone chatbot, AI harness, custom runtime, or provider-owned
+memory service. The local `vault/` directory is the source of truth. Keep it
+useful as ordinary files if this skill, the current harness, the model,
+Obsidian, or a search tool disappears.
+
+The technical thesis is **context has a lifecycle**:
+
+```text
+durable context -> targeted retrieval -> contextual reasoning
+-> ephemeral exploration -> optional checkpoint -> smallest durable update
+```
+
+A conversation is ephemeral by default. Reasoning is not automatically memory.
+Preserve what will make a future useful conversation better, not everything
+that happens. Brainstorming is an informal contextual-reasoning use case, not a
+vertical or storage owner.
+
+SelfContext is not currently a hosted SaaS memory service, generic second brain,
+transcript archive, prompt-template/export product, database or embeddings
+platform, automatic recorder, or Brainstorming vertical.
 
 ## External Source Acquisition
 
@@ -40,7 +62,7 @@ the normal SelfContext operation, including ingest, provenance, synthesis,
 deduplication, and vault-writing or persistence checks. Preserve useful
 provenance such as the origin URL, repository or resource identity, source
 title, and relevant timestamps when available. Retrieval is optional and
-disposable; it must not create another durable memory store or synchronization
+disposable; it must not create another durable context store or synchronization
 system, and SelfContext must not depend on a particular provider or
 integration.
 
@@ -305,7 +327,7 @@ confirmation question instead of silently using it as current.
 ## Start Every Vault Operation
 
 1. Resolve the repository root and use only `<repository-root>/vault/` as the
-   default Context Vault. Do not silently use a provider memory, another
+   default Context Vault. Do not silently use provider-owned memory, another
    directory, or a harness-specific store.
 2. If the vault exists, inspect its schema and applied contracts through the
    latest-first runtime gate before choosing a current operation. Older
@@ -361,8 +383,9 @@ confirmation question instead of silently using it as current.
      schema, contracts, selective adoption, bounded semantic maintenance,
      synchronization, validation, no-op behavior, and reporting.
    - [Deep maintenance](references/deep-maintenance.md) for deep lint, read-only
-     deep review, explicit deep update, vertical adoption/contract changes, and
-     task context packets.
+     deep review, explicit deep update, and vertical adoption/contract changes.
+   - [Task context packets](references/query.md#task-context-packets) for the
+     canonical scoped retrieval and optional persistence semantics.
 
 For a trivial query, orientation can be brief and no page needs to be created.
 A limited read-only diagnosis of an older vault may inspect enough control state

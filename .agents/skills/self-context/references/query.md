@@ -12,6 +12,11 @@
 - [Task context packets](#task-context-packets)
 - [Log and Response](#log-and-response)
 
+This is the canonical procedure for Query, contextual thinking, task context
+packets, persistence decisions, and context receipts. Keep those semantics in
+this reference; other procedures should link here rather than create parallel
+conversation or reasoning workflows.
+
 Keep index-first retrieval as the primary workflow. Use the disposable local
 lexical helper only as a fallback when the index is ambiguous, aliases are
 likely to matter, the vault is medium or large, the task spans a few verticals,
@@ -75,9 +80,10 @@ Use this procedure for retrieval, comparison, synthesis, or evidence gathering.
 
 ## Contextual thinking as a Query mode
 
-Contextual thinking is a subtype of Query for problems that ask the model to
-reason with the user's existing context: brainstorming, decision support,
-comparisons, tradeoffs, challenges, alternatives, or overlooked considerations.
+Contextual thinking is a subtype of Query—not a separate operation—for problems
+that ask the model to reason with the user's existing context: brainstorming,
+decision support, comparisons, tradeoffs, challenges, alternatives, or
+overlooked considerations.
 It uses the same latest-first runtime gate, index-first retrieval, provenance,
 freshness, contradiction, ownership, and persistence rules as every other
 Query. It is not a new vertical, advisor, data model, runtime, CLI, or chat
@@ -196,8 +202,8 @@ semantics.
 
 A context receipt is a compact, on-demand explanation of the evidence and
 epistemic status behind a Query answer. It is not an audit report, a transcript,
-or a private reasoning dump. Offer one when the user explicitly asks questions
-such as:
+or a private reasoning dump, and it never exposes chain-of-thought. Offer one
+when the user explicitly asks questions such as:
 
 - Why did you reach that conclusion?
 - What context or sources did you use?

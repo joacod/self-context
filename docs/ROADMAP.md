@@ -3,6 +3,16 @@
 This roadmap describes intended experiments, not promises. A change is ready
 when its behavior is validated and documented; Git records the change history.
 
+SelfContext is positioned as **Think with context you own**. Meaningful AI
+conversations repeatedly start from zero even when projects, decisions, goals,
+constraints, and previous thinking already have history. The benefit is to
+continue thinking instead of starting over. **Context has a lifecycle**:
+conversation is ephemeral by default, reasoning is not automatically memory,
+and durable updates are selective.
+
+Current product boundaries, including the fact that brainstorming is not a
+vertical, are defined in the [Vision](VISION.md#explicit-non-goals).
+
 ## Current Foundation
 
 The current system provides:
@@ -24,7 +34,7 @@ The current system provides:
 - separate Career, Learning, Writing, Relationships, Media / Taste, and
   Ventures / Projects verticals with replaceable Advisor Packs.
 
-The verticals add no competing memory format, custom runtime, universal
+The verticals add no competing context format, custom runtime, universal
 confidence taxonomy, numeric profile model, or automatic promotion of generated
 output into facts. Learning treats sources as evidence about the person's
 knowledge; Relationships treats third-party information as bounded relationship
@@ -37,9 +47,9 @@ The following workflows are implemented in the existing project-local skills.
 They operate over the existing Context Vault and may retrieve across multiple
 current areas without becoming new storage owners:
 
-- **Contextual thinking / brainstorming:** retrieves only relevant context and
-  supports exploration while keeping generated alternatives ephemeral by
-  default.
+- **Contextual thinking / brainstorming:** an informal horizontal use case that
+  retrieves only relevant context and supports exploration while keeping
+  generated alternatives ephemeral by default.
 - **Contextual decisions and tradeoff reasoning:** compares options against
   existing goals, constraints, evidence, and prior decisions without creating a
   decision-specific vertical or silently changing durable context.
@@ -74,9 +84,10 @@ The following are speculative future work, not commitments:
 - whether cross-vertical retrieval introduces noise; and
 - whether useful derived conclusions are reconstructed too often.
 
-A standalone SelfContext product may be explored later, but it is not currently
-planned or required. The current project intentionally integrates with
-compatible existing AI harnesses rather than replacing them.
+A standalone SelfContext product may be explored later as a future
+experiment, but it is not part of the current product category or required for
+the current project. The current project integrates with compatible existing AI
+harnesses rather than replacing them.
 
 ## Current Vertical Work
 

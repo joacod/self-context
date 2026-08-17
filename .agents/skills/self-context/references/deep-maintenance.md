@@ -268,24 +268,11 @@ versioned vault-format changes.
 
 ## Task context packets
 
-A task context packet is ephemeral derived output unless continuity rules and
-an explicit retention request justify storing it under `derived/`. It contains
-only the smallest relevant material:
-
-- task objective;
-- directly supported personal context;
-- relevant examples;
-- constraints and explicit preferences;
-- stale, provisional, or contradictory context;
-- unknowns;
-- evidence paths; and
-- important exclusions.
-
-Do not expose unrelated relationship or other sensitive context merely because
-it exists. A packet is not evidence and does not change the owning vertical.
-For retained packets, use `type: synthesis`,
-`assertion_kind: derived_synthesis`, provenance links, and a clear derived
-label.
+Task context packets are a Query output, not a maintenance artifact. Follow the
+canonical [Query task context packet procedure](query.md#task-context-packets)
+for scope, ownership, privacy, ephemeral handling, and optional derived
+persistence. Deep maintenance may inspect packet-related retrieval findings,
+but it must not create a parallel packet format or storage lifecycle.
 
 ## Stabilization validation handoff
 

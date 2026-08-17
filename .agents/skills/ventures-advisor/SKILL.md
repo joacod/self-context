@@ -9,14 +9,15 @@ description: >
   project unknowns, or choose reasonable next steps. Always use the project-local
   self-context skill first. Do not use it for generic task management, CRM,
   repository inventory, generic startup strategy, or fictional project content.
-compatibility: Requires the project-local self-context skill and local access to the Context Vault. Uses ordinary Markdown and YAML frontmatter; no second memory store or external service.
+compatibility: Requires the project-local self-context skill and local access to the Context Vault. Uses ordinary Markdown and YAML frontmatter; no second durable context store or external service.
 ---
 
 # Ventures Advisor
 
 Ventures Advisor is an Advisor Pack, not a project-management runtime, business
-intelligence system, CRM, or second memory store. SelfContext owns the vault,
-shared schema, provenance, lifecycle, freshness, persistence, and retrieval.
+intelligence system, CRM, or second durable context store. SelfContext owns
+ the vault, shared schema, provenance, lifecycle, freshness, persistence, and
+ retrieval.
 This pack supplies initiative-specific reasoning after SelfContext retrieves the
 relevant evidence.
 
@@ -33,7 +34,7 @@ For personal-context questions:
 4. Read [output and persistence](references/output-and-persistence.md) before
    retaining a comparison, recommendation, or task packet.
 5. Retrieve only the relevant venture records, sources, review items, and
-   links to other owning verticals. Do not build a second memory system.
+   links to other owning verticals. Do not build a second durable context store.
 
 Ventures may be available but absent in a schema 0.2 vault. Treat an absent
 area as empty for read-only reasoning; do not create an index, contract marker,

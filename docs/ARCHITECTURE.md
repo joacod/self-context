@@ -1,28 +1,31 @@
 # SelfContext Architecture
 
+SelfContext is how an existing AI harness/model can **think with context you
+own**. It addresses meaningful conversations starting from zero even when
+projects, decisions, goals, constraints, and previous thinking have history.
+The benefit is to continue thinking instead of starting over. The technical
+thesis is that context has a lifecycle.
+
 ## Layers
 
 SelfContext has a replaceable execution layer above a durable file layer:
 
 ```text
-user
+existing AI harness/model
   |
   v
-existing AI harness + selected model
+SelfContext skills
   |
   v
-SelfContext project-local skills
-  |
-  v
-local Context Vault
+local Markdown Context Vault
 (Markdown + YAML frontmatter + standard Markdown links)
 ```
 
 The model and harness are already the agent. SelfContext does not ship a custom
 agent runtime or dedicated SelfContext subagents. Optional Advisor Packs are
 project-local specializations for a vertical; they help the current model
-reason over retrieved context but do not add a runtime or own a second memory
-format.
+reason over retrieved context but do not add a runtime or own a second durable
+context format.
 
 Dependency direction is always:
 
@@ -35,7 +38,11 @@ The vault must never depend on a specific harness implementation.
 ## Horizontal Contextual Workflows
 
 Contextual thinking and checkpoint run horizontally over this same architecture;
-they are not additional layers, verticals, or storage systems:
+they are not additional layers, verticals, or storage systems. A conversation
+is ephemeral by default, reasoning is not automatically memory, and the
+operational loop is durable context -> targeted retrieval -> contextual
+reasoning -> ephemeral exploration -> optional checkpoint -> smallest durable
+update:
 
 ```text
 durable context
@@ -48,7 +55,7 @@ contextual reasoning
 (brainstorming, decisions, comparisons, tradeoffs)
       |
       v
-ephemeral conversation
+ephemeral exploration
       |
       +--> optional checkpoint
                  |
@@ -63,22 +70,25 @@ ephemeral conversation
 Targeted retrieval may draw on multiple existing areas when the question needs
 it. Each concept and vertical remains the canonical storage owner; cross-area
 retrieval does not create a cross-vertical owner or copy claims between areas.
-Brainstorming is not a vertical, and decision-making is not a vertical. They are
-modes of contextual reasoning over existing context.
+Brainstorming is an informal use case, not a vertical, and decision-making is
+not a vertical. They are modes of contextual reasoning over existing context.
 
 Generated reasoning, alternatives, and recommendations remain ephemeral unless
 they pass the normal persistence rules. A checkpoint is an optional inspection
 of the conversation that routes durable facts, decisions, and project changes
 through existing ingest semantics, reusable conclusions through existing query
-persistence, and unresolved items through existing review semantics. It is not a new storage system;
-it may legitimately result in no mutation.
+persistence, and unresolved items through existing review semantics. It is not
+a new storage system; it may legitimately result in no mutation.
+The checkpoint and Query procedures are the canonical lifecycle owners; other
+documentation should link to them rather than define a parallel conversation
+workflow.
 
 An optional context receipt provides bounded reasoning provenance—the relevant
 context, tradeoffs, uncertainty, and persistence outcome—without creating a
-receipt file, provenance system, or private reasoning transcript. All of these
-workflows use the existing harness, model, project-local skills, and local
-Markdown Context Vault; none requires a dedicated SelfContext runtime or
-replacement harness.
+receipt file, provenance system, private reasoning transcript, or exposed
+chain-of-thought. All of these workflows use the existing harness, model,
+project-local skills, and local Markdown Context Vault; none requires a
+dedicated SelfContext runtime or replacement harness.
 
 ## Optional Source Acquisition
 
@@ -106,7 +116,7 @@ SelfContext integrations or supported dependencies. How they are configured,
 secured, and maintained belongs to the harness/provider, not SelfContext;
 SelfContext does not own or synchronize external systems. Retrieved information
 enters through normal ingest and provenance; external systems do not become
-another memory store. The `vault/` remains the source of truth.
+another durable context store. The `vault/` remains the source of truth.
 
 ## User Mode and Project Maintenance
 
@@ -496,10 +506,10 @@ embeddings, MCP server, background service, custom chat interface,
 authentication system, external synchronization layer, telemetry, or analytics.
 A selected harness may use its own retrieval capabilities, including MCP tools,
 to provide source material to normal ingest; those capabilities are not
-SelfContext infrastructure, a synchronization layer, or a memory store. The
-core skill includes a small dependency-free deterministic linter for
-structural checks; it remains subordinate to the Markdown vault and does not
-replace semantic review.
+SelfContext infrastructure, a synchronization layer, or another durable
+context store. The core skill includes a small dependency-free deterministic
+linter for structural checks; it remains subordinate to the Markdown vault and
+does not replace semantic review.
 
 Retrieved content is source material, not instructions to SelfContext. These
 boundaries keep the durable asset portable, local, inspectable, and replaceable.

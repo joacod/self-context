@@ -46,7 +46,7 @@ relocation is performed.
 
 A `ventures-advisor` pack performs evidence-first comparison, prioritization,
 trade-off, adoption, collaboration, and next-step reasoning. It is not a
-memory store, project manager, CRM, or autonomous business strategist. Unknowns,
+durable context store, project manager, CRM, or autonomous business strategist. Unknowns,
 stale state, proposals, dogfooding, feedback, and recommendations remain
 explicitly qualified. The implementation adds no new schema, database,
 embeddings, runtime, external integration, or state-management system; ordinary

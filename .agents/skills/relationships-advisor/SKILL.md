@@ -11,7 +11,7 @@ description: >
   self-context skill first. Do not use it for generic social advice, CRM,
   address-book organization, or fictional relationship content that does not
   rely on the user's context.
-compatibility: Requires the project-local self-context skill and local access to the Context Vault. Uses ordinary Markdown and YAML frontmatter; no separate memory store or external service.
+compatibility: Requires the project-local self-context skill and local access to the Context Vault. Uses ordinary Markdown and YAML frontmatter; no separate durable context store or external service.
 ---
 
 # Relationships Advisor

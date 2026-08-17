@@ -9,13 +9,14 @@ description: >
   they do not say "Learning Advisor" or "SelfContext." Always use the
   project-local self-context skill first. Do not use it for generic teaching
   or fictional learning content that does not rely on the user's context.
-compatibility: Requires the project-local self-context skill and local access to the Context Vault. Uses ordinary Markdown and YAML frontmatter; no separate memory store or external service.
+compatibility: Requires the project-local self-context skill and local access to the Context Vault. Uses ordinary Markdown and YAML frontmatter; no separate durable context store or external service.
 ---
 
 # Learning Advisor
 
 Learning Advisor is an Advisor Pack, not a knowledge database, course tracker,
-notes system, or second memory store. SelfContext owns the vault, shared schema,
+notes system, or second durable context store. SelfContext owns the vault,
+shared schema,
 provenance, lifecycle, confirmation, and retrieval. This pack supplies
 Learning-specific reasoning after SelfContext retrieves relevant evidence.
 

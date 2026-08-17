@@ -2,8 +2,9 @@
 
 Checkpoint is an explicit, natural-language request to inspect the current
 conversation and decide whether anything in it should become durable
-SelfContext context. It is not a conversation summary, a transcript export, a
-chat-history database, or a new storage lifecycle.
+SelfContext context. It reuses the existing Ingest, Query persistence, review,
+provenance, ownership, and backup semantics. It is not a conversation summary,
+a transcript export, a chat-history database, or a new storage lifecycle.
 
 A conversation is ephemeral by default. A successful checkpoint may retain
 nothing.
