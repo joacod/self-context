@@ -80,6 +80,15 @@ Local Context Vault
 - User-stated facts, source-derived facts, agent inferences, and derived
   analyses remain distinguishable.
 
+### Optional source retrieval
+
+When source material lives outside the vault, SelfContext can use retrieval
+capabilities already available in the selected AI harness—such as web fetching,
+browser tools, repository access, document parsers, or MCP tools—to supply
+material to the normal ingest workflow. These capabilities are optional and
+disposable, not part of SelfContext's durable architecture. The Markdown vault
+remains the canonical context store.
+
 ## What It Supports
 
 - **Portable storage:** ordinary Markdown, YAML frontmatter, and standard

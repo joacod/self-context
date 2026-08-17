@@ -199,9 +199,11 @@ evidence.
 ## Consequences
 
 The vault gains deterministic maintenance and better task-oriented retrieval
-without adding a database, embeddings, MCP, background service, custom runtime,
-or synchronization layer. Deep review can identify semantic work while staying
-read-only; deep update makes mutation explicit, backed up, bounded, and
-reviewable. Schema 0.1 users retain backward-compatible migration, while
-schema 0.2 users gain the latest-first runtime, selective contract tracking, and
-managed catalogs.
+without adding a database, embeddings, SelfContext-owned MCP infrastructure,
+background service, custom runtime, or synchronization layer. Optional
+retrieval capabilities exposed by a selected harness may provide source
+material to normal ingest without becoming part of the durable architecture.
+Deep review can identify semantic work while staying read-only; deep update
+makes mutation explicit, backed up, bounded, and reviewable. Schema 0.1 users
+retain backward-compatible migration, while schema 0.2 users gain the
+latest-first runtime, selective contract tracking, and managed catalogs.
