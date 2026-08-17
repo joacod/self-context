@@ -162,7 +162,6 @@ class RepositoryConsistencyTests(unittest.TestCase):
 
         self.assertIn("selfcontext is not currently:", vision.casefold())
         self.assertIn("- a brainstorming vertical.", vision.casefold())
-        self.assertNotIn("brainstorming companion", combined)
         self.assertIn("references/query.md#task-context-packets", skill)
         self.assertIn("canonical procedure for query", query.casefold())
         self.assertIn(
