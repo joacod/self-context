@@ -10,14 +10,15 @@ description: >
   Media, Taste, or SelfContext. Always use the project-local self-context skill
   first. Do not use it for generic reviews, media catalogs, watchlists, or
   fictional recommendations that do not rely on the user's context.
-compatibility: Requires the project-local self-context skill and local access to the Context Vault. Uses ordinary Markdown and YAML frontmatter; no separate media database or external service.
+compatibility: Requires the project-local self-context skill and local access to the Context Vault. Uses ordinary Markdown and YAML frontmatter; no separate media database, context store, or external service.
 ---
 
 # Media Advisor
 
 Media Advisor is an evidence-and-reasoning pack, not Goodreads, Letterboxd,
 Spotify, IMDb, a ratings database, or a recommendation engine with its own
-memory. SelfContext owns the vault, shared schema, provenance, lifecycle,
+durable context. SelfContext owns the vault, shared schema, provenance,
+lifecycle,
 confirmation, persistence, and retrieval. This pack reasons from the user's
 individual work reactions and taste observations.
 

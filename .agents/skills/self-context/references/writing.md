@@ -10,10 +10,12 @@ advisor_skill: writing-advisor
 The Writing vertical records evidence-oriented patterns in how a person
 communicates and develops ideas. It is not a personality profile, a collection
 of generic writing advice, or a prompt that asks a model to imitate old prose.
+Writing and brainstorming remain contextual workflows over the shared vault,
+not separate product categories or storage owners.
 
 SelfContext owns the source records, provenance, lifecycle, and durable Writing
 context. A Writing Advisor may reason over that context, but it does not own a
-second memory store.
+second durable context store.
 
 ## Scope and Ownership
 

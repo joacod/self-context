@@ -12,12 +12,13 @@ description: >
   evidence retrieval first. Do not use it for generic motivational advice,
   generic resume writing, or fictional career content that does not rely on the
   user's context.
-compatibility: Requires the project-local self-context skill and local access to the Context Vault. Uses ordinary Markdown and YAML frontmatter; no separate memory store or external service.
+compatibility: Requires the project-local self-context skill and local access to the Context Vault. Uses ordinary Markdown and YAML frontmatter; no separate durable context store or external service.
 ---
 
 # Career Advisor
 
-Career Advisor is an Advisor Pack, not another memory system. SelfContext owns
+Career Advisor is an Advisor Pack, not another durable context store.
+SelfContext owns
 the vault, schema, provenance, lifecycle, and retrieval. Career Advisor owns
 the career-specific reasoning framework.
 
@@ -40,7 +41,7 @@ For every request that depends on the user's personal context:
 1. Use the project-local `self-context` skill first. Read the vault's
    `SCHEMA.md`, `index.md`, and recent `log.md` entries as that skill directs.
 2. Retrieve only the relevant career evidence and metadata. Do not replace
-   SelfContext with an ad hoc search, a second schema, or provider memory.
+   SelfContext with an ad hoc search, a second schema, or provider-owned memory.
 3. Read [the evidence and reasoning guide](references/evidence-and-reasoning.md)
    when forming a recommendation or comparing paths.
 4. Read [the output and persistence guide](references/output-and-persistence.md)
