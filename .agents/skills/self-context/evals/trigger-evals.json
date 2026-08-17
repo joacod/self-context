@@ -506,5 +506,33 @@
   {
     "query": "Upgrade my npm dependencies to their latest versions.",
     "should_trigger": false
+  },
+  {
+    "query": "Help me think through whether I should continue this project using my existing goals and constraints.",
+    "should_trigger": true
+  },
+  {
+    "query": "Challenge this idea using what you know about my project and the decisions I made before.",
+    "should_trigger": true
+  },
+  {
+    "query": "Compare these two options against my priorities and tell me what tradeoffs I might be overlooking.",
+    "should_trigger": true
+  },
+  {
+    "query": "Brainstorm approaches based on my existing goals and constraints, but keep the generated ideas ephemeral.",
+    "should_trigger": true
+  },
+  {
+    "query": "What am I overlooking here given the relevant context in my vault?",
+    "should_trigger": true
+  },
+  {
+    "query": "Give me generic brainstorming advice for a fictional startup without using my context.",
+    "should_trigger": false
+  },
+  {
+    "query": "Compare two generic software designs without reading my personal context.",
+    "should_trigger": false
   }
 ]

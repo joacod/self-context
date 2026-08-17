@@ -1360,6 +1360,90 @@
         "No legacy compatibility branch is required for the current operation."
       ],
       "files": []
+    },
+    {
+      "id": 122,
+      "prompt": "Help John Doe think through whether to continue his Harbor CLI project at MyContext Systems. The synthetic vault says his goal is to protect two evenings a week for family, a constraint is no more than six project hours weekly, a Ventures page records one trial user but no repeat use, and a prior decision says not to expand scope before repeat adoption. Use the existing Query workflow: retrieve relevant context, frame support, assumptions, and unknowns, explore genuinely different options, challenge them, and conclude. Do not give generic startup advice or persist the brainstorming.",
+      "expected_output": "The response performs contextual reasoning from the supplied synthetic goal, constraint, adoption evidence, and prior decision instead of offering generic project advice.",
+      "expectations": [
+        "The answer clearly uses the goal, time constraint, trial-user evidence, and prior scope decision.",
+        "Supported context is separated from assumptions and unknowns before options are proposed.",
+        "The options are meaningfully different and are challenged against the retrieved context.",
+        "The conclusion labels recommendations as derived and does not persist the brainstorming."
+      ],
+      "files": []
+    },
+    {
+      "id": 123,
+      "prompt": "John Doe asks whether he should resume Harbor CLI. In the synthetic vault, a linked Ventures decision record says to keep the project in maintenance mode until three users return in separate weeks, while a later source only records one exploratory trial. Retrieve that previous decision and its rationale before proposing options, distinguish it from current evidence, and do not invent a new decision record.",
+      "expected_output": "The Query retrieves the relevant previous decision, applies its rationale to the current question, and preserves the difference between a recorded decision and later evidence.",
+      "expectations": [
+        "The prior maintenance-mode decision and its adoption threshold are explicitly retrieved from the existing record.",
+        "The later single trial is not treated as satisfying the decision or as proof of current adoption.",
+        "Any recommendation is evaluated against the prior decision rather than generic project heuristics.",
+        "No new fact, decision page, or assistant conclusion is persisted automatically."
+      ],
+      "files": []
+    },
+    {
+      "id": 124,
+      "prompt": "Compare two synthetic Harbor CLI options for John Doe: add an enterprise integration that would take ten hours a week, or reduce the project to a small reliability experiment that fits his documented six-hour limit. His current goal favors deeper distributed-systems learning, while a core constraint protects two evenings and a prior decision limits new scope until repeat adoption. Surface the goal and constraint conflict instead of silently choosing one priority.",
+      "expected_output": "The response frames the competing goal, time constraint, adoption decision, and option costs, then compares the options without hiding the conflict.",
+      "expectations": [
+        "The goal and time constraint are both treated as supported context and their conflict is made explicit.",
+        "The ten-hour integration is challenged against the documented constraint rather than normalized as advice.",
+        "The smaller experiment is evaluated against the learning goal and prior adoption decision, including tradeoffs.",
+        "The recommendation remains conditional and does not rewrite the goal, constraint, or decision."
+      ],
+      "files": []
+    },
+    {
+      "id": 125,
+      "prompt": "What am I overlooking about John Doe's active initiatives? The synthetic vault has an active core preference to keep one initiative at a time, a Ventures page marking Harbor CLI active, another Ventures page marking Beacon active, and a review observation saying Beacon was paused after a failed trial. Reconcile the relevant context for the question without silently deciding which page is true.",
+      "expected_output": "The Query surfaces the contradiction and gives a conditional framing rather than converting one conflicting page into settled current context.",
+      "expectations": [
+        "The one-initiative preference, Harbor status, Beacon status, and paused review observation are all retrieved as relevant context.",
+        "The conflicting Beacon states are identified as a contradiction with provenance or status labels.",
+        "Options or conclusions remain conditional and name the missing confirmation needed.",
+        "No page is rewritten, verified, archived, or silently selected by the assistant."
+      ],
+      "files": []
+    },
+    {
+      "id": 126,
+      "prompt": "Help John Doe decide whether to make a public commitment about continuing Harbor CLI. The synthetic current-role page has stale_after: 2025-01-01 and the project status was last refreshed before the latest trial; older pages still describe useful historical outcomes. Use the historical evidence carefully, do not treat the stale pages as current, and ask one bounded freshness question if the decision depends on them.",
+      "expected_output": "The response uses stale material as qualified historical evidence, identifies the freshness problem, and avoids an unqualified current recommendation.",
+      "expectations": [
+        "The stale role and project-state context is labeled as stale or needing confirmation, not false.",
+        "Historical outcomes remain usable only with an explicit scope or date qualification.",
+        "The frame and recommendation do not treat stale context as settled current evidence.",
+        "A single bounded freshness question or conditional path is offered when currentness is decisive, without renewing metadata."
+      ],
+      "files": []
+    },
+    {
+      "id": 127,
+      "prompt": "Help John Doe decide whether to continue Harbor CLI by combining only relevant synthetic context: the Ventures record says the project is in a maintenance experiment, the Career goal is to build evidence of Staff-level technical leadership, the Learning area records a scoped gap in distributed-systems operations, and core limits project work to six hours weekly. Keep each fact in its owning area while reasoning across them.",
+      "expected_output": "The response performs bounded cross-vertical Query reasoning and produces a derived comparison without duplicating or relocating the underlying context.",
+      "expectations": [
+        "Relevant Ventures, Career, Learning, and core context are retrieved and their ownership remains visible.",
+        "The reasoning explains how the initiative could support or conflict with the career goal and learning gap under the time constraint.",
+        "Unrelated verticals are not loaded or exposed, and no facts are copied into another owner.",
+        "The conclusion is derived output and does not automatically mutate any vertical, goal, or verification state."
+      ],
+      "files": []
+    },
+    {
+      "id": 128,
+      "prompt": "Brainstorm three genuinely different ways John Doe could explore Harbor CLI using the synthetic vault's existing goals and constraints. Keep the session ephemeral: do not save the generated approaches, discarded options, temporary reasoning, or speculative recommendation as facts, a decision, or a derived page.",
+      "expected_output": "The Query uses relevant context to generate distinct exploratory possibilities while keeping all generated material ephemeral.",
+      "expectations": [
+        "The brainstormed approaches materially reflect the supplied goals and constraints rather than generic ideas.",
+        "The alternatives are labeled generated possibilities and are meaningfully different.",
+        "No generated idea, discarded option, temporary reasoning, or recommendation is promoted to durable context.",
+        "The response preserves the distinction between existing evidence and assistant-generated exploration."
+      ],
+      "files": []
     }
   ]
 }
