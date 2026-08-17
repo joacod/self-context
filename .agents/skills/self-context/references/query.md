@@ -23,7 +23,8 @@ likely to matter, the vault is medium or large, the task spans a few verticals,
 or historical context may matter:
 
 ```bash
-python3 .agents/skills/self-context/scripts/search_vault.py "task words" vault
+python3 .agents/skills/self-context/scripts/search_vault.py \
+  "task words" vault --contextual --scope core --scope ventures
 ```
 
 `search_vault.py` is read-only, dependency-free, builds no permanent index, and
@@ -49,6 +50,33 @@ they do not change the default inclusion behavior. Sources remain opt-in via
 Search is only a retrieval aid: inspect provenance, freshness, assertion kind,
 review state, contradictions, and source links before answering. Deep-review
 reports and noncanonical state remain excluded.
+
+### Contextual retrieval scope rules
+
+Contextual Query should make scope explicit before lexical search whenever the
+question supplies enough information to do so:
+
+1. Start with the most likely canonical owner: `core/` for goals, values,
+   preferences, and recurring constraints; or the named vertical for a domain
+   question.
+2. Add another owner only when it can materially change the answer. Keep the
+   initial set small and record the reason for each cross-vertical expansion.
+3. Treat `derived/` as optional analysis, not a default context layer. Include a
+   derived synthesis only when canonical pages are insufficient or the user
+   asks for reusable prior analysis.
+4. Keep `sources/` opt-in. When provenance, freshness, or verification matters,
+   expand the selected canonical pages' linked source records rather than
+   searching every source in the vault.
+5. Exclude unrelated verticals even when common words match. A scoped result
+   may be empty; do not fill it with lexical near-matches.
+
+The disposable helper makes these rules inspectable with repeatable
+`--scope PATH` options, `--contextual`, and `--expand-linked-sources`. A
+contextual search ignores multi-term matches below 50% query-term coverage and
+prefers canonical pages over derived syntheses unless `--include-derived` is
+explicit and `derived` is included in the requested scope. Linked-source expansion reserves at most three result slots by
+default, so provenance cannot turn a targeted query into a source dump. These
+are conservative retrieval aids, not confidence or truth scores.
 
 Before modern query semantics, require the shared latest-first runtime gate.
 A current schema with current applied contracts may be queried normally. An old
@@ -105,8 +133,11 @@ visible in the answer.
 
 ### Retrieve
 
-Define the problem or decision narrowly, then retrieve only context that can
-change the reasoning. Potentially relevant material includes:
+Define the problem or decision narrowly, then declare the smallest likely
+scope before retrieving context. Use the scope rules above: begin with `core/`
+or the primary vertical, add only materially relevant owners, and expand linked
+source records only when their provenance, freshness, or verification can
+change the answer. Potentially relevant material includes:
 
 - known facts and evidence;
 - goals, values, constraints, and preferences;
@@ -183,20 +214,24 @@ path instead of filling the gap with generic advice.
 
 ### Persistence for contextual thinking
 
-A contextual thinking session is ephemeral by default. Do not persist generated
-ideas, brainstorm alternatives, discarded options, temporary reasoning, or
-speculative assistant conclusions merely because they appeared in the
-conversation. The existing [Persistence Decision](#persistence-decision)
-rules still apply: evaluate explicit retention or durable reuse, check for a
-matching home, preserve ownership and provenance, compare conflicts and
-freshness, and store only the smallest justified `derived/` synthesis. A
-retained synthesis remains `derived_synthesis`; it is not evidence for a new
-fact or goal, and its generated alternatives are not silently copied into
-`core/` or a vertical. A permitted query log entry does not change this
-boundary: it records the operation under existing logging rules, not generated
-alternatives or temporary reasoning. If the user later supplies a durable fact
-or decision, handle that separately through normal ingest and confirmation
-semantics.
+A contextual thinking session is ephemeral and read-only by default. Do not
+mutate canonical pages, operational logs, indexes, backups, vertical markers,
+frontmatter metadata, or generated persistent artifacts while retrieving or
+reasoning. Do not persist generated ideas, brainstorm alternatives, discarded
+options, temporary reasoning, or speculative assistant conclusions merely
+because they appeared in the conversation.
+
+The existing [Persistence Decision](#persistence-decision) rules still apply
+when the user explicitly asks to retain a durable fact, decision, or reusable
+synthesis: evaluate explicit retention or durable reuse, check for a matching
+home, preserve ownership and provenance, compare conflicts and freshness, and
+store only the smallest justified result. A retained synthesis remains
+`derived_synthesis`; it is not evidence for a new fact or goal, and its
+alternatives are not silently copied into `core/` or a vertical. An operation
+log entry is also a mutation and requires a separate explicit request; it is
+never an automatic side effect of read-only Query. If the user later supplies a
+durable fact or decision, handle that separately through normal ingest and
+confirmation semantics.
 
 ## Optional Context Receipts
 
@@ -215,9 +250,9 @@ when the user explicitly asks questions such as:
 Treat these requests as a presentation mode for the existing Query result, not
 as a new operation or persistence signal. A receipt request must not create a
 receipt file, a logging database, a provenance system, or a vault mutation. If
-the underlying operation separately qualifies for the existing query-log or
-persistence lifecycle, report that outcome accurately rather than attributing
-it to the receipt request.
+the user separately and explicitly authorized a query-log or persistence
+operation, report that outcome accurately rather than attributing it to the
+receipt request.
 
 ### Receipt contents
 
@@ -225,27 +260,34 @@ Match the surrounding response's communication style instead of forcing a rigid
 template. For an explicit receipt request, include the non-empty items that
 answer the request, using bounded labels such as:
 
-- **Context used:** relevant durable concepts or source paths, with their role
-  or provenance when useful. Identify only context that affected the answer;
-  do not dump the vault or reproduce full page bodies.
+- **Context used:** only the relevant durable concepts or source paths, with
+  their owner and role/provenance. Identify only context that affected the
+  answer; do not dump the vault or reproduce page bodies.
+- **Scope used:** include this only when cross-vertical scope materially shaped
+  the result, for example `core, ventures`; optionally say which clearly
+  unrelated areas were not expanded.
+- **Coverage/as-of:** when relevant, name the source or evidence coverage date,
+  generated date, or other as-of boundary.
+- **Freshness:** distinguish an automatic `stale_after` horizon from dated
+  source coverage. Say “no automatic stale horizon; currentness unknown” when
+  `stale_after: null` governs dynamic evidence; never describe null as fresh
+  forever.
+- **Assertion:** identify important `user_stated_fact`, `source_derived_fact`,
+  `source_record`, `agent_inference`, or `derived_synthesis` status when it
+  affects the answer.
 - **Tradeoffs:** important competing goals, constraints, costs, or alternatives
   that materially shaped a recommendation. Summarize the decision-relevant
   comparison, not private token-by-token reasoning.
-- **Uncertain:** assumptions, unsupported gaps, or provisional material that
-  limits the result.
-- **Contradictory:** relevant unresolved claims or pages that point in different
-  directions, keeping their status or provenance visible.
-- **Stale:** relevant context beyond its freshness expectation, or dynamic
-  context whose currentness is unknown. Do not renew freshness merely by citing
-  it.
+- **Uncertain / contradictory:** unsupported gaps, provisional material, or
+  relevant claims that point in different directions, keeping status and
+  provenance visible.
 - **Result:** classify the answer as a **direct answer**, **synthesis**,
   **derived recommendation**, or **contextual reasoning**. A recommendation
   built from evidence is derived output, not a direct fact from any source.
 - **Persistence:** say what durable update was made through the existing
-  lifecycle, or say that no durable context was persisted. Name the canonical
-  page or area when something was stored. If only the existing operation log was
-  written, say that no durable context update was made and distinguish the log
-  entry instead of claiming that no file changed.
+  lifecycle, or say that no durable or operational-log change was made. Name
+  the canonical page or area when something was stored. A receipt request never
+  creates a receipt file.
 
 When the user asks specifically about stale or conflicting input, answer that
 category even when the answer is “none identified.” When the user asks why,
@@ -265,11 +307,11 @@ stored using its existing lifecycle report; do not create a second receipt
 artifact.
 
 Use “nothing persisted” only when the operation made no durable context or
-operational-log change. For an ephemeral brainstorm whose normal operation did
-not log anything, the accurate compact statement is: “Persistence: nothing
-persisted; no page, transcript, or derived synthesis was stored.” If an existing
-query log entry was permitted, say instead: “No durable context update; the
-query was logged under the existing logging rules.” A receipt request itself
+operational-log change. Read-only Query makes neither change by default. For an
+ephemeral brainstorm, the accurate statement is: “Persistence: nothing
+persisted; no page, transcript, derived synthesis, or log entry was stored.” If
+the user explicitly authorized a separate query-log mutation, name that log
+entry without calling it a durable context update. A receipt request itself
 never changes that state.
 
 ### Compact examples
@@ -282,11 +324,15 @@ Systems. A useful receipt can say:
 ```text
 Context used: the Ventures project page, the recorded repeat-adoption decision,
 and the core six-hour weekly constraint.
+Scope used: core, ventures. Not expanded: relationships, media.
+Freshness: no automatic stale horizon on the dynamic project state; currentness
+would need confirmation if decisive. Assertion: the decision is recorded
+project context; the recommendation is derived.
 Tradeoffs: expanding scope conflicts with the time constraint and the recorded
 adoption threshold; maintenance preserves reversibility but delays new scope.
 Result: derived recommendation — keep maintenance mode for now, not a recorded
 fact or new decision.
-Persistence: nothing persisted.
+Persistence: nothing persisted; no page, log entry, or receipt file was created.
 ```
 
 **Separating direct evidence from a derived recommendation**
@@ -392,9 +438,10 @@ Treat verification and freshness as separate dimensions:
   bounded confirmation question rather than silently promoting it.
 - A page past `stale_after` may remain useful historical evidence, but do not use
   it as current without labeling the freshness problem or asking the user.
-- `stale_after: null` means there is no automated deadline. It does not prove
-  that dynamic information is current; if currentness is decisive, identify the
-  freshness as unknown and ask a bounded question.
+- `stale_after: null` means there is no automatic stale horizon. It does not
+  prove that dynamic information is current. Report the page's generated date
+  and any dated source/evidence coverage separately; if currentness is
+  decisive, identify it as unknown and ask a bounded question.
 
 When a user confirms that an expired current-state claim is still true, update
 the page's `verified` date when the claim was explicitly confirmed and set
@@ -412,12 +459,15 @@ decisive to the requested answer.
 Use the smallest durable result that serves the request:
 
 - A simple lookup, such as a previous employer or project name, returns an
-  answer and may be logged without creating a page.
-- A meaningful query can be logged when it informs continuity or exposes a
-  review item.
+  answer without mutating the vault by default.
+- A read-only Query or contextual-thinking answer does not append an
+  operational-log entry by default. If the user explicitly asks to retain a
+  query log entry, treat that separate log write as an ordinary mutation and
+  follow the normal backup/validation lifecycle.
 - A substantial, reusable comparison or synthesis may become a page under
   `derived/`, with `type: synthesis`, `assertion_kind: derived_synthesis`, and
-  links to the evidence it combines.
+  links to the evidence it combines, but only after explicit retention or a
+  separate authorized persistence operation.
 
 ### Continuity signals
 
@@ -521,8 +571,10 @@ backup rules.
 
 ## Log and Response
 
-Log a substantial query or a meaningful evidence retrieval, but not every
-trivial lookup. Report whether a derived page was created, which evidence was
-used, and what remains unknown or needs user confirmation. If no page was
-created, briefly state that the answer did not meet the reusable-synthesis
-threshold.
+Read-only Query and contextual thinking do not log by default. Report the
+relevant evidence, scope, coverage/as-of dates, assertion kinds, freshness and
+uncertainty, and say that no durable or operational-log change was made. If the
+user explicitly authorizes a separate operation-log entry, report it as that
+mutation rather than implying a page was created. If no page was created, say
+whether the answer remained ephemeral or whether a durable candidate was
+identified but not applied.

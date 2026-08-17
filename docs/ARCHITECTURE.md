@@ -74,11 +74,15 @@ Brainstorming is an informal use case, not a vertical, and decision-making is
 not a vertical. They are modes of contextual reasoning over existing context.
 
 Generated reasoning, alternatives, and recommendations remain ephemeral unless
-they pass the normal persistence rules. A checkpoint is an optional inspection
-of the conversation that routes durable facts, decisions, and project changes
-through existing ingest semantics, reusable conclusions through existing query
-persistence, and unresolved items through existing review semantics. It is not
-a new storage system; it may legitimately result in no mutation.
+they pass the normal persistence rules. Read-only Query/contextual thinking does
+not mutate canonical pages, operational logs, indexes, backups, vertical
+markers, metadata, or generated artifacts by default. A checkpoint is an
+optional inspection of the conversation that routes durable facts, decisions,
+and project changes through existing ingest semantics, reusable conclusions
+through existing query persistence, and unresolved items through existing review
+semantics. A checkpoint dry-run only reports those routes and never starts a
+write lifecycle. It is not a new storage system; it may legitimately result in
+no mutation.
 The checkpoint and Query procedures are the canonical lifecycle owners; other
 documentation should link to them rather than define a parallel conversation
 workflow.
@@ -122,9 +126,11 @@ another durable context store. The `vault/` remains the source of truth.
 
 SelfContext has two deliberately separate modes:
 
-- **User mode:** Normal ingest, query, review, lint, and advice read or update
-  the private vault and produce the user's response. They do not modify the
-  tracked operational project, create an improvement log, or start an
+- **User mode:** Normal ingest, review, lint, and explicitly retained advice
+  may update the private vault and produce the user's response. Query and
+  contextual thinking are read-only by default and do not update pages, logs,
+  indexes, backups, metadata, or generated artifacts. User mode never modifies
+  the tracked operational project, creates an improvement log, or starts an
   architectural review.
 - **Project-maintenance mode:** Skill, schema, documentation, evaluation,
   script, or architecture changes happen only after the user explicitly asks to
@@ -472,7 +478,14 @@ For maintainers, classify a meaningful change with this small rule:
 The SelfContext skill recognizes natural-language intent and applies a lifecycle rather than a command vocabulary:
 
 1. **Ingest** or update information, preserve useful provenance, avoid duplicate concepts, connect meaningful links, update navigation, and log the operation. Triage only high-impact or unresolved items for a bounded, batched confirmation follow-up. Authored Writing sources use a local-analysis and impact-comparison step before durable profile updates; Learning evidence uses a local comparison to separate exposure, understanding, demonstration, gaps, and corrections; Relationships separates shared context from third-party profiling; and Media / Taste separates consumption from reaction and pattern evidence.
-2. **Query** through orientation, indexes, targeted file search, metadata, and link traversal. A trivial retrieval returns an answer without creating a page; a substantial reusable synthesis or explicitly retained future-use guidance may be stored under derived material after a duplicate, ownership, contradiction, and freshness check. Review status and freshness before using context as current.
+2. **Query** through orientation, scoped indexes, targeted file search, metadata,
+and link traversal. A read-only lookup or contextual-thinking answer does not
+write pages, logs, indexes, backups, markers, metadata, or generated artifacts
+by default. A trivial retrieval returns an answer without creating a page; a
+substantial reusable synthesis or explicitly retained future-use guidance may
+be stored under derived material only after a duplicate, ownership,
+contradiction, and freshness check. Review status and freshness before using
+context as current.
 3. **Checkpoint** an explicit natural-language request by inspecting the current conversation for durable changes rather than summarizing or storing it. Classify supported facts, corrections, decisions, goals, preferences, project changes, derived conclusions, unresolved items, inferences, and ephemeral discussion; route each candidate through existing ingest, query persistence, ownership, provenance, contradiction, confirmation, backup, and review semantics. Assistant suggestions, brainstorms, rejected options, and transcripts remain non-durable unless the user's explicit decision independently justifies retention. A checkpoint may successfully make no mutation.
 4. **Review** unresolved inferences, stale context, contradictions, ambiguous claims, missing provenance, and important changes needing attention.
 5. **Lint** structural and epistemic integrity, including frontmatter, links, indexes, duplicates, metadata consistency, freshness, and schema drift. Current-vault lint requires the latest runtime state; migration-source validation can still inspect recognized old formats. Lint and deep lint never migrate.
@@ -488,7 +501,9 @@ percent-encodes unsafe path characters, and plans all index writes before an
 atomic replacement/rollback sequence. `--check` is read-only; `--write` is
 reserved for an authorized mutation workflow. Catalog entries remain
 navigation surfaces rather than evidence. `search_vault.py` provides read-only
-local lexical retrieval without a permanent index. Neither tool is a second
+local lexical retrieval without a permanent index, with optional explicit path
+scopes, conservative contextual coverage filtering, canonical-over-derived
+preference, and bounded linked-source expansion. Neither tool is a second
 source of truth.
 
 Before a significant operation on an existing vault, the skill orients from `SCHEMA.md`, `index.md`, and recent `log.md` entries. This reduces duplicate concepts, missed connections, schema drift, and accidental contradictions without requiring a full-vault scan every time.
@@ -497,7 +512,13 @@ Before a significant operation on an existing vault, the skill orients from `SCH
 
 Important ingested information should retain enough source or raw material to explain where it came from. A substantial recollection may be preserved separately from normalized concepts; small conversational facts need not acquire unnecessary ceremony. Query persistence is driven by expected continuity, not by query count: an explicit request to retain a useful future-facing recommendation can justify a small derived synthesis, but cannot promote advice into a fact or goal.
 
-Queries and advice are not all permanent documents. Every meaningful operation may be recorded in the log, but only a substantial reusable synthesis or a smaller explicitly retained result should become derived material. Before writing, the operation checks for an existing home, domain ownership, contradictions, and freshness. Derived pages must link to their evidence and remain visibly derived.
+Queries and advice are not all permanent documents. Read-only Query and
+contextual thinking do not append log entries by default; an explicit request to
+retain an operation record is a separate mutation. Only a substantial reusable
+synthesis or a smaller explicitly retained result should become derived
+material. Before writing, the operation checks for an existing home, domain
+ownership, contradictions, and freshness. Derived pages must link to their
+evidence and remain visibly derived.
 
 ## Privacy and Rejected Infrastructure
 

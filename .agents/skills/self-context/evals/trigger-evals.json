@@ -622,5 +622,41 @@
   {
     "query": "Explain your private chain of thought for this generic math answer; I am not asking about personal context.",
     "should_trigger": false
+  },
+  {
+    "query": "Help me think through this project using only the relevant parts of my context; do not pull in unrelated verticals just because they share words.",
+    "should_trigger": true
+  },
+  {
+    "query": "Use a scoped query over Core and Ventures for this decision, and expand linked sources only if provenance or freshness matters.",
+    "should_trigger": true
+  },
+  {
+    "query": "Run a read-only contextual query and prove that it did not change my vault, including log.md, indexes, and backups.",
+    "should_trigger": true
+  },
+  {
+    "query": "This is a substantial brainstorming answer, but do not append an operation log or create a backup.",
+    "should_trigger": true
+  },
+  {
+    "query": "Checkpoint this conversation in dry-run mode: show me what would be retained and where, but apply nothing.",
+    "should_trigger": true
+  },
+  {
+    "query": "Checkpoint this hypothetical discussion; nothing durable happened, so report a no-op and leave the vault byte-for-byte unchanged.",
+    "should_trigger": true
+  },
+  {
+    "query": "The page has stale_after: null but its source only covers May 2026. Explain what is and is not fresh for today's answer.",
+    "should_trigger": true
+  },
+  {
+    "query": "Show me a compact receipt with context scope, source coverage, assertion kind, freshness, uncertainty, and persistence, without chain-of-thought.",
+    "should_trigger": true
+  },
+  {
+    "query": "Use a generic lexical search over a fictional documentation repository; I do not want personal context or SelfContext reasoning.",
+    "should_trigger": false
   }
 ]

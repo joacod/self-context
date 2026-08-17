@@ -1620,7 +1620,7 @@
       "expectations": [
         "The receipt identifies the goal and constraint as the context used, without treating generated alternatives as evidence.",
         "The alternatives and recommendation are labeled generated or derived rather than user facts or decisions.",
-        "The persistence line accurately says no page, transcript, or derived synthesis was stored, while respecting existing logging semantics if applicable.",
+        "The persistence line accurately says no page, transcript, derived synthesis, or log entry was stored for the read-only brainstorm.",
         "The response summarizes evidence and status without revealing private chain-of-thought."
       ],
       "files": []
@@ -1646,6 +1646,114 @@
         "Any materially important uncertainty, stale context, contradiction, or confirmation need remains visible.",
         "Generated options and recommendations remain derived and ephemeral unless separately retained.",
         "No receipt file, logging database, or new provenance structure is introduced."
+      ],
+      "files": []
+    },
+    {
+      "id": 146,
+      "prompt": "Help John Doe decide whether to continue Harbor CLI. A broad lexical search also matches unrelated synthetic Career, Relationships, Media, and derived pages because they mention projects or decisions. Use the narrowest relevant canonical scope first and do not load those unrelated pages merely because of lexical overlap.",
+      "expected_output": "The response uses a bounded retrieval plan, starts with the likely owning context, and expands only when another owner can materially change the answer.",
+      "expectations": [
+        "The initial retrieval scope names the primary owner and any directly relevant core constraints.",
+        "Unrelated Career, Relationships, Media, and derived matches are excluded or explicitly not expanded.",
+        "A cross-vertical expansion is justified by the decision rather than by lexical overlap alone.",
+        "The answer does not claim that a broad search result is evidence merely because it matched a word."
+      ],
+      "files": []
+    },
+    {
+      "id": 147,
+      "prompt": "Use a scoped contextual Query for John Doe's Harbor CLI decision. Start with synthetic core constraints and the Ventures record, include Career only if the documented leadership goal materially changes the comparison, and keep derived syntheses out unless the canonical pages are insufficient or I ask for prior analysis.",
+      "expected_output": "The retrieval is explicitly scoped, canonical context is preferred, and cross-vertical or derived expansion is conditional and explainable.",
+      "expectations": [
+        "Core and Ventures are the initial scope for the project decision.",
+        "Career is added only with a stated reason tied to the decision.",
+        "Derived material is not loaded by default when canonical pages answer the question.",
+        "The final answer reports the ownership boundaries without duplicating claims."
+      ],
+      "files": []
+    },
+    {
+      "id": 148,
+      "prompt": "John Doe asks what evidence supports the synthetic Harbor CLI decision. Retrieve the canonical Ventures page first, then expand only its linked source records because provenance and freshness matter; do not search every source page in the vault.",
+      "expected_output": "The response performs bounded linked-source expansion and distinguishes canonical context from provenance records.",
+      "expectations": [
+        "The canonical Ventures page is retrieved before its source records.",
+        "Only linked source records needed for provenance are expanded, rather than the entire Sources area.",
+        "Source records remain provenance and are not treated as automatically verified facts.",
+        "The response identifies any coverage or freshness limitation found in the linked evidence."
+      ],
+      "files": []
+    },
+    {
+      "id": 149,
+      "prompt": "Run a read-only contextual Query against a copied synthetic vault and compare every file before and after, including canonical pages, log.md, indexes, SCHEMA.md, backups, vertical markers, frontmatter metadata, and generated artifacts. The entire vault must remain unchanged.",
+      "expected_output": "The read-only contextual operation proves complete vault preservation and creates no persistent artifact.",
+      "expectations": [
+        "The byte/file comparison includes log, indexes, schema, backups, and metadata, not only durable pages.",
+        "No query log entry, receipt file, backup, derived page, or vertical marker is created.",
+        "The response labels the operation read-only and reports persistence accurately.",
+        "Any requested durable follow-up is kept separate from this read-only operation."
+      ],
+      "files": []
+    },
+    {
+      "id": 150,
+      "prompt": "Think through John Doe's synthetic Harbor CLI options as a read-only Query. This is a meaningful reasoning request, but I do not authorize an operation log entry or any persistence. Do not append log.md or create a backup just because the answer is substantial.",
+      "expected_output": "The response performs contextual reasoning without operational-log or backup mutation and clearly reports that no persistence occurred.",
+      "expectations": [
+        "A substantial read-only Query does not append an operational log entry by default.",
+        "No backup, page, index, metadata, or generated artifact is created.",
+        "The result and any recommendation remain derived and ephemeral.",
+        "The response distinguishes an explicit future persistence request from this read-only answer."
+      ],
+      "files": []
+    },
+    {
+      "id": 151,
+      "prompt": "Checkpoint a synthetic hypothetical brainstorming conversation in which John Doe stated no fact, decision, preference, project change, reusable conclusion, or review-worthy unknown. Report that nothing durable was identified and prove that the vault and log remain unchanged.",
+      "expected_output": "The checkpoint is a read-only no-op with an explicit outcome distinct from a pending durable candidate.",
+      "expectations": [
+        "The report says nothing durable identified rather than implying a write was suppressed.",
+        "No page, log, index, backup, metadata, or checkpoint artifact is created.",
+        "The transcript, suggestions, rejected options, and temporary reasoning are not stored.",
+        "The report states that no confirmation is pending."
+      ],
+      "files": []
+    },
+    {
+      "id": 152,
+      "prompt": "Run a checkpoint dry-run for John Doe. He explicitly decides in the synthetic conversation to keep Harbor CLI in maintenance mode, but this evaluation must not apply writes. Report the candidate, classification, canonical Ventures owner, existing page that would be updated, confirmation requirement, and persistence state as not applied.",
+      "expected_output": "The checkpoint distinguishes a durable candidate intentionally not applied from a no-op and does not duplicate ingest or persistence logic.",
+      "expectations": [
+        "The report identifies the explicit decision as a durable project candidate.",
+        "The canonical owner and existing Ventures page are named.",
+        "The report states whether confirmation is needed and says persistence: not applied.",
+        "No ingest, log, backup, index, metadata, or page mutation occurs during the dry-run."
+      ],
+      "files": []
+    },
+    {
+      "id": 153,
+      "prompt": "A synthetic current project concept has generated: 2026-05-20, stale_after: null, and a linked source whose evidence coverage ends in May 2026. Explain the freshness for a current decision without calling null an infinite freshness guarantee.",
+      "expected_output": "The response separates the absence of an automatic stale horizon from the dated source coverage and treats currentness as unknown when decisive.",
+      "expectations": [
+        "stale_after: null is described as no automatic stale horizon, not permanently fresh.",
+        "The generated/as-of date and linked source coverage through May 2026 are reported separately.",
+        "The assertion kind and verification state remain distinct from freshness.",
+        "A bounded confirmation or conditional answer is used if currentness controls the decision."
+      ],
+      "files": []
+    },
+    {
+      "id": 154,
+      "prompt": "Give John Doe a compact context receipt for the synthetic Harbor CLI recommendation. Show the important context and source coverage, freshness status, assertion kinds, uncertainty or contradiction state, scope used (core and ventures), areas not expanded (relationships and media), and persistence. Do not reveal hidden chain-of-thought.",
+      "expected_output": "The receipt is compact, bounded, and truthful about evidence, scope, freshness, epistemic status, uncertainty, and persistence.",
+      "expectations": [
+        "The receipt names only decision-relevant context and includes source coverage when it matters.",
+        "Freshness, assertion kind, verification or uncertainty, and contradictions are distinguished.",
+        "The scope line names core and Ventures and optionally notes that Relationships and Media were not expanded.",
+        "Persistence accurately reports no mutation or the separately authorized canonical update, without exposing hidden reasoning."
       ],
       "files": []
     }
