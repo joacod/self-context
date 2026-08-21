@@ -51,8 +51,9 @@ into career evidence.
 
 ## Ingest and update
 
-1. Orient from `SCHEMA.md`, the root index, recent log entries, and the Career
-   index when it exists.
+1. Orient from `SCHEMA.md` and the root index, use the bounded
+   `recent_log.py` view for continuity, and load the Career index when Career
+   is the likely owner.
 2. Search for the existing role, project, skill, story, goal, or public-work
    page before creating a duplicate.
 3. Preserve a useful source record for a supplied resume or substantial source.

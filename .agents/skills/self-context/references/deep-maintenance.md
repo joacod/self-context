@@ -104,8 +104,9 @@ read-only retrieval and does not cause file creation.
 
 ### A. Preflight
 
-Orient from `SCHEMA.md`, the root index, recent log entries, and enabled
-vertical indexes. Run ordinary lint, then deep lint in JSON mode. Record the
+For this explicit broad maintenance operation, orient from `SCHEMA.md`, the
+root index, the bounded recent-log view, and the enabled vertical indexes as
+its preflight requires. Run ordinary lint, then deep lint in JSON mode. Record the
 snapshot ID and detect schema and contract compatibility. A deep-review JSON
 report is a compact inventory: it includes schema version, enabled contracts,
 page metadata, link/index relationships, findings, and severity counts, but not
@@ -188,8 +189,9 @@ create the area during assessment.
 
 ### F. Retrieval-readiness pass
 
-Use a small representative set of questions from meaningful recent log
-entries, the deep-review request, and enabled indexes. Evaluate evidence
+Use a small representative set of questions from meaningful recent-log
+entries (and `search_log.py` when older history is explicitly relevant), the
+deep-review request, and enabled indexes. Evaluate evidence
 selection, irrelevant-area dominance, stale/provisional visibility, ownership,
 aliases, descriptions, links, and catalog entries. Evaluate selection and
 epistemic labels, not exact generated prose.

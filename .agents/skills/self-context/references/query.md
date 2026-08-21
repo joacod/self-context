@@ -27,6 +27,23 @@ python3 .agents/skills/self-context/scripts/search_vault.py \
   "task words" vault --contextual --scope core --scope ventures
 ```
 
+Normal orientation is bounded and separates current continuity from historical
+lookup:
+
+```bash
+python3 .agents/skills/self-context/scripts/recent_log.py \
+  vault --entries 10
+```
+
+`recent_log.py` is for the current continuity slice. Do not read the complete
+`log.md` or run historical search automatically. When an older operation may
+matter, use the bounded historical helper explicitly:
+
+```bash
+python3 .agents/skills/self-context/scripts/search_log.py \
+  "migration ventures" vault --limit 10
+```
+
 `search_vault.py` is read-only, dependency-free, builds no permanent index, and
 never replaces the Markdown vault. Its deterministic priorities are exact stable
 ID, exact normalized title, exact normalized alias, title/alias phrase, and
@@ -357,11 +374,31 @@ stored.
 
 ## Targeted Retrieval
 
-Start with `SCHEMA.md`, `index.md`, recent log entries, enabled vertical
-indexes, and the smallest relevant linked pages. Managed catalog blocks are
-compiled navigation, not evidence; inspect the linked durable page and its
-provenance before relying on an entry. If a catalog is missing, drifted, or has
-invalid marker structure, treat it as an unreliable navigation aid and run
+For normal Query orientation, use this bounded sequence:
+
+```text
+SCHEMA.md
+  ↓
+root index.md
+  ↓
+recent_log.py vault --entries 10
+  ↓
+infer the smallest likely owner
+  ↓
+primary relevant vertical/index only
+  ↓
+linked pages and scoped search as needed
+```
+
+Start with `SCHEMA.md` and `index.md`, then inspect only the primary owner index
+that the request makes relevant. Add another enabled vertical only when it can
+materially change the answer; cross-vertical questions may use multiple
+relevant indexes, while unrelated enabled verticals stay out of context. The
+root index and targeted search remain current navigation; do not maintain or
+load a growing Recent Additions page/list. Managed catalog blocks are compiled
+navigation, not evidence; inspect the linked durable page and its provenance
+before relying on an entry. If a catalog is missing, drifted, or has invalid
+marker structure, treat it as an unreliable navigation aid and run
 `sync_indexes.py --check` as a read-only diagnostic. Do not manually edit
 managed entries. `sync_indexes.py --write` belongs only inside an authorized
 current-model mutation workflow. For schema 0.2, an absent available vertical
@@ -370,12 +407,10 @@ schema 0.1 query is limited to orientation/diagnosis and must direct the user
 to upgrade rather than promise current retrieval semantics. Use local lexical
 search as the fallback described above, not as a replacement for index
 orientation. Do not scan the entire vault for a narrow question unless
-orientation shows that the relevant path is unclear.
-
-Start with `SCHEMA.md`, `index.md`, and recent log entries. Use category indexes,
-frontmatter, filenames, targeted text search, and links to locate relevant
-pages. Do not scan the entire vault for a narrow question unless orientation
-shows that the relevant path is unclear.
+orientation shows that the relevant path is unclear. Use `search_log.py` only
+for an explicit historical question; normal Query does not search full log
+history automatically. Explicit broad review or deep-maintenance procedures
+may use their documented broader inventory when required.
 
 Separate the result into:
 

@@ -103,8 +103,10 @@ documentation, or comment.
 
 Read only the control and evidence needed to choose the next phase:
 
-1. Resolve the repository root and orient from `vault/SCHEMA.md`,
-   `vault/index.md`, recent `vault/log.md`, and enabled vertical indexes.
+1. Resolve the repository root and orient from `vault/SCHEMA.md` and
+   `vault/index.md`, use the bounded `recent_log.py` view for continuity, and
+   inspect enabled vertical indexes when the upgrade phase requires their
+   control state.
 2. Determine the schema and run the canonical read-only migration planner:
 
    ```bash

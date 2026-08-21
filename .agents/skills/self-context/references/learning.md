@@ -144,8 +144,8 @@ reviewable observation.
 
 ## Learning ingest and update
 
-After the normal SelfContext orientation, apply this sequence for Learning
-material:
+After the normal SelfContext orientation—bounded recent log continuity and
+only the relevant owner index—apply this sequence for Learning material:
 
 1. **Classify the evidence.** Separate what the user said, what a retained
    source documents, what the agent observes, and what remains unknown. Do not

@@ -25,9 +25,9 @@ reasoning and consumes retrieved Writing context when it exists.
 For a request that depends on the user's own communication or writing:
 
 1. Use the project-local `self-context` skill first.
-2. Read the vault's `SCHEMA.md`, `index.md`, recent `log.md`, and the relevant
-   `writing/index.md` and linked pages when they exist. If a vault has no Writing
-   area, treat it as empty for read-only work; SelfContext creates the index only
+2. Read the vault's `SCHEMA.md` and `index.md`, use its bounded `recent_log.py`
+   view for continuity, and load the relevant `writing/index.md` and linked
+   pages only when Writing is relevant. If a vault has no Writing area, treat it as empty for read-only work; SelfContext creates the index only
    for a requested Writing mutation within the provisional/final backup lifecycle.
 3. Retrieve only the Writing evidence and other vertical context relevant to the
    current objective. Do not scan or copy the whole vault by default.

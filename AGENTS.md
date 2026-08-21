@@ -30,6 +30,10 @@ Current vertical routing:
 
 Do not invent a competing vault schema or lifecycle ad hoc. Follow the SelfContext skill, the vault's `SCHEMA.md`, and the Deep Maintenance Protocol once they exist. SelfContext is latest-first: the current schema and applied contracts are the only normal runtime target; recognized historical schemas remain upgrade/migration sources, and schema 0.2 records selective vertical contracts and compiled catalogs. Prefer natural-language interaction; commands are optional conveniences, never the canonical interface.
 
+Default context-loading paths must remain bounded as vault history and page count
+grow. Prefer disposable, targeted retrieval over adding always-loaded summaries,
+catalogs, or duplicate recent-page lists.
+
 ## Operating Modes
 
 Normal vault use is **user mode**. Ingest, query, targeted review, ordinary
