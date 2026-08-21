@@ -25,8 +25,9 @@ relevant evidence.
 
 For personal-context questions:
 
-1. Use the project-local `self-context` skill first. Orient from `SCHEMA.md`,
-   `index.md`, recent `log.md`, and `ventures/index.md` when it exists.
+1. Use the project-local `self-context` skill first. Orient from `SCHEMA.md`
+   and `index.md`, use its bounded `recent_log.py` view for continuity, and
+   load `ventures/index.md` only when Ventures / Projects is relevant.
 2. Read the [Ventures procedure](../self-context/references/ventures.md) before
    ingesting, updating, reviewing, or interpreting initiative evidence.
 3. Read [evidence and reasoning](references/evidence-and-reasoning.md) before

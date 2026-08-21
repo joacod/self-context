@@ -190,6 +190,41 @@ class RepositoryConsistencyTests(unittest.TestCase):
         self.assertIn("do not log by default", query)
         self.assertIn("log entry, index write", skill)
 
+    def test_normal_orientation_is_bounded_and_owner_scoped(self) -> None:
+        skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+        query = (SKILL_ROOT / "references/query.md").read_text(encoding="utf-8")
+        initialization = (SKILL_ROOT / "references/initialization.md").read_text(encoding="utf-8")
+        ingest = (SKILL_ROOT / "references/ingest.md").read_text(encoding="utf-8")
+        deep_maintenance = (SKILL_ROOT / "references/deep-maintenance.md").read_text(encoding="utf-8")
+        normal = "\n".join((skill, query, initialization, ingest)).casefold()
+
+        self.assertIn("recent_log.py", normal)
+        self.assertIn("search_log.py", normal)
+        self.assertIn("smallest likely owner", normal)
+        self.assertIn("unrelated enabled verticals", normal)
+        self.assertIn("explicit broad", normal)
+        self.assertNotIn(
+            "read `schema.md`, `index.md`, the most recent entries in `log.md`, and enabled vertical indexes",
+            normal,
+        )
+        self.assertIn("enabled vertical indexes", deep_maintenance.casefold())
+        self.assertIn("explicit broad maintenance", deep_maintenance.casefold())
+
+        tracked_paths = subprocess.run(
+            ["git", "ls-files", "--", "*recent.md", "*recent-additions.md"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.splitlines()
+        self.assertEqual(tracked_paths, [])
+
+        evals = json.loads((SKILL_ROOT / "evals/evals.json").read_text(encoding="utf-8"))["evals"]
+        by_id = {int(case["id"]): case for case in evals}
+        for identifier in (155, 156, 157, 158):
+            self.assertIn(identifier, by_id)
+            self.assertGreaterEqual(len(by_id[identifier].get("expectations", [])), 3)
+
     def test_natural_language_examples_cover_the_operational_loop(self) -> None:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         trigger_evals = json.loads(

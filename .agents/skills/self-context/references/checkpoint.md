@@ -71,8 +71,9 @@ Keep the outcome distinct from a normal no-op:
 ## 1. Inspect the conversation, not just its ending
 
 First orient the current vault through the normal latest-first runtime gate and
-significant-operation orientation. Read the schema, root index, recent log, and
-relevant enabled indexes before planning any mutation. A checkpoint against an
+significant-operation orientation. Read the schema and root index, use the
+bounded `recent_log.py` view, and load only relevant owner indexes before
+planning any mutation. A checkpoint against an
 old, future, malformed, or otherwise incompatible vault follows the same
 upgrade or recovery boundary as the operation it would invoke.
 

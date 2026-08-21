@@ -192,7 +192,7 @@ will contain self-description equivalent to:
 vault/
 |-- SCHEMA.md       # organization, metadata, and lifecycle rules
 |-- index.md        # navigation and concept entry points
-|-- log.md          # recent operations and continuity notes
+|-- log.md          # complete operation history and continuity notes
 |-- core/           # universal cross-domain personal context
 |-- review/         # universal unresolved observations and review items
 |-- sources/        # universal retained source or recollection material
@@ -503,10 +503,20 @@ reserved for an authorized mutation workflow. Catalog entries remain
 navigation surfaces rather than evidence. `search_vault.py` provides read-only
 local lexical retrieval without a permanent index, with optional explicit path
 scopes, conservative contextual coverage filtering, canonical-over-derived
-preference, and bounded linked-source expansion. Neither tool is a second
-source of truth.
+preference, and bounded linked-source expansion. `recent_log.py` provides a
+bounded, complete-entry continuity slice from the canonical log, while
+`search_log.py` provides bounded lexical lookup for explicit historical
+questions. Both log helpers are read-only and disposable; neither creates a
+persistent index or becomes a second source of truth.
 
-Before a significant operation on an existing vault, the skill orients from `SCHEMA.md`, `index.md`, and recent `log.md` entries. This reduces duplicate concepts, missed connections, schema drift, and accidental contradictions without requiring a full-vault scan every time.
+Before a significant normal operation on an existing vault, the skill orients
+from `SCHEMA.md`, `index.md`, and `recent_log.py --entries 10`, then infers the
+smallest relevant owner and follows linked pages or scoped search. It does not
+load every enabled vertical index or the complete log by default. Explicit
+migration, lint, upgrade, validation, review, and deep-maintenance procedures
+may use broader inventory when their semantics require it. This bounded control
+layer reduces duplicate concepts, missed connections, schema drift, and
+accidental contradictions without creating a growing Recent Additions list.
 
 ## Provenance and Persistence
 

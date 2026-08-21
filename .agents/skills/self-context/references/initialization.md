@@ -71,9 +71,10 @@ An existing vault may have more files, a different ordering, or a previously
 initialized schema. Preserve its knowledge and orient before changing it.
 
 - If `SCHEMA.md` is absent, treat the vault as unversioned. Read its visible
-  indexes, recent log if present, and relevant pages. Do not reorganize or
-  rename the existing taxonomy merely to match the default layout. Add a concise
-  schema note only when it accurately describes the observed structure, and
+  indexes, use `recent_log.py` for a bounded recent log slice if `log.md` is
+  present, and inspect relevant pages. Do not reorganize or rename the existing
+  taxonomy merely to match the default layout. Add a concise schema note only
+  when it accurately describes the observed structure, and
   otherwise remain conservative.
 - If a schema declares a future or unknown major version, remain read-only,
   explain the compatibility issue, and ask before modifying content.
@@ -121,9 +122,11 @@ vertical_contracts:
 This directory is a portable SelfContext Context Vault. Markdown files are
 canonical; standard relative Markdown links are canonical links.
 
-Read this file, `index.md`, and recent `log.md` entries before significant
-operations. See the category indexes for navigation. Keep user facts, source
-records, agent observations, and derived syntheses visibly distinct.
+Read this file and `index.md` before significant operations, then use
+`.agents/skills/self-context/scripts/recent_log.py vault --entries 10` for a
+bounded continuity slice. See the category indexes for navigation; load only the
+relevant owner index for the request. Keep user facts, source records, agent
+observations, and derived syntheses visibly distinct.
 
 Top-level areas:
 
@@ -187,7 +190,7 @@ and may later contain generated entries if the layout gains durable root pages.
 # SelfContext Vault
 
 Portable personal context. Read [the schema](SCHEMA.md) before significant
-changes and [the recent log](log.md) for continuity.
+changes and use the bounded recent-log helper for operational continuity.
 
 ## Areas
 
@@ -270,5 +273,8 @@ available.
 - follow_up: Add context through natural-language operations.
 ```
 
-Keep the initialization entry factual. The first requested ingest or query
-should add its own operation entry rather than rewriting history.
+Keep the initialization entry factual. The complete `log.md` remains the
+canonical operation history; normal orientation uses the bounded `recent_log.py`
+view, while `search_log.py` is reserved for explicit historical lookup. The
+first requested ingest or query should add its own operation entry rather than
+rewriting history.

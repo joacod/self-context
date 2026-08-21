@@ -156,9 +156,10 @@ actually using it”; “we changed the scope”; “I may turn this experiment 
 threshold: do not create a page for every passing idea, coding task,
 repository mention, meeting, vague maybe, or company/person name.
 
-1. Orient from `SCHEMA.md`, the root index, recent log, and `ventures/index.md`
-   when it exists. Search for the existing initiative before creating another
-   record, including aliases and prior lifecycle states.
+1. Orient from `SCHEMA.md` and the root index, use the bounded `recent_log.py`
+   view for continuity, and load `ventures/index.md` when Ventures / Projects
+   is the likely owner. Search for the existing initiative before creating
+   another record, including aliases and prior lifecycle states.
 2. Separate what the user said, what a source records, what another person
    proposed or reported, what was observed, what is inferred, and what remains
    unknown. Preserve useful provenance.

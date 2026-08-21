@@ -134,8 +134,10 @@ From the repository root:
 1. Resolve only `<repository-root>/vault/` as the default vault.
 2. Read `vault/SCHEMA.md`.
 3. Read the root `vault/index.md`.
-4. Inspect only recent `vault/log.md` entries needed for continuity.
-5. Read enabled vertical indexes when the plan needs their control state.
+4. Inspect only the bounded recent `vault/log.md` slice needed for continuity
+   with `recent_log.py`.
+5. Read enabled vertical indexes only when the migration plan needs their
+   control state.
 6. Determine the current schema from `SCHEMA.md`.
 7. Determine the latest schema exposed by the repository migration registry.
 

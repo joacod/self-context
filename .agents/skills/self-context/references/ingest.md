@@ -40,10 +40,19 @@ arbitrary binary document dump as the durable representation.
 
 ## 2. Orient and Find Related Concepts
 
-Read the schema, root index, and recent log first. Search relevant category
-indexes and pages for names, organizations, roles, dates, projects, skills, and
-distinctive phrases from the new information. Follow links only as far as
-needed to understand relationships.
+Read the schema and root index first, then use the bounded recent-log helper:
+
+```bash
+python3 .agents/skills/self-context/scripts/recent_log.py \
+  vault --entries 10
+```
+
+Infer the smallest likely owner from the supplied information and search its
+category index and pages for names, organizations, roles, dates, projects,
+skills, and distinctive phrases. Add another owner only when it can materially
+change the ingest. Follow links only as far as needed to understand
+relationships; do not load every enabled vertical index or the complete log by
+default.
 
 Do not search `.obsidian/` or treat viewer configuration as supplied context.
 

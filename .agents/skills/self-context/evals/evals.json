@@ -1756,6 +1756,54 @@
         "Persistence accurately reports no mutation or the separately authorized canonical update, without exposing hidden reasoning."
       ],
       "files": []
+    },
+    {
+      "id": 155,
+      "prompt": "Answer John Doe's synthetic Career question about preparing a Staff-level interview story. The vault also has enabled Writing, Media, Relationships, and Ventures areas with pages that share words like project and leadership. Orient from bounded recent operational history, load Career first, and do not load unrelated vertical indexes unless one can materially change the answer.",
+      "expected_output": "The response keeps normal orientation bounded, starts with Career ownership, and excludes unrelated enabled verticals from default context.",
+      "expectations": [
+        "Recent operational continuity is retrieved through a bounded slice rather than the complete log.",
+        "Career is identified as the primary owner and its index is loaded first.",
+        "Writing, Media, Relationships, and Ventures are not loaded merely because lexical matches exist.",
+        "The answer can state what additional owner would justify a material cross-vertical expansion."
+      ],
+      "files": []
+    },
+    {
+      "id": 156,
+      "prompt": "Help John Doe compare a synthetic Harbor CLI initiative against his Career leadership goal and Core six-hour constraint. Start with the likely Ventures owner, then expand to Career and Core only because each can materially change the comparison. Keep unrelated Learning, Writing, Media, and Relationships indexes out of context.",
+      "expected_output": "The response uses bounded cross-domain orientation and adds only the materially relevant owners with explicit reasons.",
+      "expectations": [
+        "The likely primary owner is selected before cross-vertical expansion.",
+        "Career and Core are added for decision-relevant reasons rather than lexical overlap.",
+        "Unrelated enabled verticals remain outside the retrieval scope.",
+        "The recommendation remains derived and does not mutate the vault."
+      ],
+      "files": []
+    },
+    {
+      "id": 157,
+      "prompt": "Perform an explicitly requested deep review of a synthetic current vault. This operation may inspect all enabled vertical indexes and broad maintenance inventory because deep-review semantics require it, but it must remain read-only and must not turn that broad exception into the default behavior for ordinary Career or Query work.",
+      "expected_output": "The response preserves the explicit broad-maintenance exception while keeping ordinary orientation targeted and read-only.",
+      "expectations": [
+        "Deep review can use broad enabled-vertical inventory when its procedure requires it.",
+        "The broad scan does not create a new summary, cache, recent artifact, or operation-log mutation.",
+        "The response distinguishes deep-review scope from normal owner-scoped Query orientation.",
+        "The complete canonical log remains unchanged."
+      ],
+      "files": []
+    },
+    {
+      "id": 158,
+      "prompt": "In a synthetic vault with a long operation log, answer a current Ventures question using only the bounded recent-log view for continuity. Then, only because I explicitly ask when an older migration introduced Harbor CLI, use bounded historical log search and return the matching complete operation entries without loading the full log into the answer.",
+      "expected_output": "The response separates current continuity retrieval from demand-driven historical lookup and preserves complete canonical history.",
+      "expectations": [
+        "Normal orientation uses recent_log.py with a small explicit bound and does not read the whole log by default.",
+        "search_log.py is used only for the explicit older-history question and has a bounded result limit.",
+        "Historical results include entry/date/change information and preserve complete operation boundaries.",
+        "No log mutation, cache, database, or duplicate recent-pages artifact is created."
+      ],
+      "files": []
     }
   ]
 }

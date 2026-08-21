@@ -39,7 +39,9 @@ must not copy personal vault content into tracked files.
 For every request that depends on the user's personal context:
 
 1. Use the project-local `self-context` skill first. Read the vault's
-   `SCHEMA.md`, `index.md`, and recent `log.md` entries as that skill directs.
+   `SCHEMA.md` and `index.md`, then use its bounded `recent_log.py` view for
+   continuity; load the relevant Career index only when Career is the likely
+   owner.
 2. Retrieve only the relevant career evidence and metadata. Do not replace
    SelfContext with an ad hoc search, a second schema, or provider-owned memory.
 3. Read [the evidence and reasoning guide](references/evidence-and-reasoning.md)

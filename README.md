@@ -102,7 +102,9 @@ local Markdown Context Vault
 ```
 
 - The vault is the durable source of truth. You can inspect, edit, copy, and
-  back it up independently.
+  back it up independently. Normal orientation uses a bounded recent operation
+  slice and only the relevant owner indexes; older history remains in the
+  complete `log.md` and is retrieved explicitly when needed.
 - The existing AI harness provides the model and execution. SelfContext
   provides workflows for ingest, query, review, lint, advice, and maintenance.
 - User-stated facts, source-derived facts, agent inferences, and derived

@@ -15,7 +15,8 @@ read-only review or lint run needs no backup.
 
 ## Review
 
-Orient from the schema, root index, and recent log. Then inspect:
+Orient from the schema and root index, use the bounded `recent_log.py` view,
+and then inspect:
 
 - durable pages with `status: review`, pages under `review/observations/`, and
   any `agent_inference` pages;

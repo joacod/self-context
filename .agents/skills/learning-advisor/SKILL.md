@@ -24,9 +24,9 @@ Learning-specific reasoning after SelfContext retrieves relevant evidence.
 
 For every request that depends on the person's own knowledge:
 
-1. Use the project-local `self-context` skill first. Orient from `SCHEMA.md`,
-   `index.md`, recent `log.md`, and the relevant `learning/index.md` when it
-   exists.
+1. Use the project-local `self-context` skill first. Orient from `SCHEMA.md`
+   and `index.md`, use its bounded `recent_log.py` view for continuity, and
+   load `learning/index.md` only when Learning is relevant.
 2. Read [the evidence and reasoning guide](references/evidence-and-reasoning.md)
    before assessing knowledge, gaps, prerequisites, progression, or mental
    models.
