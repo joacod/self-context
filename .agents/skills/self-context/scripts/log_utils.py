@@ -239,6 +239,11 @@ def search_log_entries(
             match = score_log_entry(entry, query)
             if match is not None:
                 matches.append(match)
+                # Keep only the requested top results while streaming.  The
+                # result bound therefore also bounds search memory for a query
+                # that matches a large fraction of the history.
+                matches.sort(key=lambda item: (-item.score, -item.entry.ordinal))
+                del matches[limit:]
     except FileNotFoundError as error:
         raise LogReadError(f"missing required operation log: {path}") from error
     except IsADirectoryError as error:
@@ -248,5 +253,4 @@ def search_log_entries(
     except OSError as error:
         raise LogReadError(f"unable to read operation log: {path}") from error
 
-    matches.sort(key=lambda match: (-match.score, -match.entry.ordinal))
-    return matches[:limit]
+    return matches
