@@ -86,7 +86,9 @@ The body must identify the question, linked evidence, assumptions, uncertainty,
 and recommendations. A derived page is not evidence, does not verify a
 Learning concept, and does not change a goal or core preference.
 
-Before any persisted result, create the provisional recovery backup. After
-writing and validating, use the shared final backup and discard the provisional
-only after final backup success. Report whether a Learning page changed, whether
-only derived material changed, and what remains unconfirmed.
+Before any persisted result in an existing current vault, prepare the
+semantic proposal and invoke SelfContext's ordinary commit boundary. It stages
+pages, managed indexes, and the log, validates them together, owns both backups
+and rollback, and returns one receipt. Report whether a Learning page changed,
+whether only derived material changed, and what remains unconfirmed. Missing or
+uninitialized bootstrap remains with SelfContext's Initialization procedure.

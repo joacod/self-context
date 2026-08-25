@@ -7,6 +7,13 @@ versions. The current runtime is latest-first: recognized schema 0.1 state is
 preserved for migration and diagnosis, but ordinary operations upgrade it first
 rather than activating historical semantics.
 
+The ordinary commit boundary intentionally supports only existing, current,
+compatible vaults. It returns a structured `initialization-required` blocker for
+a missing or incomplete vault and does not create the vault root, universal
+layout, or bootstrap backups. Missing-vault and empty-vault initialization,
+including first-use continuation in the same operation, remain owned by this
+procedure until a separate transaction design authorizes changing that boundary.
+
 ## Missing Vault
 
 When a request requires a vault and `<repository-root>/vault/` does not exist:

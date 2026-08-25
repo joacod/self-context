@@ -32,7 +32,8 @@ For a request that depends on the user's own communication or writing:
 2. Retrieve only the Writing evidence and other vertical context relevant to
    the objective. If a vault has no Writing area, treat it as empty for
    read-only work; SelfContext creates the index only for a requested Writing
-   mutation within the provisional/final backup lifecycle.
+   mutation through the ordinary commit boundary for an existing current vault.
+   Missing or uninitialized bootstrap remains with Initialization.
 3. Read [the evidence and reasoning guide](references/evidence-and-reasoning.md)
    before making claims about the user's writing.
 4. Read [the output and persistence guide](references/output-and-persistence.md)
@@ -44,9 +45,11 @@ user voice. Missing evidence is not permission to infer a voice from the user's
 request, job, beliefs, or a generated draft.
 
 When the request is to ingest or update Writing evidence, SelfContext owns that
-operation. Follow its Writing lifecycle, including source classification,
-comparison, schema-specific activation, selective updates, backup rules,
-provenance, and the explicit "No meaningful update" outcome. The Advisor must
+operation. Follow its Writing classification, comparison, schema-specific
+activation, selective updates, provenance, and explicit "No meaningful update"
+semantics, then invoke the ordinary commit boundary for an existing current
+vault. The helper owns staged indexes, log formatting, validation, backups, and
+rollback; missing or uninitialized bootstrap remains separate. The Advisor must
 not mutate the profile merely because it produced a draft or critique. Writing
 is an available vertical and may be absent from a schema 0.2 vault; read-only
 work treats it as empty and does not create its area.

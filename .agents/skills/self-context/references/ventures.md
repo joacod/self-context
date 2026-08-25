@@ -172,11 +172,15 @@ repository mention, meeting, vague maybe, or company/person name.
 4. Link Career, Learning, Relationships, Writing, Core, and Sources only when
    their owned evidence helps explain the initiative. Route new facts to their
    real owner instead of copying them into Ventures.
-5. For a meaningful mutation in a current vault, follow the shared provisional
-   recovery backup, validation, final backup, and guarded provisional-discard
-   lifecycle. A schema 0.2 first use records exactly `ventures@1`, creates only
-   the area and index, and adds the root link. A schema 0.1 vault upgrades first
-   and receives no legacy Ventures activation. Read-only work never creates or
+5. For a meaningful mutation in an existing current vault, prepare the
+   semantic initiative bytes and explicitly request `ventures` activation when
+   first use requires it, then invoke the ordinary commit boundary. It stages
+   exactly the requested control companions, managed catalog, and log, validates
+   them together, owns backups/rollback, and returns one receipt. A schema 0.2
+   first use records exactly `ventures@1`, creates only the area and index, and
+   adds the root link. Missing or uninitialized bootstrap remains with
+   [Initialization](initialization.md); a schema 0.1 vault upgrades first and
+   receives no legacy Ventures activation. Read-only work never creates or
    enables Ventures.
 
 ## Query and cross-vertical routing

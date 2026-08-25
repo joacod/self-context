@@ -180,8 +180,8 @@
     },
     {
       "id": 17,
-      "prompt": "In a synthetic existing Context Vault, update one page and its index. Create a provisional timestamped ZIP under the project-root backups/ directory before writing, then after validation create the final ZIP, discard only the provisional, keep the vault independent, and retain no more than the latest ten managed backups.",
-      "expected_output": "The skill preserves a provisional recovery backup while mutating, creates a final-state backup after validation, discards the provisional only after final success, reports backup failure as incomplete, excludes operational backups from canonical context, and enforces ten-backup retention.",
+      "prompt": "In a synthetic existing current Context Vault, prepare one page update and invoke the ordinary commit boundary. Keep the vault independent, make the managed index part of the same transaction, and retain no more than the latest ten managed backups.",
+      "expected_output": "The skill uses one structured ordinary-commit receipt: the helper stages the prepared page and index, validates before active replacement, owns provisional/final backups and rollback, discards the provisional only after final success, reports cleanup or backup failure accurately, excludes operational backups from canonical context, and enforces ten-backup retention.",
       "files": [],
       "expectations": [
         "An ordinary mutation creates a provisional backup before active writes and a final backup after writes and validation.",
@@ -324,8 +324,8 @@
     },
     {
       "id": 30,
-      "prompt": "A synthetic copied vault follows the shared structure with SCHEMA.md, index.md, log.md, core, career, review, sources, and derived, but no writing directory. First answer a read-only question about the user's Writing context without creating files. Then, only when explicitly asked to ingest an authored essay, create the provisional backup, create writing/index.md and its root link, complete and validate the ingest, create the final backup, discard the provisional, and avoid rewriting the existing schema or reorganizing existing pages.",
-      "expected_output": "The missing Writing area is treated as empty for read-only work and is added minimally only for an authorized mutation under the existing backup and compatibility lifecycle.",
+      "prompt": "A synthetic copied current vault follows the shared structure with SCHEMA.md, index.md, log.md, core, career, review, sources, and derived, but no writing directory. First answer a read-only question about the user's Writing context without creating files. Then, only when explicitly asked to ingest an authored essay, prepare the semantic proposal and invoke ordinary commit with explicit Writing activation, without rewriting the existing schema or reorganizing existing pages.",
+      "expected_output": "The missing Writing area is treated as empty for read-only work and is added minimally only for an authorized existing-current-vault mutation through one ordinary commit receipt; missing-vault bootstrap remains with Initialization.",
       "files": [],
       "expectations": [
         "Read-only Writing retrieval does not create an index, profile, or backup.",
@@ -391,8 +391,8 @@
     },
     {
       "id": 36,
-      "prompt": "A synthetic existing Context Vault has no learning directory. First answer a read-only question about prior knowledge without creating files. Then, only after an explicit request to ingest evidence, create the provisional backup, add the minimal Learning index and root link, complete and validate the ingest, create the final backup, and discard the provisional.",
-      "expected_output": "The skill treats a missing Learning area as empty for read-only retrieval and adds it minimally only for a requested mutation.",
+      "prompt": "A synthetic existing current Context Vault has no learning directory. First answer a read-only question about prior knowledge without creating files. Then, only after an explicit request to ingest evidence, prepare the semantic proposal and invoke ordinary commit with explicit Learning activation, adding only the minimal Learning index and root link.",
+      "expected_output": "The skill treats a missing Learning area as empty for read-only retrieval and adds it minimally only for a requested existing-current-vault mutation through one ordinary commit receipt; missing-vault bootstrap remains separate.",
       "files": [],
       "expectations": [
         "Read-only retrieval does not create Learning files or a backup.",
@@ -617,8 +617,8 @@
     },
     {
       "id": 56,
-      "prompt": "In a synthetic schema 0.2 vault with no optional verticals, explicitly ingest one authored essay requiring Writing. Create the provisional recovery backup, activate exactly Writing at the catalog version, create its area and index, add the root link, continue and validate the ingest, create the final backup, discard the provisional, and do not enable other verticals.",
-      "expected_output": "The first mutating use records exactly one available Writing contract and continues the original operation.",
+      "prompt": "In a synthetic schema 0.2 vault with no optional verticals, explicitly ingest one authored essay requiring Writing. Prepare the semantic proposal and invoke ordinary commit with exactly one explicit Writing activation, using the catalog version, and do not enable other verticals.",
+      "expected_output": "The first mutating use records exactly one available Writing contract, stages its area/index/root link with the semantic change, and returns one ordinary commit receipt.",
       "expectations": [
         "Exactly one vertical is activated.",
         "The recorded contract matches the available version.",

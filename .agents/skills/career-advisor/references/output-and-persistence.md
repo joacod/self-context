@@ -86,9 +86,9 @@ and clearly labeled recommendations. A derived page is not a source for a new
 fact, current goal, or agent confidence loop.
 
 Before creating a derived page, updating the relevant derived index, or
-logging persisted advice, create the provisional recovery backup. Validate the
-resulting vault, create the final backup through SelfContext's [Vault
-Backups](../../self-context/references/backups.md) procedure, and discard the
-provisional only after final backup success. If persistence is not clearly
-valuable, keep the answer ephemeral and do not create a backup solely for the
-read-only advice.
+logging persisted advice in an existing current vault, prepare the semantic
+proposal and invoke SelfContext's ordinary commit boundary. It stages the page,
+managed index, and log, validates the result, owns both backups and rollback,
+and returns one receipt. If persistence is not clearly valuable, keep the answer
+ephemeral and do not create a backup solely for the read-only advice. Missing or
+uninitialized bootstrap remains with SelfContext's Initialization procedure.

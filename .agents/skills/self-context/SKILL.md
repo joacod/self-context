@@ -118,13 +118,19 @@ an inaccessible source was retrieved.
 - Treat the project-root `backups/` directory and its ZIP archives as private
   operational state, not context. Never index, search, lint, link to, or use
   backup contents as evidence.
-- For ordinary mutations, create a provisional recovery backup before the
-  first active write, then create a final backup after the mutation and relevant
-  validation. Discard the provisional only after the final backup succeeds. For
-  migration and deep maintenance, retain both the pre-write recovery backup and
-  the final-state backup. If any required backup fails, stop further writes and
-  report the operation as incomplete; transactional helpers should roll back
-  when they can.
+- For ordinary mutations against an existing current vault, prepare the
+  semantic writes and small deterministic metadata, then invoke the ordinary
+  commit boundary. It independently re-checks the active runtime, constructs
+  and validates a staged proposed vault, synchronizes managed indexes in that
+  stage, appends the formatted log entry there, and owns the provisional recovery backup,
+  final backup, transaction, rollback, and cleanup receipt. Do not call
+  `prepare_context.py` as a write safety gate or run `sync_indexes.py --write`
+  against the active vault afterward. If the vault is missing or uninitialized,
+  stop with the helper's initialization-required state and use the existing
+  initialization procedure instead. For schema migration or deep maintenance,
+  read the relevant procedure and retain their distinct backup lifecycles. If
+  any required backup fails, stop further writes and report the operation as
+  incomplete; transactional helpers should roll back when they can.
 
 ## User Mode Boundary
 
@@ -382,12 +388,15 @@ confirmation question instead of silently using it as current.
    links before answering. Do not scan `.obsidian/` inside the vault or the
    project-root `backups/` directory; they are noncanonical operational state,
    not personal context.
-5. If an ordinary operation will mutate the vault, read [the backup procedure](references/backups.md)
-   and create its provisional recovery backup before the first active write,
-   then its final backup after mutation and validation; discard the provisional
-   only after final success. For schema migration or deep maintenance, read the
-   relevant procedure and retain both backups. If the operation is read-only, do
-   not create a backup, log entry, index write, metadata update, or generated
+5. If an ordinary operation will mutate an existing current vault, read [the
+   ordinary commit procedure](references/ingest.md#ordinary-commit-boundary),
+   prepare the semantic proposal, and inspect its one structured receipt. The
+   helper owns staging, indexes, logging, validation, backups, rollback, and
+   guarded provisional cleanup. For a missing or uninitialized vault, use the
+   existing initialization procedure; the ordinary commit does not own
+   bootstrap. For schema migration or deep maintenance, read the relevant
+   procedure and retain both backups. If the operation is read-only, do not
+   create a backup, log entry, index write, metadata update, or generated
    artifact merely because the vault was inspected.
 6. Read the relevant reference procedure before writing or validating content:
    - [Vault backups](references/backups.md) for provisional/final archives,
@@ -453,12 +462,15 @@ End the response with a concise account of:
   synthesis; and
 - any confirmation needed from the user.
 
-For a mutation, report the provisional recovery archive, final-state archive,
-any discarded provisional archive, and older archives removed by the ten-item
-retention rule. If a required backup fails, report the mutation as incomplete,
-keep the recovery archive, and do not perform further writes until the resulting
-vault is safely backed up. If guarded discard fails after final backup success,
-report the cleanup failure and keep the provisional rather than force-deleting it.
+For an ordinary mutation, report the structured commit receipt, including
+changed/created/modified paths, snapshot IDs, validation, rollback, explicit
+activations, and provisional/final backup paths. The receipt reports whether the
+provisional archive was discarded and any retention cleanup. A failed ordinary
+commit keeps the provisional archive and does not claim a final mutation; a
+successful final backup followed by guarded provisional-discard failure keeps
+the valid committed vault and reports the cleanup warning. Missing-vault
+initialization remains a separate exception. Migration and deep maintenance
+report their own distinct receipts and retain both archives.
 
 If a request asks for advice, distinguish retrieved evidence, likely
 interpretations, unknowns, and recommendations. A recommendation must never

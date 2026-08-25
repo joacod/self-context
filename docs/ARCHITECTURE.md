@@ -494,13 +494,45 @@ context as current.
 8. **Advise** through an Advisor Pack that retrieves evidence from the core skill and applies a domain-specific reasoning framework.
 9. **Maintain** through current-vault lint, deterministic deep lint, read-only deep review, and explicitly authorized deep update. Deep review uses snapshots and bounded semantic passes but never writes by default. Direct deep maintenance does not operate as a legacy runtime; an old schema or stale contract is reported as requiring `upgrade vault latest`. The upgrade orchestration may delegate semantic phases after compatibility is current.
 
+### Ordinary current-vault commit boundary
+
+For an existing schema 0.2 vault with current applied contracts, ordinary
+CREATE/UPDATE persistence accepts a thin prepared filesystem proposal rather
+than a semantic mutation language:
+
+```text
+agent-owned semantic bytes + explicit activation + log metadata
+    -> ordinary_commit.commit_mutation
+    -> current runtime/input gate
+    -> temporary staged vault
+       -> explicit control activation
+       -> managed catalog synchronization
+       -> deterministic operation-log append
+       -> ordinary validation
+    -> one bounded active write set through file_transaction
+       -> active validation and proposed-snapshot check
+       -> final backup
+       -> guarded provisional cleanup
+    -> structured receipt
+```
+
+The helper rejects absolute/traversal/symlink/private-state/non-regular paths,
+control/index writes, malformed labels, and deletion attempts. It independently
+checks runtime compatibility and does not trust a prior `prepare_context` packet.
+A no-op is detected before the log entry and backup lifecycle. Missing or
+uninitialized vaults return `initialization-required` and remain owned by the
+existing Initialization procedure; schema migration and deep maintenance are
+separate high-level workflows that may share only the low-level transaction
+kernel and deterministic control helpers.
+
 `sync_indexes.py` compiles deterministic managed catalog blocks from page
 metadata while preserving user-written text outside markers. It requires one
 unambiguous marker pair per managed index, escapes Markdown-significant text,
 percent-encodes unsafe path characters, and plans all index writes before an
 atomic replacement/rollback sequence. `--check` is read-only; `--write` is
-reserved for an authorized mutation workflow. Catalog entries remain
-navigation surfaces rather than evidence. `search_vault.py` provides read-only
+reserved for an authorized mutation workflow and, for ordinary commit, is run
+only against the disposable staged vault. Catalog entries remain navigation
+surfaces rather than evidence. `search_vault.py` provides read-only
 local lexical retrieval without a permanent index, with optional explicit path
 scopes, conservative contextual coverage filtering, canonical-over-derived
 preference, and bounded linked-source expansion. `recent_log.py` provides a
