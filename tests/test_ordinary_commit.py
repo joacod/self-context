@@ -185,6 +185,9 @@ class OrdinaryCommitTests(unittest.TestCase):
             )
             custom = vault / "custom-notes" / "field-log.md"
             custom_before = custom.read_bytes()
+            custom_binary = vault / "custom-notes" / "raw-export.bin"
+            custom_binary.write_bytes(b"\x00custom bytes\xff")
+            custom_binary_before = custom_binary.read_bytes()
             result = ordinary_commit.commit_mutation(
                 vault,
                 self.proposal(writes={"career/ordinary-page.md": PAGE}),
@@ -195,6 +198,7 @@ class OrdinaryCommitTests(unittest.TestCase):
             self.assertIn("Manual prefix that must remain.", updated_index)
             self.assertIn("Manual suffix that must remain.", updated_index)
             self.assertEqual(custom.read_bytes(), custom_before)
+            self.assertEqual(custom_binary.read_bytes(), custom_binary_before)
 
     def test_operation_log_escapes_special_canonical_paths(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -352,6 +356,42 @@ class OrdinaryCommitTests(unittest.TestCase):
             self.assertEqual(result["status"], "blocked")
             self.assertEqual(result["state"], "input-invalid")
             self.assertTrue(target.is_dir())
+
+    def test_non_markdown_writes_are_rejected_before_staging_or_backups(self) -> None:
+        labels = ("career/example.bin", "sources/document.pdf", "ventures/blob.dat")
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            vault = build_synthetic_vault(project)
+            before = tree_snapshot(vault)
+
+            with mock.patch.object(
+                ordinary_commit.shutil, "copytree", wraps=ordinary_commit.shutil.copytree
+            ) as copytree, mock.patch.object(
+                ordinary_commit.backup_vault, "create_backup"
+            ) as create_backup, mock.patch.object(
+                ordinary_commit.file_transaction, "replace_planned_files"
+            ) as replace_planned_files:
+                for label in labels:
+                    with self.subTest(label=label):
+                        result = ordinary_commit.commit_mutation(
+                            vault,
+                            self.proposal(writes={label: b"not a Markdown page"}, paths=[label]),
+                        )
+                        self.assertEqual(result["status"], "blocked")
+                        self.assertEqual(result["state"], "input-invalid")
+                        self.assertTrue(
+                            any(
+                                item["classification"] == "input-file-type"
+                                for item in result["findings"]
+                            )
+                        )
+
+                copytree.assert_not_called()
+                create_backup.assert_not_called()
+                replace_planned_files.assert_not_called()
+
+            self.assertEqual(tree_snapshot(vault), before)
+            self.assertEqual(backup_paths(project), [])
 
     def test_unsupported_deletion_is_explicitly_blocked(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

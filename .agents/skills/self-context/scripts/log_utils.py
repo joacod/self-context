@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Dependency-free parsing and retrieval helpers for the operation log.
+"""Dependency-free helpers for reading and updating the operation log.
 
-The Markdown log remains the canonical history.  These helpers only read it,
-parse the documented level-two operation entries, and return bounded views.
+The Markdown log remains the canonical history. These helpers provide bounded
+reads and deterministic rendering/appending of documented operation entries.
 """
 
 from __future__ import annotations

@@ -95,12 +95,14 @@ vault/
 
 Create a vertical directory and index only when a triggering mutation requires
 that vertical or the user explicitly adopts it. A read-only query about an
-absent vertical treats it as empty and creates no files. On first required use,
-a current schema 0.2 vault creates the provisional recovery backup, records its
-exact available contract, adds its root-index link, completes the operation in
-the same turn, creates the final backup, and discards the provisional only after
-success. A schema 0.1 vault upgrades first; it does not receive a legacy
-first-use activation.
+absent vertical treats it as empty and creates no files. On first required use
+in an existing current-compatible schema 0.2 vault, the agent explicitly
+chooses the vertical and includes it in the ordinary commit proposal;
+`ordinary_commit` stages the area, exact available contract, root-index link,
+semantic writes, managed indexes, log, validation, backups, and transaction
+through one receipt. A missing or incomplete vault remains with Initialization,
+not ordinary commit. A schema 0.1 vault upgrades first; it does not receive a
+legacy first-use activation.
 
 Schema 0.1 vaults may have the historical default areas, custom areas, or only
 some verticals. Preserve their taxonomy. The current available verticals are

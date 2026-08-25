@@ -387,6 +387,16 @@ def _validate_proposal(
         if finding is not None:
             findings.append(finding)
             continue
+        if PurePosixPath(label).suffix != ".md":
+            findings.append(
+                _finding(
+                    "error",
+                    label,
+                    "ordinary semantic writes must target Markdown files with a .md extension",
+                    "input-file-type",
+                )
+            )
+            continue
         if content is None:
             findings.append(
                 _finding(

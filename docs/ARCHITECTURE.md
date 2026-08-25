@@ -386,11 +386,14 @@ skill that owns the catalog.
 
 The canonical current-schema activation procedure is
 [Initialization](../.agents/skills/self-context/references/initialization.md):
-a current vault's first mutating use records the exact available
-`vertical@version` for only the required vertical, completes the operation, and
-follows the ordinary provisional/final backup lifecycle. Read-only queries and
-assessments create nothing. A historical vault must pass the shared runtime
-gate and upgrade before this activation semantics applies.
+for an existing current-compatible vault, the agent explicitly chooses only
+the required vertical and includes its exact available `vertical@version` in
+the ordinary commit proposal. `ordinary_commit` stages the area, root link,
+semantic writes, managed indexes, log, validation, and provisional/final
+backup lifecycle together. Read-only queries and assessments create nothing. A
+missing or incomplete vault remains with Initialization, and a historical vault
+must pass the shared runtime gate and upgrade before this activation semantics
+applies.
 
 In schema 0.2, **available** means present in the repository catalog, **enabled**
 means recorded in `SCHEMA.md` with its area, index, and root link, and **applied**
@@ -541,14 +544,16 @@ bounded, complete-entry continuity slice from the canonical log, while
 questions. Both log helpers are read-only and disposable; neither creates a
 persistent index or becomes a second source of truth.
 
-Before a significant normal operation on an existing vault, the skill orients
-from `SCHEMA.md`, `index.md`, and `recent_log.py --entries 10`, then infers the
-smallest relevant owner and follows linked pages or scoped search. It does not
-load every enabled vertical index or the complete log by default. Explicit
-migration, lint, upgrade, validation, review, and deep-maintenance procedures
-may use broader inventory when their semantics require it. This bounded control
-layer reduces duplicate concepts, missed connections, schema drift, and
-accidental contradictions without creating a growing Recent Additions list.
+For ordinary Query, Ingest, Checkpoint, and advisor orientation, the skill
+chooses the smallest semantic scope and useful search anchors, then uses the
+bounded `prepare_context.py` packet. Its runtime state is the latest-first
+compatibility gate; full canonical pages are read only when the bounded packet
+indicates they are needed for semantic interpretation. It does not load every
+enabled vertical index or the complete log by default. Explicit migration,
+lint, upgrade, validation, review, and deep-maintenance procedures may use
+broader inventory when their semantics require it. This bounded control layer
+reduces duplicate concepts, missed connections, schema drift, and accidental
+contradictions without creating a growing Recent Additions list.
 
 ## Provenance and Persistence
 
