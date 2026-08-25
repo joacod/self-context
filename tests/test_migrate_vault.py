@@ -377,7 +377,7 @@ class MigrateVaultTests(unittest.TestCase):
             root = Path(temporary)
             vault = self.make_legacy(root, career_index=False, career_page=True)
             before = self.file_bytes(vault)
-            original_replace = module.os.replace
+            original_replace = module.file_transaction.os.replace
             calls = {"count": 0}
 
             def fail_second(source: str | Path, destination: str | Path) -> None:
@@ -386,18 +386,22 @@ class MigrateVaultTests(unittest.TestCase):
                     raise OSError("injected replacement failure")
                 original_replace(source, destination)
 
-            original_replace_planned = module._replace_planned_files
+            original_replace_planned = module.file_transaction.replace_planned_files
 
             def with_injected_failure(path: Path, updates: dict[str, bytes]) -> dict:
-                with mock.patch.object(module.os, "replace", side_effect=fail_second):
+                with mock.patch.object(module.file_transaction.os, "replace", side_effect=fail_second):
                     return original_replace_planned(path, updates)
 
-            with mock.patch.object(module, "_replace_planned_files", side_effect=with_injected_failure):
+            with mock.patch.object(
+                module.file_transaction,
+                "replace_planned_files",
+                side_effect=with_injected_failure,
+            ):
                 result = module.apply_migration(vault)
             self.assertNotEqual(result["status"], "success")
             self.assertEqual(result["rollback"]["status"], "rolled-back")
             self.assertEqual(before, self.file_bytes(vault))
-            self.assertFalse(any("migrate-" in path.name for path in vault.rglob(".*")))
+            self.assertFalse(any("transaction-" in path.name for path in vault.rglob(".*")))
             self.assertEqual(len(self.backup_files(root)), 1)
 
     def test_post_write_validation_failure_rolls_back_new_files_and_changes(self) -> None:
@@ -416,7 +420,7 @@ class MigrateVaultTests(unittest.TestCase):
             self.assertEqual(result["rollback"]["status"], "rolled-back")
             self.assertEqual(before, self.file_bytes(vault))
             self.assertFalse((vault / "career" / "index.md").exists())
-            self.assertFalse(any("migrate-" in path.name for path in vault.rglob(".*")))
+            self.assertFalse(any("transaction-" in path.name for path in vault.rglob(".*")))
             self.assertEqual(len(self.backup_files(root)), 1)
 
     def test_result_passes_ordinary_deep_lint_and_catalog_sync(self) -> None:
@@ -661,7 +665,7 @@ class MigrateVaultTests(unittest.TestCase):
             before_page = (vault / "career" / "evidence.md").read_bytes()
             before_custom = (vault / "custom-archive" / "historical.md").read_bytes()
             registry = self.make_multi_step_registry(module)
-            original_replace = module._replace_planned_files
+            original_replace = module.file_transaction.replace_planned_files
 
             def assert_final_transaction(path: Path, updates: Mapping[str, bytes]) -> dict:
                 self.assertEqual(
@@ -671,7 +675,11 @@ class MigrateVaultTests(unittest.TestCase):
                 self.assertNotIn(b"test-only-0.3", (path / "SCHEMA.md").read_bytes())
                 return original_replace(path, updates)
 
-            with mock.patch.object(module, "_replace_planned_files", side_effect=assert_final_transaction) as replace:
+            with mock.patch.object(
+                module.file_transaction,
+                "replace_planned_files",
+                side_effect=assert_final_transaction,
+            ) as replace:
                 result = module.apply_migration(
                     vault, target="test-only-0.3", registry=registry
                 )
@@ -709,7 +717,7 @@ class MigrateVaultTests(unittest.TestCase):
             vault = self.make_legacy(root, career_page=True)
             before = self.file_bytes(vault)
             registry = self.make_multi_step_registry(module)
-            original_replace = module.os.replace
+            original_replace = module.file_transaction.os.replace
             calls = {"count": 0}
 
             def fail_second(source: str | Path, destination: str | Path) -> None:
@@ -718,14 +726,16 @@ class MigrateVaultTests(unittest.TestCase):
                     raise OSError("injected multi-step replacement failure")
                 original_replace(source, destination)
 
-            original_replace_planned = module._replace_planned_files
+            original_replace_planned = module.file_transaction.replace_planned_files
 
             def with_injected_failure(path: Path, updates: Mapping[str, bytes]) -> dict:
-                with mock.patch.object(module.os, "replace", side_effect=fail_second):
+                with mock.patch.object(module.file_transaction.os, "replace", side_effect=fail_second):
                     return original_replace_planned(path, updates)
 
             with mock.patch.object(
-                module, "_replace_planned_files", side_effect=with_injected_failure
+                module.file_transaction,
+                "replace_planned_files",
+                side_effect=with_injected_failure,
             ):
                 result = module.apply_migration(
                     vault, target="test-only-0.3", registry=registry
@@ -734,7 +744,7 @@ class MigrateVaultTests(unittest.TestCase):
             self.assertEqual(result["rollback"]["status"], "rolled-back")
             self.assertEqual(before, self.file_bytes(vault))
             self.assertEqual(len(self.backup_files(root)), 1)
-            self.assertFalse(any("migrate-" in path.name for path in vault.rglob(".*")))
+            self.assertFalse(any("transaction-" in path.name for path in vault.rglob(".*")))
 
 
 if __name__ == "__main__":
