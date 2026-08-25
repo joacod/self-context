@@ -186,14 +186,17 @@ procedures:
    not append a transcript, create a checkpoint page, or mutate a catalog just
    to record that the conversation was inspected.
 
-When a routed result mutates the vault, use exactly the existing mutation
-lifecycle: create the provisional recovery backup before the first active write,
-apply the owning ingest or persistence procedure, validate, create the final
-backup, and discard the provisional only after final-backup success. A
-checkpoint must not create a second backup or bypass provenance, indexes,
-contradiction handling, confirmation, or logging. A dry-run never starts that
-lifecycle. If no candidate is durable, there is no active write and no backup or
-log mutation solely for checkpoint.
+When a routed result mutates an existing current vault, let the owning ingest
+or persistence procedure prepare the semantic proposal and invoke the ordinary
+commit boundary. The helper stages the page/source/control candidates, managed
+indexes, and operation log; validates them together; owns the provisional/final
+backup lifecycle, rollback, and guarded cleanup; and returns one receipt. A
+checkpoint must not create a second backup or bypass provenance,
+contradiction handling, confirmation, or semantic ownership. A dry-run never
+starts that lifecycle. If no candidate is durable, there is no active write and
+no backup or log mutation solely for checkpoint. A missing or uninitialized
+vault remains with the existing initialization procedure rather than the
+ordinary commit helper.
 
 A checkpoint can produce more than one normal update when the conversation
 contains distinct, supported changes, but prefer the smallest coherent set and

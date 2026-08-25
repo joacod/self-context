@@ -216,8 +216,12 @@ infer ownership or load unrelated verticals.
    when a durable page or review item changes. Leave `core/` unchanged unless
    the user explicitly supplied a genuinely cross-domain personal value,
    boundary, or preference owned there.
-8. Apply the shared backup, confirmation, and freshness rules. A supplied
-   message or source does not verify a relationship claim by itself.
+8. For an existing current vault, prepare the semantic relationship/source
+   bytes and explicit activation decision, then invoke the ordinary commit
+   boundary. It stages navigation and the operation log, validates, owns
+   backups and rollback, and returns one receipt. Missing or uninitialized
+   bootstrap remains separate. A supplied message or source does not verify a
+   relationship claim by itself.
 
 A meaningful operation may result in **No meaningful Relationships update** when
 the interaction is incidental, already represented, too private to retain, or

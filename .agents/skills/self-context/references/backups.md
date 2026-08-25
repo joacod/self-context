@@ -6,22 +6,27 @@ newest successful archive reflects the resulting state.
 
 ## Ordinary mutations
 
-For an ordinary ingest, persisted query result, targeted review, or vertical
-update, make a provisional recovery snapshot before the first active write:
+For an ordinary mutation against an existing current vault, the ordinary commit
+helper owns the complete lifecycle. Prepare semantic page bytes, explicit
+activation IDs when needed, and the small log metadata, then invoke the helper
+and inspect its one structured receipt. It stages and validates the proposal,
+creates one provisional recovery snapshot, applies one bounded active write set,
+validates again, creates the final snapshot, and discards the provisional only
+after final success.
 
-1. Run the helper and retain the returned archive path as `provisional_backup`.
-2. Apply the requested mutation, indexes, and log changes.
-3. Validate the resulting vault.
-4. Run the helper again and retain the returned path as `final_backup`.
-5. Only after the final backup succeeds, discard exactly `provisional_backup`
-   with the helper's guarded `--discard` mode.
+Do not create a separate orchestration backup, run `sync_indexes.py --write`
+against the active vault, append the log separately, or perform a second cleanup
+step. On a blocked or failed transaction, the receipt identifies the source
+snapshot, rollback result, and retained provisional archive. If final backup
+succeeds but guarded discard fails, the helper keeps the provisional archive and
+reports a cleanup warning without rolling back the valid committed vault. A
+semantic no-op creates no backup or log entry.
 
-The provisional archive protects the previous state if the mutation or final
-backup fails. Keep it in that case, stop further writes, and report the
-incomplete operation. Do not discard it before a valid final archive exists. If
-final backup succeeds but guarded discard fails, keep the provisional, report
-the cleanup failure, and do not force-delete it. Make one provisional and one
-final backup for the operation, not one backup per changed file.
+The ordinary boundary supports only existing, current, compatible vaults and
+CREATE/UPDATE writes. Missing or uninitialized vault bootstrap remains owned by
+the existing [Initialization](initialization.md) procedure and is intentionally
+not delegated to the ordinary helper. Schema migration and deep maintenance
+retain their separate high-level backup lifecycles below.
 
 Run the final cleanup from the repository root:
 
@@ -87,10 +92,10 @@ encryption dependency; use a separate user-controlled protection mechanism
 when encryption is required.
 
 Read-only retrieval, lint, or review that does not persist a log entry does not
-need a backup. If the vault does not exist, initialize the empty vault, create a
-provisional snapshot of that initialized state, complete the requested mutation
-and validation, create the final snapshot, and discard the provisional snapshot
-only after final backup success.
+need a backup. If the vault does not exist, the ordinary commit helper returns
+an initialization-required state without creating `backups/`; the existing
+initialization procedure may then create the empty layout and continue the
+requested operation under its documented bootstrap lifecycle.
 
 The project-root `backups/` directory is private operational state, not
 canonical context. Do not index, search, lint, link to, or include its contents

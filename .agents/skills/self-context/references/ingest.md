@@ -13,14 +13,17 @@ run legacy ingest semantics or silently upgrade; tell the user to run
 `upgrade vault latest`. Future, malformed, or unversioned state is a safe
 blocker/recovery case.
 
-For a current vault, determine the current-schema vertical activation plan in
-[Initialization](initialization.md). Create the provisional recovery backup,
-then apply that plan and the requested page, index, source-record, review-item,
-or log changes. Validate the resulting vault, create the final backup, and
-discard the provisional only after final backup success, following the [Vault
-Backups](backups.md) procedure. Read-only work never activates a vertical. If a
-required backup fails, keep the recovery archive, stop further writes, and
-report the mutation as incomplete.
+For an existing current vault, determine the semantic page/source/review
+proposal and any explicit current-schema vertical activation decision in
+[Initialization](initialization.md), then invoke the ordinary commit boundary.
+It stages the supplied bytes, activation controls, managed indexes, and
+operation log; validates the complete proposed state; and owns the provisional
+and final backups, active transaction, rollback, and guarded cleanup. Inspect
+one structured receipt rather than coordinating those mechanics separately.
+Read-only work never activates a vertical. If the helper reports
+`initialization-required`, preserve this procedure's existing bootstrap
+exception and use [Initialization](initialization.md); missing-vault
+initialization is not owned by ordinary commit.
 
 ## 1. Understand the Input
 
@@ -320,14 +323,13 @@ claim or prove that it is current.
 ## 4. Connect and Maintain Navigation
 
 Add links that explain meaningful relationships, such as a role to its projects,
-a project to its skills and stories, or a goal to supporting evidence. Update
-the nearest category index and the root index when a new durable page is
-created. Managed catalog blocks can be inspected with the read-only
-`sync_indexes.py --check` and refreshed with `sync_indexes.py --write` only
-inside the authorized mutation workflow. They are navigation surfaces, not
-evidence. Preserve user-written index text outside the markers and never
-manually edit generated entries. Do not add links to nonexistent pages or link
-every page to every related page.
+a project to its skills and stories, or a goal to supporting evidence. Include
+those semantic page bytes in the ordinary proposal. The commit boundary derives
+managed catalog candidates in the staged vault, preserves user-written text
+outside the markers, and includes the resulting index bytes in the same active
+write set. Do not run `sync_indexes.py --write` against the active vault as a
+separate step or manually edit generated entries. Do not add links to
+nonexistent pages or link every page to every related page.
 
 When a page enters `status: review`, keep the review index or a linked review
 observation useful for finding the pending action. Do not create a separate
@@ -335,15 +337,29 @@ observation page for every ordinary unverified source-derived claim.
 
 ## 5. Log and Report
 
-Append a concise dated entry to `log.md` for meaningful ingests and updates.
-Include the operation, summary, changed pages, source records, and unresolved
-follow-up items. Do not copy an entire resume or personal narrative into the
-log.
+For a meaningful ingest, supply the operation identifier, concise semantic
+summary, and affected canonical paths in the ordinary proposal's `log` object.
+The shared log primitive owns the dated Markdown formatting and deterministic
+append behavior in the staged vault; it does not invent the summary or infer
+ownership. Do not copy an entire resume or personal narrative into the log.
 
 Tell the user what was created or updated, what evidence was retained, what
-remains uncertain, and whether confirmation is needed. A correction should
-preserve useful history and provenance; do not silently erase a conflicting
-source.
+remains uncertain, whether confirmation is needed, and what the one commit
+receipt reports. A correction should preserve useful history and provenance; do
+not silently erase a conflicting source.
+
+### Ordinary commit boundary
+
+The helper accepts only a thin filesystem proposal: optional
+`expected_snapshot`, `writes` mapping canonical relative labels to prepared text
+or bytes, explicit `activations` catalog IDs, and `log` metadata containing
+`operation`, `summary`, and `paths`. It supports CREATE/UPDATE only. It rejects
+unsafe paths, control/index writes, symlink traversal, non-regular targets,
+private backup/viewer state, malformed labels, and deletion attempts. It
+independently checks that the vault is existing/current/compatible; it does not
+trust a preceding `prepare_context` packet. Missing or uninitialized vaults
+return `initialization-required` and remain with the existing initialization
+procedure.
 
 Also state whether `core/` and `derived/` changed or were intentionally left
 unchanged. For `core/`, give the domain-scope reason. For `derived/`, explain

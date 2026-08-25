@@ -577,10 +577,14 @@ uncertainty and freshness, and label conclusions as derived. If the result is
 advice, label recommendations as recommendations. Never phrase a recommendation
 as a newly confirmed goal.
 
-For a persisted query result, create the provisional recovery backup before
-creating or updating the derived page, index, or operation log. Validate the
-resulting vault, create the final backup, and discard the provisional only after
-final backup success as described in [Vault Backups](backups.md).
+For a persisted query result in an existing current vault, prepare the
+smallest derived-page bytes and invoke the ordinary commit boundary with the
+semantic log metadata. The helper stages the page, managed index, and log,
+validates them together, owns the provisional/final backup lifecycle and
+rollback, and returns one receipt. A true persistence no-op creates no backup
+or log entry. If the vault is missing or uninitialized, use the existing
+initialization procedure; ordinary commit does not bootstrap it. Schema
+migration and deep maintenance remain separate high-level workflows.
 
 ## Task context packets
 

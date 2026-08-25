@@ -18,6 +18,12 @@ try:
     import file_transaction
     import lint_vault
     import sync_indexes
+    from vault_controls import (
+        root_has_link as _shared_root_has_link,
+        root_with_links as _shared_root_with_links,
+        schema_with_contracts as _shared_schema_with_contracts,
+        vertical_index_template as _shared_vertical_index_template,
+    )
     from vault_utils import (
         canonical_files,
         catalog_records,
@@ -34,6 +40,12 @@ try:
     )
 except ImportError:  # pragma: no cover - useful when imported as a package
     from . import backup_vault, file_transaction, lint_vault, sync_indexes  # type: ignore
+    from .vault_controls import (  # type: ignore
+        root_has_link as _shared_root_has_link,
+        root_with_links as _shared_root_with_links,
+        schema_with_contracts as _shared_schema_with_contracts,
+        vertical_index_template as _shared_vertical_index_template,
+    )
     from .vault_utils import (  # type: ignore
         canonical_files,
         catalog_records,
@@ -306,72 +318,13 @@ def _newline_style(text: str) -> str:
 
 
 def _schema_with_contracts(text: str, contracts: Sequence[Mapping[str, Any]]) -> str:
-    """Return schema text with only the version and contract section changed."""
+    """Compatibility wrapper around the shared control renderer."""
 
-    matches = list(SCHEMA_LINE.finditer(text))
-    if len(matches) != 1:
-        raise ValueError("SCHEMA.md must contain exactly one schema_version: 0.1")
-
-    newline = _newline_style(text)
-    updated = SCHEMA_LINE.sub(
-        lambda match: f"{match.group(1)}0.2{match.group(2)}", text, count=1
-    )
-    lines = updated.splitlines(keepends=True)
-    section_indices = [
-        index
-        for index, line in enumerate(lines)
-        if SCHEMA_SECTION_LINE.match(line.rstrip("\r\n"))
-    ]
-    if len(section_indices) > 1:
-        raise ValueError("SCHEMA.md contains duplicate vertical_contracts sections")
-
-    block = [f"vertical_contracts:{newline}"]
-    block.extend(
-        f"  - {contract['id']}@{contract['version']}{newline}"
-        for contract in contracts
-    )
-
-    if section_indices:
-        start = section_indices[0]
-        end = start + 1
-        while end < len(lines):
-            stripped = lines[end].strip()
-            if not stripped:
-                end += 1
-                continue
-            if lines[end].startswith((" ", "\t")) and stripped.startswith("-"):
-                end += 1
-                continue
-            break
-        lines[start:end] = block
-    else:
-        version_index = next(
-            index
-            for index, line in enumerate(lines)
-            if re.match(r"^[ \t]*schema_version:[ \t]*0\.2", line)
-        )
-        lines[version_index + 1 : version_index + 1] = block
-
-    result = "".join(lines)
-    if not text.endswith(("\n", "\r")) and result.endswith(newline):
-        result = result[: -len(newline)]
-    return result
+    return _shared_schema_with_contracts(text, contracts, schema_version="0.2")
 
 
 def _root_has_link(vault: Path, index_path: str, text: Optional[str] = None) -> bool:
-    root_index = vault / "index.md"
-    if text is None:
-        text, error = safe_read_text(root_index)
-        if error or text is None:
-            return False
-    for destination in iter_markdown_links(text):
-        try:
-            target = link_target(root_index, destination, vault)
-            if target is not None and relative_label(target, vault) == index_path:
-                return True
-        except (OSError, RuntimeError, ValueError):
-            continue
-    return False
+    return _shared_root_has_link(vault, index_path, text)
 
 
 def _area_has_meaningful_content(vault: Path, area: str) -> bool:
@@ -552,11 +505,7 @@ def _vertical_analysis(
 
 
 def _index_template(record: Mapping[str, Any]) -> str:
-    display_name = str(record.get("display_name") or record.get("vault_area"))
-    ownership = str(record.get("ownership") or f"{display_name} context.")
-    start = getattr(sync_indexes, "CATALOG_START", "<!-- selfcontext:catalog:start -->")
-    end = getattr(sync_indexes, "CATALOG_END", "<!-- selfcontext:catalog:end -->")
-    return f"# {display_name} Context\n\n{ownership}\n\n{start}\n{end}\n"
+    return _shared_vertical_index_template(record)
 
 
 def _root_with_links(
@@ -565,35 +514,7 @@ def _root_with_links(
     catalog: Mapping[str, Any],
     text: str,
 ) -> Tuple[str, List[str]]:
-    records = {
-        str(record.get("id")): record
-        for record in catalog_records(dict(catalog))
-        if isinstance(record, dict)
-    }
-    additions: List[str] = []
-    for contract in contracts:
-        record = records.get(str(contract.get("id")))
-        if record is None:
-            continue
-        index_path = record.get("index_path")
-        if not isinstance(index_path, str) or _root_has_link(vault, index_path, text):
-            continue
-        additions.append(f"- [{record.get('display_name', record.get('id'))} context]({index_path})")
-    if not additions:
-        return text, []
-    newline = _newline_style(text)
-    separator = "" if text.endswith(("\n", "\r")) else newline
-    return text + separator + newline.join(additions) + newline, [
-        str(records[str(contract.get("id"))].get("index_path"))
-        for contract in contracts
-        if str(contract.get("id")) in records
-        and str(records[str(contract.get("id"))].get("index_path"))
-        in {
-            line.split("](", 1)[1].rstrip(")")
-            for line in additions
-            if "](" in line
-        }
-    ]
+    return _shared_root_with_links(vault, contracts, catalog, text)
 
 
 def _append_log_entry(

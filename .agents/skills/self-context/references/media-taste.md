@@ -205,8 +205,12 @@ load unrelated verticals.
 7. Update `media/index.md`, relevant review navigation, and `log.md` when a
    durable page or review observation changes. Keep Learning, Relationships,
    Writing, Career, and `core/` unchanged unless a claim clearly belongs there.
-8. Apply the shared backup, confirmation, and freshness rules. A source or
-   generated recommendation does not verify a taste claim.
+8. For an existing current vault, prepare the semantic work/reaction bytes
+   and explicit activation decision, then invoke the ordinary commit boundary.
+   It stages the managed catalog and log, validates, owns backups and rollback,
+   and returns one receipt. Missing or uninitialized bootstrap remains
+   separate. A source or generated recommendation does not verify a taste
+   claim.
 
 A meaningful operation may result in **No meaningful Media / Taste update** when
 the item was incidental, only supplied external metadata, repeated existing

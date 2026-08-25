@@ -274,10 +274,13 @@ safe work merely because these findings exist, but it must report them.
 ## Phase F: synchronize and validate
 
 Use the existing managed-index synchronizer and deep-maintenance validation,
-not a second index implementation. A required catalog/control repair is part of
-the existing mutation boundary; run `sync_indexes.py --write` only inside the
-authorized bounded update after its recovery gate. Do not create an
-orchestration-level backup around a helper that already owns one.
+not a second index implementation. A required catalog/control repair in a deep
+maintenance phase remains inside that phase's authorized bounded update; the
+ordinary current-vault mutation boundary stages equivalent managed-index bytes
+inside its own ordinary commit. Do not run `sync_indexes.py --write` against an
+active vault as a separate cleanup step, and do not create an orchestration-level
+backup around a helper that already owns one. Schema migration remains the
+separate migration workflow described above.
 
 At the end of every mutating phase, validate the active vault with the existing
 ordinary lint, deep lint, and managed-catalog check. Re-run the relevant

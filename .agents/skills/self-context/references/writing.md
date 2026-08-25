@@ -341,12 +341,15 @@ or project evidence.
 
 ## Persistence and Safety
 
-Writing source preservation, profile changes, index updates, and operation logs
-are vault mutations. Create the provisional recovery backup before the first
-write, complete the authorized writes and relevant validation, create the final
-backup, and discard the provisional only after final backup success. Read-only
-local analysis and a no-op comparison do not require a backup unless a source or
-log is actually persisted.
+Writing source preservation, profile changes, managed index updates, and
+operation logs are vault mutations. For an existing current vault, prepare the
+semantic source/profile bytes and explicit activation decision, then invoke the
+ordinary commit boundary. It stages the complete proposal, validates it, owns
+the provisional/final backup lifecycle and rollback, and returns one receipt.
+Read-only local analysis and a no-op comparison do not require a backup unless a
+source or log is actually persisted. Missing or uninitialized bootstrap remains
+with [Initialization](initialization.md), and schema migration remains a
+separate high-level workflow.
 
 Drafts, brainstorming, critiques, and reader analyses normally remain in the
 response. A substantial reusable synthesis may be stored under `derived/` with

@@ -123,7 +123,8 @@ linked `derived_synthesis`. It must remain derived and must not update a work
 reaction, taste pattern, `core/` preference, or verification state automatically.
 
 A supplied work reaction or explicit request to update taste context is an
-ingest operation: create the provisional recovery backup, preserve the smallest
-evidence, update the appropriate index, validate the result, create the final
-backup, discard the provisional after final backup success, and report whether
-the result was a meaningful update or **No meaningful Media / Taste update**.
+ingest operation: prepare the smallest semantic proposal and invoke SelfContext's
+ordinary commit boundary for an existing current vault. It stages the evidence,
+managed index, and log, validates, owns both backups and rollback, and reports
+whether the result was a meaningful update or **No meaningful Media / Taste
+update**. Missing or uninitialized bootstrap remains with Initialization.

@@ -5,7 +5,13 @@ schema migration. Resolve this file relative to the installed
 `.agents/skills/self-context/` skill; do not substitute a project-local
 `.swe-forge/` tree or another harness store. It may be invoked directly for
 schema-specific requests or delegated to by the latest-first
-[upgrade procedure](upgrade.md).
+[upgrade procedure](upgrade.md). Migration remains a distinct high-level
+workflow from ordinary current-vault commit: it owns schema transitions,
+migration staging/planning, migration validation, migration-specific logs, and
+retention of both migration backups. The two workflows may share the low-level
+filesystem transaction kernel and deterministic control/index helpers, but
+ordinary commit never routes a schema transition through migration and
+migration never depends on ordinary semantic mutation input.
 
 ## What migration means
 

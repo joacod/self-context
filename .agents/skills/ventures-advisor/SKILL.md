@@ -42,8 +42,9 @@ For personal-context questions:
 Ventures may be available but absent in a schema 0.2 vault. Treat an absent
 area as empty for read-only reasoning; do not create an index, contract marker,
 placeholder page, or backup merely because the Advisor was triggered. A
-requested ingest or adoption follows SelfContext's schema-specific activation
-and backup lifecycle.
+requested ingest or adoption prepares semantic bytes and explicit activation
+metadata, then follows SelfContext's ordinary commit boundary for an existing
+current vault; missing or uninitialized bootstrap remains separate.
 
 ## Evidence discipline
 

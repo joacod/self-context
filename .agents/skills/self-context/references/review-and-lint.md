@@ -7,11 +7,14 @@ explicit “deep review” selects the full, read-only maintenance protocol in
 [Deep Maintenance](deep-maintenance.md). A normal request such as “review my
 current role” must not trigger a full-vault scan.
 
-If review will resolve a page or append a review/lint operation to `log.md`,
-create the provisional recovery backup first. Complete the authorized writes and
-relevant validation, create the final backup, and discard the provisional only
-after final backup success as described in [Vault Backups](backups.md). A
-read-only review or lint run needs no backup.
+If targeted review will resolve a page or append a review operation, prepare
+those semantic bytes and invoke the ordinary commit boundary when the vault is
+existing, current, and compatible. It stages managed indexes and the log,
+validates the complete proposal, owns provisional/final backups and rollback,
+and returns one receipt. Do not run an active-vault index write or a separate
+backup choreography. A read-only review or lint run needs no backup. If the
+vault is missing or uninitialized, preserve the existing initialization
+procedure; ordinary commit does not bootstrap it.
 
 ## Review
 

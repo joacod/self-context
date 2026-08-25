@@ -7,6 +7,7 @@ parse the documented level-two operation entries, and return bounded views.
 
 from __future__ import annotations
 
+import datetime as dt
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -26,6 +27,7 @@ DATE_PATTERN = re.compile(r"(?<!\d)(\d{4}-\d{2}-\d{2})(?!\d)")
 OPERATION_PATTERN = re.compile(
     r"(?mi)^[ \t]*-[ \t]*operation:[ \t]*(\S.*?)\s*$"
 )
+OPERATION_IDENTIFIER_PATTERN = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
 
 
 class LogReadError(RuntimeError):
@@ -92,6 +94,57 @@ def iter_log_file(path: Path) -> Iterator[LogEntry]:
 
     with path.open("r", encoding="utf-8", newline="") as handle:
         yield from iter_log_entries(handle)
+
+
+def append_operation_entry(
+    text: str,
+    *,
+    operation: str,
+    summary: str,
+    paths: Sequence[str],
+    today: Optional[dt.date] = None,
+) -> Tuple[str, bool]:
+    """Append one deterministic ordinary operation entry.
+
+    Callers provide the semantic operation identifier, summary, and affected
+    labels.  This helper owns the documented Markdown formatting and newline
+    handling; it does not infer meaning or decide whether a mutation is needed.
+    """
+
+    if not isinstance(operation, str) or not OPERATION_IDENTIFIER_PATTERN.fullmatch(operation):
+        raise ValueError(
+            "operation must be a lowercase identifier using letters, numbers, '-' or '_'"
+        )
+    if not isinstance(summary, str) or not summary.strip() or any(
+        character in summary for character in "\r\n"
+    ):
+        raise ValueError("summary must be a non-empty single-line string")
+    if not isinstance(paths, Sequence) or isinstance(paths, (str, bytes, bytearray)):
+        raise ValueError("paths must be a sequence of canonical labels")
+
+    cleaned_paths: List[str] = []
+    for path in paths:
+        if not isinstance(path, str) or not path or path != path.strip():
+            raise ValueError("paths must contain non-empty canonical labels")
+        if any(character in path for character in "\r\n"):
+            raise ValueError("paths must contain single-line labels")
+        cleaned_paths.append(path)
+    cleaned_paths = sorted(set(cleaned_paths))
+    if not cleaned_paths:
+        raise ValueError("paths must contain at least one affected label")
+
+    newline = "\r\n" if "\r\n" in text else "\n"
+    separator = "" if text.endswith(("\n", "\r")) else newline
+    current = today or dt.date.today()
+    lines = [
+        f"{separator}{newline}## {current.isoformat()} - {operation}{newline}",
+        newline,
+        f"- operation: {operation}{newline}",
+        f"- summary: {summary.strip()}{newline}",
+        f"- changed:{newline}",
+    ]
+    lines.extend(f"  - [{path}]({path}){newline}" for path in cleaned_paths)
+    return text + "".join(lines), True
 
 
 def operation_log_path(vault: Path) -> Path:

@@ -68,9 +68,13 @@ into career evidence.
    than silently choosing or averaging them.
 6. Leave `core/` unchanged unless the user explicitly states a genuinely
    cross-domain value, preference, communication pattern, or constraint.
-7. Create the provisional recovery backup before the page, index, and
-   operation-log writes. Validate the result, create the final backup, and
-   discard the provisional only after final backup success.
+7. Prepare the semantic page/source bytes and explicit Career activation
+   decision in one ordinary commit proposal. For an existing current vault,
+   let the ordinary commit boundary stage the page, managed indexes, and log,
+   validate the complete proposal, own both backups and rollback, and return
+   one receipt. Missing or uninitialized bootstrap remains with
+   [Initialization](initialization.md); older or incompatible state must use
+   the documented upgrade path.
 
 A source that repeats existing career evidence may produce **No meaningful
 Career update**. Preserving provenance and making no profile change is a
