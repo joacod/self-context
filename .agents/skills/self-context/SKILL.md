@@ -148,17 +148,26 @@ tests, scripts, or architecture decisions.
 
 ## Latest-first runtime gate
 
-Before any normal current SelfContext operation, orient the active vault through
-the shared compatibility boundary:
+For ordinary Query, Ingest, Checkpoint, and advisor orientation, the bounded
+`prepare_context.py` packet is the shared latest-first compatibility/orientation
+entrypoint. After choosing the smallest semantic scope and useful search
+anchors, call it and inspect its returned runtime state; do not perform a
+separate schema/runtime compatibility or orientation read first. If the state is
+current, continue from the bounded evidence packet. Otherwise, stop the
+ordinary path and follow the relevant upgrade or diagnostic boundary.
 
 ```text
-inspect schema and applied contracts
+prepare_context packet runtime state
         |
         +-- current schema + current contracts -> continue normally
         +-- older recognized state -> stop and recommend `upgrade vault latest`
         +-- future state -> safe compatibility blocker
         +-- malformed/unversioned state -> recovery/diagnostic path
 ```
+
+Migration, upgrade, lint, deep maintenance, and other diagnostic procedures that
+do not enter through `prepare_context.py` retain their documented direct runtime
+checks.
 
 The latest schema is the only full runtime target. Older schemas and older
 applied vertical contracts remain readable enough for diagnosis, migration
@@ -180,7 +189,7 @@ enable every catalog entry.
 Infer the operation from natural language:
 
 - **Ingest:** add supplied information or update existing context, but only
-  after the current-runtime gate succeeds.
+  after `prepare_context` reports a current runtime state.
 - **Query:** retrieve or synthesize existing context when the vault is current;
   an older vault receives upgrade guidance rather than a native modern query.
   Query is read-only by default; explicit persistence or operation logging is a
@@ -338,8 +347,10 @@ confirmation question instead of silently using it as current.
 1. Resolve the repository root and use only `<repository-root>/vault/` as the
    default Context Vault. Do not silently use provider-owned memory, another
    directory, or a harness-specific store.
-2. If the vault exists, inspect its schema and applied contracts through the
-   latest-first runtime gate before choosing a current operation. Older
+2. For ordinary Query, Ingest, Checkpoint, and advisor orientation, choose the
+   smallest explicit scope and useful search anchors, then call
+   `prepare_context.py` and inspect the runtime state in its packet. Do not
+   repeat a schema/runtime compatibility or orientation read separately. Older
    recognized state is an upgrade source, not a normal runtime mode; future or
    malformed state remains blocked.
 3. If `vault/` does not exist, a read-only preparation must report a missing
@@ -347,9 +358,8 @@ confirmation question instead of silently using it as current.
    requires a vault, initialize it through [the initialization
    procedure](references/initialization.md); do not ask the user to create the
    taxonomy manually.
-4. For read-only orientation and candidate retrieval, first choose the
-   smallest explicit scope and useful search anchors, then call the bounded
-   preparation helper:
+4. For read-only orientation and candidate retrieval, call the bounded
+   preparation helper with that agent-selected scope and anchors:
 
    ```bash
    python3 .agents/skills/self-context/scripts/prepare_context.py \

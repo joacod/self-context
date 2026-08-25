@@ -70,14 +70,16 @@ Keep the outcome distinct from a normal no-op:
 
 ## 1. Inspect the conversation, not just its ending
 
-First orient the current vault through the normal latest-first runtime gate,
-then choose the smallest explicit scope and useful anchors and use the bounded
-read-only `prepare_context.py` packet. It supplies selected navigation,
-bounded continuity, and candidate metadata without inferring ownership or
-writing state. Read only the relevant full pages before planning any mutation.
-A checkpoint against an old, future, malformed, or otherwise incompatible
-vault follows the same upgrade or recovery boundary as the operation it would
-invoke.
+For ordinary checkpoint orientation, choose the smallest explicit scope and
+useful anchors, then call the bounded read-only `prepare_context.py` packet.
+Inspect its returned runtime state as the latest-first compatibility gate: if it
+is current, continue from the packet; if it is old, future, malformed, or
+otherwise incompatible, stop the ordinary checkpoint path and follow the same
+upgrade or recovery boundary as the operation it would invoke. Do not perform a
+separate schema/runtime compatibility or orientation read first. The packet
+supplies selected navigation, bounded continuity, and candidate metadata
+without inferring ownership or writing state. Read only the relevant full pages
+before planning any mutation.
 
 Then inspect the current conversation and make a transient candidate list. Do
 not copy the conversation into a file, log, source record, task packet, or
