@@ -29,6 +29,9 @@ DEFAULT_LINKED_SOURCE_LIMIT = 3
 SNIPPET_LIMIT = 220
 LOG_SNIPPET_LIMIT = 240
 SOURCE_REFERENCE_LIMIT = 12
+METADATA_LIMIT = 240
+PATH_LIMIT = 400
+DATE_LIMIT = 64
 
 
 def _non_negative(value: int, name: str) -> int:
@@ -42,6 +45,22 @@ def _bounded_text(value: Any, limit: int) -> str:
     if len(text) <= limit:
         return text
     return text[: max(0, limit - 1)].rstrip() + "…"
+
+
+def _bounded_optional(value: Any, limit: int = METADATA_LIMIT) -> Any:
+    if value is None:
+        return None
+    return _bounded_text(value, limit)
+
+
+def _compact_text_list(value: Any, *, count: int, limit: int = METADATA_LIMIT) -> List[str]:
+    if isinstance(value, str):
+        values = [value]
+    elif isinstance(value, list):
+        values = [str(item) for item in value]
+    else:
+        values = []
+    return [_bounded_text(item, limit) for item in values[:count]]
 
 
 def _as_sequence(values: Optional[Sequence[Any]]) -> List[Any]:
@@ -266,8 +285,16 @@ def _navigation_record(
         return None
 
     try:
-        managed = sync_indexes.managed_entries(text)[:limit]
-        links = vault_utils.markdown_link_records(path, root, text)[:limit]
+        managed = [
+            _compact_navigation_entry(entry)
+            for entry in sync_indexes.managed_entries(text)[:limit]
+            if isinstance(entry, Mapping)
+        ]
+        links = [
+            _compact_link(link)
+            for link in vault_utils.markdown_link_records(path, root, text)[:limit]
+            if isinstance(link, Mapping)
+        ]
     except (OSError, RuntimeError, ValueError) as error:
         _append_finding(
             findings,
@@ -283,53 +310,78 @@ def _navigation_record(
         links = []
 
     return {
-        "path": label,
-        "selected_by": reason,
-        "heading": vault_utils.first_heading(text),
+        "path": _bounded_text(label, PATH_LIMIT),
+        "selected_by": _bounded_text(reason, PATH_LIMIT),
+        "heading": _bounded_text(vault_utils.first_heading(text), METADATA_LIMIT),
         "description": _bounded_text(vault_utils.index_description(text), SNIPPET_LIMIT),
         "managed_entries": managed,
         "links": links,
     }
 
 
+def _compact_navigation_entry(entry: Mapping[str, Any]) -> Dict[str, Any]:
+    return {
+        "title": _bounded_text(entry.get("title"), METADATA_LIMIT),
+        "path": _bounded_text(entry.get("path"), PATH_LIMIT),
+        "description": _bounded_text(entry.get("description"), METADATA_LIMIT),
+        "status": _bounded_text(entry.get("status"), DATE_LIMIT),
+    }
+
+
+def _compact_link(link: Mapping[str, Any]) -> Dict[str, Any]:
+    return {
+        "source": _bounded_text(link.get("source"), PATH_LIMIT),
+        "destination": _bounded_text(link.get("destination"), PATH_LIMIT),
+        "target": _bounded_optional(link.get("target"), PATH_LIMIT),
+        "external": bool(link.get("external")),
+        "exists": bool(link.get("exists")),
+        "leaves_vault": bool(link.get("leaves_vault")),
+        "kind": _bounded_text(link.get("kind"), DATE_LIMIT),
+    }
+
+
 def _compact_sources(value: Any) -> List[str]:
-    if isinstance(value, str):
-        values = [value]
-    elif isinstance(value, list):
-        values = [str(item) for item in value]
-    else:
-        values = []
-    return values[:SOURCE_REFERENCE_LIMIT]
+    return _compact_text_list(
+        value, count=SOURCE_REFERENCE_LIMIT, limit=PATH_LIMIT
+    )
 
 
 def _compact_match(item: Mapping[str, Any], anchors: Sequence[str]) -> Dict[str, Any]:
     result: Dict[str, Any] = {
-        "id": item.get("id"),
-        "path": item.get("path"),
-        "title": item.get("title"),
-        "aliases": list(item.get("aliases", []) or [])[:SOURCE_REFERENCE_LIMIT],
-        "type": item.get("type"),
-        "description": item.get("description"),
-        "status": item.get("status"),
-        "assertion_kind": item.get("assertion_kind"),
-        "generated": item.get("generated"),
-        "verified": item.get("verified"),
-        "stale_after": item.get("stale_after"),
+        "id": _bounded_optional(item.get("id"), PATH_LIMIT),
+        "path": _bounded_text(item.get("path"), PATH_LIMIT),
+        "title": _bounded_text(item.get("title"), METADATA_LIMIT),
+        "aliases": _compact_text_list(
+            item.get("aliases"), count=SOURCE_REFERENCE_LIMIT
+        ),
+        "type": _bounded_optional(item.get("type"), DATE_LIMIT),
+        "description": _bounded_optional(item.get("description")),
+        "status": _bounded_optional(item.get("status"), DATE_LIMIT),
+        "assertion_kind": _bounded_optional(item.get("assertion_kind"), DATE_LIMIT),
+        "generated": _bounded_optional(item.get("generated"), DATE_LIMIT),
+        "verified": _bounded_optional(item.get("verified"), DATE_LIMIT),
+        "stale_after": _bounded_optional(item.get("stale_after"), DATE_LIMIT),
         "sources": _compact_sources(item.get("sources")),
-        "vertical": item.get("vertical"),
-        "matched_fields": list(item.get("matched_fields", []) or []),
+        "vertical": _bounded_optional(item.get("vertical"), DATE_LIMIT),
+        "matched_fields": _compact_text_list(
+            item.get("matched_fields"), count=SOURCE_REFERENCE_LIMIT, limit=DATE_LIMIT
+        ),
         "snippet": _bounded_text(item.get("snippet"), SNIPPET_LIMIT),
-        "match_type": item.get("match_type"),
+        "match_type": _bounded_optional(item.get("match_type"), DATE_LIMIT),
         "query_term_coverage": item.get("query_term_coverage"),
         "matched_term_count": item.get("matched_term_count"),
         "query_term_count": item.get("query_term_count"),
-        "phrase_fields": list(item.get("phrase_fields", []) or []),
+        "phrase_fields": _compact_text_list(
+            item.get("phrase_fields"), count=SOURCE_REFERENCE_LIMIT, limit=DATE_LIMIT
+        ),
         "rank_score": item.get("rank_score"),
     }
     if anchors:
-        result["matched_anchors"] = list(anchors)
+        result["matched_anchors"] = _compact_text_list(
+            anchors, count=SOURCE_REFERENCE_LIMIT
+        )
     if item.get("linked_from"):
-        result["linked_from"] = item.get("linked_from")
+        result["linked_from"] = _bounded_text(item.get("linked_from"), PATH_LIMIT)
     return result
 
 
@@ -492,9 +544,13 @@ def prepare_context(
         "read_only": True,
         "initializes_missing_vault": False,
         "runs_deep_lint": False,
-        "requested_scope": requested_scope,
-        "scope": scopes,
-        "search_anchors": search_anchors,
+        "requested_scope": _compact_text_list(
+            requested_scope, count=32, limit=PATH_LIMIT
+        ),
+        "scope": _compact_text_list(scopes, count=32, limit=PATH_LIMIT),
+        "search_anchors": _compact_text_list(
+            search_anchors, count=32, limit=METADATA_LIMIT
+        ),
         "recent_limit": recent_limit,
         "result_limit": result_limit,
         "linked_source_limit": linked_source_limit if expand_linked_sources else 0,

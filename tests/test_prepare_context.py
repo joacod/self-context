@@ -67,6 +67,13 @@ class PrepareContextTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             vault = build_synthetic_vault(Path(temporary))
             self.append_log_entries(vault, 5)
+            write_page(
+                vault,
+                "career/bounded-evidence.md",
+                title="Bounded Evidence",
+                description="metadata prefix " + ("x" * 1200) + " METADATA_BODY_MARKER",
+                body=("bounded body prefix\n" + ("y" * 1200) + "\n" + SENSITIVE_BODY_MARKER + "\n"),
+            )
             before = tree_snapshot(vault)
 
             packet = prepare_context.prepare_context(
@@ -101,6 +108,16 @@ class PrepareContextTests(unittest.TestCase):
             self.assertNotIn("learning/index.md", {item["path"] for item in packet["navigation"]})
             serialized = json.dumps(packet, sort_keys=True)
             self.assertNotIn(SENSITIVE_BODY_MARKER, serialized)
+
+            bounded = prepare_context.prepare_context(
+                vault,
+                scope=["career"],
+                anchors=["Bounded Evidence"],
+                result_limit=1,
+            )
+            bounded_serialized = json.dumps(bounded, sort_keys=True)
+            self.assertNotIn(SENSITIVE_BODY_MARKER, bounded_serialized)
+            self.assertNotIn("METADATA_BODY_MARKER", bounded_serialized)
             self.assertEqual(before, tree_snapshot(vault))
 
     def test_old_future_and_malformed_vaults_report_blockers_without_search_or_writes(self) -> None:
