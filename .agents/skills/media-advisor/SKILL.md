@@ -26,9 +26,11 @@ individual work reactions and taste observations.
 
 For every personalized media or taste request:
 
-1. Use the project-local `self-context` skill first. Orient from `SCHEMA.md`
-   and `index.md`, use its bounded `recent_log.py` view for continuity, and
-   load `media/index.md` only when Media / Taste is relevant.
+1. Use the project-local `self-context` skill first. When Media / Taste is
+   relevant, choose an explicit Media scope and useful anchors, then use its
+   bounded read-only `prepare_context.py` boundary for runtime state, selected
+   navigation, continuity, and candidate metadata. It does not infer ownership
+   or load unrelated verticals.
 2. Read [the Media / Taste procedure](../self-context/references/media-taste.md)
    before ingesting or updating work reactions, patterns, exceptions, or taste
    evolution.

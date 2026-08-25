@@ -131,6 +131,12 @@ def _normalize_scopes(scope: Optional[Sequence[str]]) -> Tuple[List[str], List[s
     return values, findings
 
 
+def normalize_scopes(scope: Optional[Sequence[str]]) -> Tuple[List[str], List[str]]:
+    """Expose the search scope normalization for read-only composition helpers."""
+
+    return _normalize_scopes(scope)
+
+
 def _path_matches_scope(path: str, scopes: Sequence[str]) -> bool:
     return not scopes or any(path == scope or path.startswith(scope + "/") for scope in scopes)
 
@@ -181,6 +187,7 @@ def _render_result(
     summary: Dict[str, Any],
     score: int,
     linked_from: Optional[str] = None,
+    include_identity: bool = False,
 ) -> Dict[str, Any]:
     fields = record.get("frontmatter")
     if not isinstance(fields, dict):
@@ -188,7 +195,7 @@ def _render_result(
     sources = fields.get("sources")
     if not isinstance(sources, list):
         sources = []
-    return {
+    result = {
         "path": record.get("path"),
         "type": fields.get("type"),
         "title": fields.get("title"),
@@ -210,6 +217,11 @@ def _render_result(
         "rank_score": score,
         "linked_from": linked_from,
     }
+    if include_identity:
+        aliases = fields.get("aliases")
+        result["id"] = fields.get("id")
+        result["aliases"] = aliases if isinstance(aliases, list) else []
+    return result
 
 
 def _snippet(body: str, terms: Sequence[str], limit: int = 220) -> str:
@@ -485,6 +497,7 @@ def search_vault(
     include_superseded: bool = False,
     exclude_archived: bool = False,
     exclude_superseded: bool = False,
+    include_identity: bool = False,
 ) -> Dict[str, Any]:
     """Search canonical pages without mutating or indexing the vault.
 
@@ -561,7 +574,17 @@ def search_vault(
         if contextual and len(terms) > 1 and summary["query_term_coverage"] < 0.5:
             continue
         score += _record_adjustment(fields)
-        results.append(_render_result(record, catalog, terms, matched, summary, score))
+        results.append(
+            _render_result(
+                record,
+                catalog,
+                terms,
+                matched,
+                summary,
+                score,
+                include_identity=include_identity,
+            )
+        )
     results.sort(key=lambda item: (-int(item["rank_score"]), str(item["path"])))
     result_limit = max(0, limit)
     primary_limit = result_limit
@@ -616,6 +639,7 @@ def search_vault(
                         linked_summary,
                         -1,
                         linked_from=str(item.get("path")),
+                        include_identity=include_identity,
                     )
                 )
                 seen_paths.add(source_path)

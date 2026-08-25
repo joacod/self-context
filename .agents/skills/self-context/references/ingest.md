@@ -38,21 +38,27 @@ record under `sources/` when practical. Keep the original wording or a faithful
 text capture sufficient to explain later normalized claims. Do not create an
 arbitrary binary document dump as the durable representation.
 
-## 2. Orient and Find Related Concepts
+## 2. Choose scope and prepare context
 
-Read the schema and root index first, then use the bounded recent-log helper:
+Decide what the supplied material means, choose the smallest likely owner, and
+select useful names, organizations, roles, dates, projects, skills, or
+distinctive phrases as search anchors. Then call the bounded read-only
+preparation helper with the explicit scope and anchors:
 
 ```bash
-python3 .agents/skills/self-context/scripts/recent_log.py \
-  vault --entries 10
+python3 .agents/skills/self-context/scripts/prepare_context.py \
+  vault --scope career --anchor "organization" --anchor "project" \
+  --recent-limit 10 --result-limit 10 --expand-linked-sources
 ```
 
-Infer the smallest likely owner from the supplied information and search its
-category index and pages for names, organizations, roles, dates, projects,
-skills, and distinctive phrases. Add another owner only when it can materially
-change the ingest. Follow links only as far as needed to understand
-relationships; do not load every enabled vertical index or the complete log by
-default.
+The packet composes the latest-first runtime state, selected navigation,
+bounded `recent_log.py` continuity, existing lexical ranking, and bounded
+linked-source candidates. It does not infer semantic ownership, search every
+enabled vertical, initialize a missing vault, run deep lint, or decide whether
+pages represent the same concept. Read the relevant full pages and provenance
+returned by the packet, and add another explicit scope only when it can
+materially change the ingest. Follow links only as far as needed to understand
+relationships; do not load unrelated verticals or the complete log by default.
 
 Do not search `.obsidian/` or treat viewer configuration as supplied context.
 

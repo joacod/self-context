@@ -38,10 +38,11 @@ must not copy personal vault content into tracked files.
 
 For every request that depends on the user's personal context:
 
-1. Use the project-local `self-context` skill first. Read the vault's
-   `SCHEMA.md` and `index.md`, then use its bounded `recent_log.py` view for
-   continuity; load the relevant Career index only when Career is the likely
-   owner.
+1. Use the project-local `self-context` skill first. After deciding that
+   Career is the likely owner and choosing explicit search anchors, use its
+   bounded read-only `prepare_context.py` boundary to retrieve runtime state,
+   selected navigation, continuity, and candidate metadata. The helper does
+   not infer ownership or search unrelated verticals.
 2. Retrieve only the relevant career evidence and metadata. Do not replace
    SelfContext with an ad hoc search, a second schema, or provider-owned memory.
 3. Read [the evidence and reasoning guide](references/evidence-and-reasoning.md)

@@ -51,10 +51,14 @@ into career evidence.
 
 ## Ingest and update
 
-1. Orient from `SCHEMA.md` and the root index, use the bounded
-   `recent_log.py` view for continuity, and load the Career index when Career
-   is the likely owner.
-2. Search for the existing role, project, skill, story, goal, or public-work
+1. After deciding Career is the likely owner, choose an explicit Career scope
+   and useful anchors, then use the bounded read-only `prepare_context.py`
+   boundary. It returns compatibility, selected navigation, recent continuity,
+   and ranked candidate metadata without inferring ownership or loading
+   unrelated verticals.
+2. Read the returned Career index and full candidate pages needed to distinguish
+   an update from a new concept. Search for the existing role, project, skill,
+   story, goal, or public-work
    page before creating a duplicate.
 3. Preserve a useful source record for a supplied resume or substantial source.
 4. Update the smallest coherent career pages, link them to provenance and
