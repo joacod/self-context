@@ -6,39 +6,29 @@ newest successful archive reflects the resulting state.
 
 ## Ordinary mutations
 
-For an ordinary mutation against an existing current vault, the ordinary commit
-helper owns the complete lifecycle. Prepare semantic page bytes, explicit
-activation IDs when needed, and the small log metadata, then invoke the helper
-and inspect its one structured receipt. It stages and validates the proposal,
-creates one provisional recovery snapshot, applies one bounded active write set,
-validates again, creates the final snapshot, and discards the provisional only
-after final success.
+For an ordinary mutation against an existing current vault, `ordinary_commit`
+owns the complete lifecycle and reports the result in one structured receipt.
+Prepare semantic page bytes, explicit activation IDs when needed, and the small
+log metadata, then invoke the helper. It stages and validates the proposal,
+creates one provisional recovery snapshot, applies the bounded active write set
+atomically, validates the active vault again, creates the final snapshot, and
+performs guarded provisional cleanup only after final success.
 
 Do not create a separate orchestration backup, run `sync_indexes.py --write`
 against the active vault, append the log separately, or perform a second cleanup
-step. On a blocked or failed transaction, the receipt identifies the source
-snapshot, rollback result, and retained provisional archive. If final backup
-succeeds but guarded discard fails, the helper keeps the provisional archive and
-reports a cleanup warning without rolling back the valid committed vault. A
-semantic no-op creates no backup or log entry.
+step. After a successful `ordinary_commit`, do not invoke
+`backup_vault.py --discard` separately. On a blocked or failed transaction, the
+receipt identifies the source snapshot, rollback result, and retained
+provisional archive. If final backup succeeds but guarded discard fails, the
+helper keeps the provisional archive and reports a cleanup warning without
+rolling back the valid committed vault. A semantic no-op creates no backup or
+log entry.
 
 The ordinary boundary supports only existing, current, compatible vaults and
 CREATE/UPDATE writes. Missing or uninitialized vault bootstrap remains owned by
 the existing [Initialization](initialization.md) procedure and is intentionally
 not delegated to the ordinary helper. Schema migration and deep maintenance
 retain their separate high-level backup lifecycles below.
-
-Run the final cleanup from the repository root:
-
-```bash
-python3 .agents/skills/self-context/scripts/backup_vault.py \
-  vault \
-  --discard "$provisional_backup"
-```
-
-`--discard` accepts only a managed ZIP inside the matching project-root
-`backups/` directory. It cannot remove an arbitrary path, symlink, or file
-outside that directory.
 
 ## Deep maintenance and migration
 
@@ -64,6 +54,23 @@ Run it from the repository root:
 ```bash
 python3 .agents/skills/self-context/scripts/backup_vault.py vault
 ```
+
+### Direct/manual backup management
+
+For direct/manual backup management only, including manual recovery or
+maintenance, discard a managed archive from the repository root with:
+
+```bash
+python3 .agents/skills/self-context/scripts/backup_vault.py \
+  vault \
+  --discard "$provisional_backup"
+```
+
+Ordinary current-vault mutations performed through `ordinary_commit` must not
+invoke this command separately; `ordinary_commit` owns provisional cleanup and
+reports it in its structured receipt. `--discard` accepts only a managed ZIP
+inside the matching project-root `backups/` directory. It cannot remove an
+arbitrary path, symlink, or file outside that directory.
 
 The helper:
 
