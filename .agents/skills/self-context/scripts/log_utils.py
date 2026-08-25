@@ -12,6 +12,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Iterator, List, Optional, Sequence, Tuple
+from urllib.parse import quote
 
 try:
     from vault_utils import normalized_text, normalized_tokens
@@ -28,6 +29,7 @@ OPERATION_PATTERN = re.compile(
     r"(?mi)^[ \t]*-[ \t]*operation:[ \t]*(\S.*?)\s*$"
 )
 OPERATION_IDENTIFIER_PATTERN = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
+_LOG_MARKDOWN_PUNCTUATION = set(r"\\`*_{}[]()#+!<>|&")
 
 
 class LogReadError(RuntimeError):
@@ -96,6 +98,17 @@ def iter_log_file(path: Path) -> Iterator[LogEntry]:
         yield from iter_log_entries(handle)
 
 
+def _escape_log_label(value: str) -> str:
+    return "".join(
+        ("\\" + character) if character in _LOG_MARKDOWN_PUNCTUATION else character
+        for character in value
+    )
+
+
+def _render_log_path(value: str) -> str:
+    return quote(value, safe="/._~-")
+
+
 def append_operation_entry(
     text: str,
     *,
@@ -143,7 +156,10 @@ def append_operation_entry(
         f"- summary: {summary.strip()}{newline}",
         f"- changed:{newline}",
     ]
-    lines.extend(f"  - [{path}]({path}){newline}" for path in cleaned_paths)
+    lines.extend(
+        f"  - [{_escape_log_label(path)}]({_render_log_path(path)}){newline}"
+        for path in cleaned_paths
+    )
     return text + "".join(lines), True
 
 

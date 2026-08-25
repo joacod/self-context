@@ -442,22 +442,13 @@ def _validate_proposal(
     raw_log = proposal.get("log")
     log, log_findings = _validate_log(vault, raw_log) if raw_log is not None else (None, [])
     findings.extend(log_findings)
-    if (writes or activations) and log is None:
-        findings.append(
-            _finding(
-                "error",
-                "log",
-                "a non-empty ordinary mutation must provide operation, summary, and affected paths",
-                "input-log",
-            )
-        )
 
     if findings:
         return None, findings
     return {
         "expected_snapshot": expected_snapshot,
         "writes": writes,
-        "activations": activations,
+        "activations": sorted(activations),
         "log": log,
     }, findings
 
@@ -841,26 +832,36 @@ def _validation_findings(
 
 
 
+def _verify_rollback_snapshot(
+    rollback: Mapping[str, Any],
+    vault: Path,
+    source_snapshot: str,
+) -> Dict[str, Any]:
+    if not rollback.get("ok"):
+        return dict(rollback)
+    current_snapshot, error = _safe_snapshot(vault)
+    if error is None and current_snapshot == source_snapshot:
+        return dict(rollback)
+    verified = dict(rollback)
+    verified["ok"] = False
+    verified["status"] = "rollback-failed"
+    failures = list(verified.get("failures", []))
+    failures.append(
+        "rollback snapshot does not match the original source snapshot"
+        if error is None
+        else f"unable to verify rollback snapshot: {error}"
+    )
+    verified["failures"] = failures
+    return verified
+
+
 def _rollback_and_verify(
     transaction: Mapping[str, Any],
     vault: Path,
     source_snapshot: str,
 ) -> Dict[str, Any]:
     rollback = file_transaction.rollback_transaction(transaction)
-    if rollback.get("ok"):
-        current_snapshot, error = _safe_snapshot(vault)
-        if error is not None or current_snapshot != source_snapshot:
-            rollback = dict(rollback)
-            rollback["ok"] = False
-            rollback["status"] = "rollback-failed"
-            failures = list(rollback.get("failures", []))
-            failures.append(
-                "rollback snapshot does not match the original source snapshot"
-                if error is None
-                else f"unable to verify rollback snapshot: {error}"
-            )
-            rollback["failures"] = failures
-    return rollback
+    return _verify_rollback_snapshot(rollback, vault, source_snapshot)
 
 
 
@@ -917,6 +918,30 @@ def commit_mutation(vault: Path, proposal: Mapping[str, Any]) -> Dict[str, Any]:
     if initialization is not None:
         receipt["state"] = "initialization-required"
         receipt["findings"].append(initialization)
+        return receipt
+
+    raw_expected_snapshot = (
+        proposal.get("expected_snapshot")
+        if isinstance(proposal, Mapping)
+        else None
+    )
+    receipt["expected_snapshot_id"] = raw_expected_snapshot
+    if (
+        isinstance(raw_expected_snapshot, str)
+        and raw_expected_snapshot
+        and raw_expected_snapshot != source_snapshot
+    ):
+        receipt["state"] = "snapshot-mismatch"
+        receipt["findings"].append(
+            _finding(
+                "error",
+                "",
+                "expected source snapshot does not match the active vault",
+                "snapshot-mismatch",
+                expected_snapshot=raw_expected_snapshot,
+                current_snapshot=source_snapshot,
+            )
+        )
         return receipt
 
     validated, input_findings = _validate_proposal(supplied, proposal)
@@ -1108,7 +1133,16 @@ def commit_mutation(vault: Path, proposal: Mapping[str, Any]) -> Dict[str, Any]:
         receipt["planned_changed"] = sorted(set(created + modified))
         receipt["proposed_snapshot_id"] = vault_utils.snapshot_id(stage)
 
-        proposed_validation = _validate_state(stage)
+        try:
+            proposed_validation = _validate_state(stage)
+        except Exception as error:  # pragma: no cover - defensive validation boundary
+            proposed_validation = {
+                "ok": False,
+                "ordinary": {
+                    "errors": [{"path": "", "message": str(error)}],
+                    "warnings": [],
+                },
+            }
         receipt["validation"]["proposed"] = proposed_validation
         if not proposed_validation.get("ok"):
             receipt["state"] = "proposed-validation"
@@ -1218,8 +1252,8 @@ def commit_mutation(vault: Path, proposal: Mapping[str, Any]) -> Dict[str, Any]:
                 "rollback", {"status": "unknown", "ok": False}
             )
             if receipt["rollback"].get("ok"):
-                receipt["rollback"] = _rollback_and_verify(
-                    transaction, supplied, source_snapshot
+                receipt["rollback"] = _verify_rollback_snapshot(
+                    receipt["rollback"], supplied, source_snapshot
                 )
             receipt["status"] = "failed"
             receipt["state"] = "active-replacement"
@@ -1243,7 +1277,16 @@ def commit_mutation(vault: Path, proposal: Mapping[str, Any]) -> Dict[str, Any]:
                 )
             return receipt
 
-        active_validation = _validate_state(supplied)
+        try:
+            active_validation = _validate_state(supplied)
+        except Exception as error:  # pragma: no cover - rollback safety boundary
+            active_validation = {
+                "ok": False,
+                "ordinary": {
+                    "errors": [{"path": "", "message": str(error)}],
+                    "warnings": [],
+                },
+            }
         receipt["validation"]["active"] = active_validation
         actual_final_snapshot, active_snapshot_error = _safe_snapshot(supplied)
         expected_final_snapshot = receipt["proposed_snapshot_id"]

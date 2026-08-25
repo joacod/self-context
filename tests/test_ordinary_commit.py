@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime as date
 import json
 import sys
 import tempfile
@@ -15,6 +16,7 @@ for import_path in (SCRIPTS, TESTS):
     if str(import_path) not in sys.path:
         sys.path.insert(0, str(import_path))
 
+import lint_vault  # type: ignore  # noqa: E402
 import ordinary_commit  # type: ignore  # noqa: E402
 import vault_utils  # type: ignore  # noqa: E402
 from synthetic_vault import (  # type: ignore  # noqa: E402
@@ -128,11 +130,7 @@ class OrdinaryCommitTests(unittest.TestCase):
             before_log = (vault / "log.md").read_bytes()
             result = ordinary_commit.commit_mutation(
                 vault,
-                self.proposal(
-                    writes={"career/harbor-launch.md": page.read_bytes()},
-                    paths=["career/harbor-launch.md"],
-                    summary="This must not be logged for a no-op",
-                ),
+                {"writes": {"career/harbor-launch.md": page.read_bytes()}},
             )
 
             self.assertEqual(result["status"], "noop")
@@ -197,6 +195,27 @@ class OrdinaryCommitTests(unittest.TestCase):
             self.assertIn("Manual prefix that must remain.", updated_index)
             self.assertIn("Manual suffix that must remain.", updated_index)
             self.assertEqual(custom.read_bytes(), custom_before)
+
+    def test_operation_log_escapes_special_canonical_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            vault = build_synthetic_vault(project)
+            label = "career/space [one].md"
+            result = ordinary_commit.commit_mutation(
+                vault,
+                self.proposal(
+                    writes={label: PAGE},
+                    paths=[label],
+                    summary="Stored a path with Markdown punctuation",
+                ),
+            )
+
+            self.assertEqual(result["status"], "success")
+            log = (vault / "log.md").read_text(encoding="utf-8")
+            self.assertIn(r"career/space \[one\].md", log)
+            self.assertIn("career/space%20%5Bone%5D.md", log)
+            errors, _ = lint_vault.lint_vault(vault, date.date.today())
+            self.assertEqual(errors, [])
 
     def test_explicit_one_vertical_activation_uses_exact_catalog_contract(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

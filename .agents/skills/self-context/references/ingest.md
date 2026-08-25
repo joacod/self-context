@@ -352,8 +352,9 @@ not silently erase a conflicting source.
 
 The helper accepts only a thin filesystem proposal: optional
 `expected_snapshot`, `writes` mapping canonical relative labels to prepared text
-or bytes, explicit `activations` catalog IDs, and `log` metadata containing
-`operation`, `summary`, and `paths`. It supports CREATE/UPDATE only. It rejects
+or bytes, explicit `activations` catalog IDs, and, when the staged state changes, `log` metadata containing `operation`,
+`summary`, and `paths` (a byte-equivalent proposal may omit it). It supports
+CREATE/UPDATE only. It rejects
 unsafe paths, control/index writes, symlink traversal, non-regular targets,
 private backup/viewer state, malformed labels, and deletion attempts. It
 independently checks that the vault is existing/current/compatible; it does not
