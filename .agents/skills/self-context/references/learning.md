@@ -144,8 +144,12 @@ reviewable observation.
 
 ## Learning ingest and update
 
-After the normal SelfContext orientation—bounded recent log continuity and
-only the relevant owner index—apply this sequence for Learning material:
+After deciding Learning is relevant, choose an explicit Learning scope and
+useful anchors, then use SelfContext's bounded read-only `prepare_context.py`
+packet for compatibility, selected navigation, recent continuity, and ranked
+candidate metadata. Read the returned full pages and linked evidence before
+applying this sequence for Learning material; the helper does not infer
+ownership or load unrelated verticals.
 
 1. **Classify the evidence.** Separate what the user said, what a retained
    source documents, what the agent observes, and what remains unknown. Do not

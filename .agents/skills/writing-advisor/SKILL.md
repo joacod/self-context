@@ -24,16 +24,18 @@ reasoning and consumes retrieved Writing context when it exists.
 
 For a request that depends on the user's own communication or writing:
 
-1. Use the project-local `self-context` skill first.
-2. Read the vault's `SCHEMA.md` and `index.md`, use its bounded `recent_log.py`
-   view for continuity, and load the relevant `writing/index.md` and linked
-   pages only when Writing is relevant. If a vault has no Writing area, treat it as empty for read-only work; SelfContext creates the index only
-   for a requested Writing mutation within the provisional/final backup lifecycle.
-3. Retrieve only the Writing evidence and other vertical context relevant to the
-   current objective. Do not scan or copy the whole vault by default.
-4. Read [the evidence and reasoning guide](references/evidence-and-reasoning.md)
+1. Use the project-local `self-context` skill first. When Writing is
+   relevant, choose an explicit Writing scope and useful anchors, then use its
+   bounded read-only `prepare_context.py` boundary for runtime state, selected
+   navigation, continuity, and candidate metadata. It does not infer ownership
+   or load unrelated verticals.
+2. Retrieve only the Writing evidence and other vertical context relevant to
+   the objective. If a vault has no Writing area, treat it as empty for
+   read-only work; SelfContext creates the index only for a requested Writing
+   mutation within the provisional/final backup lifecycle.
+3. Read [the evidence and reasoning guide](references/evidence-and-reasoning.md)
    before making claims about the user's writing.
-5. Read [the output and persistence guide](references/output-and-persistence.md)
+4. Read [the output and persistence guide](references/output-and-persistence.md)
    before drafting a substantial artifact or deciding whether to persist it.
 
 If the vault has no Writing evidence, say that the personal style is unknown and

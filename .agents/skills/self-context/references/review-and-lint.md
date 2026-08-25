@@ -15,8 +15,9 @@ read-only review or lint run needs no backup.
 
 ## Review
 
-Orient from the schema and root index, use the bounded `recent_log.py` view,
-and then inspect:
+Choose the explicit review scope and useful anchors, use the bounded
+read-only `prepare_context.py` packet for runtime state, selected navigation,
+recent continuity, and candidate metadata, then inspect:
 
 - durable pages with `status: review`, pages under `review/observations/`, and
   any `agent_inference` pages;

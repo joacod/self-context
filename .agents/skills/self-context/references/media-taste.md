@@ -179,7 +179,12 @@ invent a sensitive attribute as its explanation.
 
 ## Media / Taste ingest and update
 
-After the normal SelfContext orientation and before a mutation:
+After deciding Media / Taste is relevant, choose an explicit Media scope and
+useful anchors, then use SelfContext's bounded read-only `prepare_context.py`
+packet for compatibility, selected navigation, recent continuity, and ranked
+candidate metadata. Read the returned full work and pattern pages, provenance,
+and linked evidence before a mutation; the helper does not infer ownership or
+load unrelated verticals.
 
 1. Identify the work, medium, user's actual experience, and the personal
    reaction or reason it has future value. Do not create a record for every

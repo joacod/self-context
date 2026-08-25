@@ -156,10 +156,13 @@ actually using it”; “we changed the scope”; “I may turn this experiment 
 threshold: do not create a page for every passing idea, coding task,
 repository mention, meeting, vague maybe, or company/person name.
 
-1. Orient from `SCHEMA.md` and the root index, use the bounded `recent_log.py`
-   view for continuity, and load `ventures/index.md` when Ventures / Projects
-   is the likely owner. Search for the existing initiative before creating
-   another record, including aliases and prior lifecycle states.
+1. After deciding Ventures / Projects is the likely owner, choose an explicit
+   Ventures scope and useful anchors, then use SelfContext's bounded read-only
+   `prepare_context.py` packet for compatibility, selected navigation, recent
+   continuity, and ranked candidate metadata. Read the returned full initiative
+   pages and linked evidence before creating another record, including aliases
+   and prior lifecycle states; the helper does not infer ownership or load
+   unrelated verticals.
 2. Separate what the user said, what a source records, what another person
    proposed or reported, what was observed, what is inferred, and what remains
    unknown. Preserve useful provenance.

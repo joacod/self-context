@@ -342,34 +342,36 @@ confirmation question instead of silently using it as current.
    latest-first runtime gate before choosing a current operation. Older
    recognized state is an upgrade source, not a normal runtime mode; future or
    malformed state remains blocked.
-3. If `vault/` does not exist and the request requires it, initialize it
-   automatically using [the initialization procedure](references/initialization.md).
-   Do not ask the user to create the taxonomy manually.
-4. If the vault exists, read `SCHEMA.md` and `index.md`, then use the bounded
-   recent-log helper for normal operational continuity:
+3. If `vault/` does not exist, a read-only preparation must report a missing
+   or empty vault and make no filesystem changes. When a mutation genuinely
+   requires a vault, initialize it through [the initialization
+   procedure](references/initialization.md); do not ask the user to create the
+   taxonomy manually.
+4. For read-only orientation and candidate retrieval, first choose the
+   smallest explicit scope and useful search anchors, then call the bounded
+   preparation helper:
 
    ```bash
-   python3 .agents/skills/self-context/scripts/recent_log.py \
-     vault --entries 10
+   python3 .agents/skills/self-context/scripts/prepare_context.py \
+     vault --scope core --anchor "task words" --recent-limit 10 \
+     --result-limit 10
    ```
 
-   Do not load the complete `log.md` by default. Infer the smallest likely
-   owner from the request and root index, load that primary vertical/index only
-   when relevant, and add another enabled vertical only when it can materially
-   change the result. Cross-vertical questions may load multiple relevant
-   indexes; unrelated enabled verticals stay out of normal context. For older
-   operational history, run the bounded `search_log.py` helper only when the
-   request calls for historical lookup; do not search full history
-   automatically. Current navigation remains root/vertical indexes and
-   targeted search, not a growing Recent Additions section or duplicate page
-   list. Explicit initialization, migration, lint, upgrade, validation,
-   review, and deep-maintenance procedures may inspect more broadly when their
-   semantics require it. Then search only the relevant indexes, metadata,
-   filenames, and linked pages needed for the task. For a large or ambiguous
-   vault, use the disposable local lexical helper only as a retrieval aid and
-   inspect provenance, freshness, status, and source links before answering.
-   Do not scan `.obsidian/` inside the vault or the project-root `backups/`
-   directory; they are noncanonical operational state, not personal context.
+   Its JSON packet composes the latest-first compatibility state, selected root
+   or explicitly requested indexes, the bounded `recent_log.py` continuity
+   slice, and ranked `search_vault.py` metadata with optional linked-source
+   expansion. It performs no writes, initialization, vertical activation,
+   deep lint, semantic ownership inference, or global search when scope is
+   absent. The agent still chooses the likely owner, adds another enabled
+   vertical only when it can materially change the result, and decides which
+   candidates deserve full-page reading. Cross-vertical questions may pass
+   multiple explicit scopes; unrelated enabled verticals stay out of the
+   packet. For older operational history, run the bounded `search_log.py`
+   helper only when the request calls for historical lookup. Inspect full
+   canonical pages, provenance, freshness, status, assertion kind, and source
+   links before answering. Do not scan `.obsidian/` inside the vault or the
+   project-root `backups/` directory; they are noncanonical operational state,
+   not personal context.
 5. If an ordinary operation will mutate the vault, read [the backup procedure](references/backups.md)
    and create its provisional recovery backup before the first active write,
    then its final backup after mutation and validation; discard the provisional

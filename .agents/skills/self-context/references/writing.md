@@ -193,8 +193,11 @@ profile mutation.
 2. **Analyze locally.** Extract observable candidate patterns from the document
    and, for assisted material, from meaningful human changes. Do not update the
    durable profile yet.
-3. **Compare with context.** Read the Writing index and relevant pages, then
-   classify each candidate as known, redundant, reinforcing, genuinely new,
+3. **Prepare and compare with context.** Choose an explicit Writing scope and
+   useful anchors, use SelfContext's bounded read-only `prepare_context.py`
+   packet, then read the returned Writing index and relevant full pages. The
+   helper does not infer ownership or load unrelated verticals. Classify each
+   candidate as known, redundant, reinforcing, genuinely new,
    contextual, contradictory, temporal, incidental, or too weak to retain.
 4. **Assess impact.** Decide whether the new source changes SelfContext's
    understanding. Independent sources and distinct contexts matter more than

@@ -26,9 +26,11 @@ retrieves the smallest relevant evidence set.
 
 For every request that depends on the user's relationship context:
 
-1. Use the project-local `self-context` skill first. Orient from `SCHEMA.md`
-   and `index.md`, use its bounded `recent_log.py` view for continuity, and
-   load `relationships/index.md` only when Relationships is relevant.
+1. Use the project-local `self-context` skill first. When Relationships is
+   relevant, choose an explicit Relationships scope and useful anchors, then
+   use its bounded read-only `prepare_context.py` boundary for runtime state,
+   selected navigation, continuity, and candidate metadata. It does not infer
+   ownership or load unrelated verticals.
 2. Read [the Relationships procedure](../self-context/references/relationships.md)
    before ingesting, updating, reviewing, or interpreting relationship evidence.
 3. Read [the evidence and reasoning guide](references/evidence-and-reasoning.md)

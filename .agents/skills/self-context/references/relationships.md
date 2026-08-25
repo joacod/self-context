@@ -189,7 +189,12 @@ scope, time, exception, or explicit user correction explains it.
 
 ## Relationships ingest and update
 
-After the normal SelfContext orientation and before a mutation:
+After deciding Relationships is relevant, choose an explicit Relationships
+scope and useful anchors, then use SelfContext's bounded read-only
+`prepare_context.py` packet for compatibility, selected navigation, recent
+continuity, and ranked candidate metadata. Read only the returned full
+relationship pages and linked evidence before a mutation; the helper does not
+infer ownership or load unrelated verticals.
 
 1. Identify the person or group and the user's relationship purpose. Do not
    create a page for a stranger or incidental mention without a continuity
