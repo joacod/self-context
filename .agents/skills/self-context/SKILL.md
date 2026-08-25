@@ -122,8 +122,8 @@ an inaccessible source was retrieved.
   semantic writes and small deterministic metadata, then invoke the ordinary
   commit boundary. It independently re-checks the active runtime, constructs
   and validates a staged proposed vault, synchronizes managed indexes in that
-  stage, appends the formatted log entry there, and owns the provisional/final
-  backup, transaction, rollback, and cleanup receipt. Do not call
+  stage, appends the formatted log entry there, and owns the provisional recovery backup,
+  final backup, transaction, rollback, and cleanup receipt. Do not call
   `prepare_context.py` as a write safety gate or run `sync_indexes.py --write`
   against the active vault afterward. If the vault is missing or uninitialized,
   stop with the helper's initialization-required state and use the existing
