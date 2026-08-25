@@ -3,10 +3,13 @@
 Use this procedure when the user supplies new information, a source document,
 a recollection, or a correction to existing context.
 
-After orientation, run the shared latest-first runtime gate before planning a
-write. Only a current schema with current applied contracts may continue to
-normal ingest. If the vault is schema 0.1 or has an older applied contract, do
-not run legacy ingest semantics or silently upgrade; tell the user to run
+Ordinary ingest enters through the shared `prepare_context.py` boundary:
+choose the smallest semantic scope and useful search anchors, call it, and
+inspect the runtime state in the returned packet before planning a write. Do
+not perform a separate schema/runtime compatibility or orientation read first.
+Only a current schema with current applied contracts may continue to normal
+ingest. If the packet reports schema 0.1 or an older applied contract, do not
+run legacy ingest semantics or silently upgrade; tell the user to run
 `upgrade vault latest`. Future, malformed, or unversioned state is a safe
 blocker/recovery case.
 

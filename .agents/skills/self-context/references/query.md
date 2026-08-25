@@ -93,13 +93,15 @@ explicit and `derived` is included in the requested scope. Linked-source expansi
 default, so provenance cannot turn a targeted query into a source dump. These
 are conservative retrieval aids, not confidence or truth scores.
 
-Before modern query semantics, require the shared latest-first runtime gate.
-A current schema with current applied contracts may be queried normally. An old
-recognized schema or stale applied contract must not receive a native modern
-query answer or silently upgrade; return a concise `upgrade vault latest`
-direction. Limited read-only orientation and migration planning may inspect
-control state and selected old pages solely to explain or perform the upgrade.
-Future, malformed, and unversioned state is a compatibility/recovery blocker.
+For modern Query semantics, treat the runtime state returned by
+`prepare_context.py` as the shared latest-first compatibility gate. Continue
+normally only when the packet reports a current schema with current applied
+contracts. An old recognized schema or stale applied contract must not receive
+a native modern query answer or silently upgrade; return a concise `upgrade
+vault latest` direction. Limited read-only orientation and migration planning
+may inspect control state and selected old pages solely to explain or perform
+the upgrade. Future, malformed, and unversioned state is a
+compatibility/recovery blocker.
 
 ## Deep-lint inventory versus search output
 
