@@ -10,9 +10,10 @@ rather than activating historical semantics.
 The ordinary commit boundary intentionally supports only existing, current,
 compatible vaults. It returns a structured `initialization-required` blocker for
 a missing or incomplete vault and does not create the vault root, universal
-layout, or bootstrap backups. Missing-vault and empty-vault initialization,
+layout, or bootstrap backups. Missing-vault and incomplete-vault initialization,
 including first-use continuation in the same operation, remain owned by this
-procedure until a separate transaction design authorizes changing that boundary.
+procedure; ordinary commit does not bootstrap a nonexistent or incomplete
+vault.
 
 ## Missing Vault
 
@@ -44,6 +45,13 @@ other vault file to the repository merely to preserve the directory.
 
 ## Existing Vault
 
+For ordinary Query, Ingest, Checkpoint, and advisor orientation, choose the
+semantic scope and useful search anchors, then use the bounded
+`prepare_context.py` packet. Treat its runtime state as the latest-first
+compatibility gate. Read full canonical pages only when the bounded packet
+indicates they are needed for semantic interpretation. Use the direct
+orientation steps below only for the documented diagnostic or recovery paths.
+
 First determine the schema state from `SCHEMA.md`:
 
 - **Schema 0.1:** preserve its text and legacy layout as a migration source.
@@ -53,13 +61,13 @@ First determine the schema state from `SCHEMA.md`:
   it to 0.2.
 - **Schema 0.2:** parse `vertical_contracts` strictly and treat it as
   selective. An available vertical is not enabled merely because it exists in
-  the repository catalog. A first meaningful mutation that requires a vertical
-  creates only that vertical's area and index, records the exact available
-  `vertical@version`, adds its root link, completes the original operation,
-  creates the final backup, and discards the provisional recovery backup only
-  after success. It does not enable unrelated available
-  verticals. Missing area/index/root-link companions for an already applied
-  contract are lint/maintenance errors.
+  the repository catalog. For an existing current-compatible vault, the agent
+  explicitly decides whether first use requires a vertical and includes that
+  activation in the ordinary commit proposal. `ordinary_commit` stages only
+  the requested area's index, exact `vertical@version` marker, root link,
+  semantic writes, managed indexes, log, validation, backups, and transaction.
+  It does not enable unrelated available verticals. Missing area/index/root-link
+  companions for an already applied contract are lint/maintenance errors.
 - **Unrecognized or malformed state:** remain conservative and report the
   ambiguity. Do not guess a migration, infer a contract version, or create a
   vertical until the schema state is repaired or explicitly resolved.
@@ -77,12 +85,12 @@ natural-language agent must not create separate backups before calling it.
 An existing vault may have more files, a different ordering, or a previously
 initialized schema. Preserve its knowledge and orient before changing it.
 
-- If `SCHEMA.md` is absent, treat the vault as unversioned. Read its visible
-  indexes, use `recent_log.py` for a bounded recent log slice if `log.md` is
-  present, and inspect relevant pages. Do not reorganize or rename the existing
-  taxonomy merely to match the default layout. Add a concise schema note only
-  when it accurately describes the observed structure, and
-  otherwise remain conservative.
+- If `SCHEMA.md` is absent, treat the vault as unversioned. For this
+  diagnostic path, read its visible indexes, use `recent_log.py` for a bounded
+  recent log slice if `log.md` is present, and inspect relevant pages. Do not
+  reorganize or rename the existing taxonomy merely to match the default
+  layout. Add a concise schema note only when it accurately describes the
+  observed structure, and otherwise remain conservative.
 - If a schema declares a future or unknown major version, remain read-only,
   explain the compatibility issue, and ask before modifying content.
 - If a required control file is missing, create only the missing file after
@@ -129,11 +137,18 @@ vertical_contracts:
 This directory is a portable SelfContext Context Vault. Markdown files are
 canonical; standard relative Markdown links are canonical links.
 
-Read this file and `index.md` before significant operations, then use
-`.agents/skills/self-context/scripts/recent_log.py vault --entries 10` for a
-bounded continuity slice. See the category indexes for navigation; load only the
-relevant owner index for the request. Keep user facts, source records, agent
-observations, and derived syntheses visibly distinct.
+For ordinary Query, Ingest, Checkpoint, and advisor orientation, use the
+bounded `prepare_context.py` packet with the selected semantic scope and search
+anchors. Treat its runtime state as the latest-first compatibility gate. Read
+full canonical pages only when the packet indicates they are needed for
+semantic interpretation.
+
+Use this file and `index.md` directly only for the documented diagnostic,
+upgrade, migration, lint, review, or maintenance procedures.
+
+See the category indexes for navigation when a bounded packet calls for them.
+Keep user facts, source records, agent observations, and derived syntheses
+visibly distinct.
 
 Top-level areas:
 
@@ -174,16 +189,19 @@ syntax.
 ### Optional vertical initialization
 
 Follow the current-schema activation rule above. The `vertical_contracts:` line
-in a schema 0.2 `SCHEMA.md` is the explicit empty contract list; a first
-vertical activation appends its exact `vertical@version` entry there. Create a
-provisional recovery backup, add only the required area and `index.md`, add the
-exact available contract marker and root-index link, continue the original
-operation, validate, create the final backup, and discard the provisional only
-after success.
+in a schema 0.2 `SCHEMA.md` is the explicit empty contract list. For an
+existing current-compatible vault, the agent decides the appropriate vertical
+and includes that activation in the ordinary commit proposal;
+`ordinary_commit` stages the area's index, exact `vertical@version` marker, root
+link, semantic writes, managed indexes, log, validation, backups, and
+transaction together. Do not coordinate those steps manually or run a separate
+backup or `sync_indexes.py --write` against the active vault.
 
-A schema 0.1 vault does not receive legacy first-use activation; upgrade it
-first. An unrecognized or malformed state reports ambiguity and does not
-initialize the vertical.
+A missing or incomplete vault remains with the Missing Vault procedure above;
+ordinary commit returns `initialization-required` and does not bootstrap it. A
+schema 0.1 vault does not receive legacy first-use activation; upgrade it first.
+An unrecognized or malformed state reports ambiguity and does not initialize
+the vertical.
 
 Never create or enable a vertical for a read-only query, assessment, lint, or
 review.
@@ -196,8 +214,11 @@ and may later contain generated entries if the layout gains durable root pages.
 ```markdown
 # SelfContext Vault
 
-Portable personal context. Read [the schema](SCHEMA.md) before significant
-changes and use the bounded recent-log helper for operational continuity.
+Portable personal context. For ordinary Query, Ingest, Checkpoint, and
+advisor orientation, use the bounded `prepare_context.py` packet with the
+selected scope and search anchors; treat its runtime state as the latest-first
+compatibility gate. Read full canonical pages only when the packet indicates
+they are needed.
 
 ## Areas
 
@@ -281,7 +302,8 @@ available.
 ```
 
 Keep the initialization entry factual. The complete `log.md` remains the
-canonical operation history; normal orientation uses the bounded `recent_log.py`
-view, while `search_log.py` is reserved for explicit historical lookup. The
-first requested ingest or query should add its own operation entry rather than
-rewriting history.
+canonical operation history. Ordinary Query, Ingest, Checkpoint, and advisor
+orientation uses the bounded `prepare_context.py` packet; use `recent_log.py`
+or `search_log.py` directly only for documented diagnostic or explicit
+historical lookups. The first requested ingest or query should add its own
+operation entry rather than rewriting history.
