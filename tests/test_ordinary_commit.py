@@ -18,6 +18,7 @@ for import_path in (SCRIPTS, TESTS):
 
 import lint_vault  # type: ignore  # noqa: E402
 import ordinary_commit  # type: ignore  # noqa: E402
+import vault_state  # type: ignore  # noqa: E402
 import vault_utils  # type: ignore  # noqa: E402
 from synthetic_vault import (  # type: ignore  # noqa: E402
     backup_paths,
@@ -82,6 +83,31 @@ class OrdinaryCommitTests(unittest.TestCase):
                 "paths": paths or sorted((writes or {}).keys()),
             },
         }
+
+    def test_shared_canonical_snapshot_and_diff_preserve_bytes_and_order(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            vault = build_synthetic_vault(project)
+            before = vault_state.canonical_bytes(vault)
+
+            (vault / ".obsidian").mkdir()
+            (vault / ".obsidian" / "workspace.json").write_bytes(b"ignored")
+            (vault / "backups").mkdir()
+            (vault / "backups" / "recovery.zip").write_bytes(b"ignored")
+            (vault / "zeta.bin").write_bytes(b"created")
+            (vault / "alpha.bin").write_bytes(b"created")
+            page = vault / "career" / "harbor-launch.md"
+            page.write_bytes(page.read_bytes() + b"\\x00")
+            (vault / "core" / "index.md").unlink()
+
+            after = vault_state.canonical_bytes(vault)
+            created, modified, deleted = vault_state.diff_bytes(before, after)
+
+            self.assertEqual(created, ["alpha.bin", "zeta.bin"])
+            self.assertEqual(modified, ["career/harbor-launch.md"])
+            self.assertEqual(deleted, ["core/index.md"])
+            self.assertNotIn(".obsidian/workspace.json", after)
+            self.assertNotIn("backups/recovery.zip", after)
 
     def test_current_compatible_vault_create_succeeds_with_one_final_backup(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

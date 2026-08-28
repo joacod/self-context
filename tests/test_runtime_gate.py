@@ -4,6 +4,7 @@ import datetime as date
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / ".agents/skills/self-context/scripts"
@@ -18,6 +19,7 @@ import lint_vault  # type: ignore  # noqa: E402
 import migrate_vault  # type: ignore  # noqa: E402
 import search_vault  # type: ignore  # noqa: E402
 import sync_indexes  # type: ignore  # noqa: E402
+import ordinary_commit  # type: ignore  # noqa: E402
 import vault_utils  # type: ignore  # noqa: E402
 from synthetic_vault import backup_paths, build_synthetic_vault, tree_snapshot  # noqa: E402
 
@@ -40,6 +42,30 @@ class RuntimeGateTests(unittest.TestCase):
             catalogs = sync_indexes.synchronize(vault, write=True)
             self.assertEqual(catalogs["changed"], [])
             self.assertEqual(backup_paths(project), [])
+
+    def test_current_schema_consumers_follow_injected_registry_latest(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            vault = build_synthetic_vault(project, schema_version="0.2")
+            schema = vault / "SCHEMA.md"
+            schema.write_text(
+                schema.read_text(encoding="utf-8").replace(
+                    "schema_version: 0.2", "schema_version: 0.3", 1
+                ),
+                encoding="utf-8",
+            )
+            registry = migrate_vault.MigrationRegistry("0.3", ())
+
+            with mock.patch.object(
+                migrate_vault, "default_migration_registry", return_value=registry
+            ):
+                compatibility = vault_utils.runtime_compatibility(vault)
+                errors, _ = lint_vault.lint_vault(vault, date.date(2026, 8, 15))
+                controls = ordinary_commit._validate_control_state(vault)
+
+            self.assertEqual(compatibility["state"], "current")
+            self.assertEqual(errors, [])
+            self.assertTrue(controls["ok"])
 
     def test_old_schema_is_a_readable_upgrade_source_but_blocks_current_runtime(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

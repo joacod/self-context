@@ -18,6 +18,7 @@ try:
     import file_transaction
     import lint_vault
     import sync_indexes
+    import vault_state
     from vault_controls import (
         root_has_link as _shared_root_has_link,
         root_with_links as _shared_root_with_links,
@@ -32,14 +33,13 @@ try:
         link_target,
         load_vertical_catalog,
         parse_schema,
-        relative_label,
         safe_read_bytes,
         safe_read_text,
         snapshot_id,
         validate_vertical_catalog,
     )
 except ImportError:  # pragma: no cover - useful when imported as a package
-    from . import backup_vault, file_transaction, lint_vault, sync_indexes  # type: ignore
+    from . import backup_vault, file_transaction, lint_vault, sync_indexes, vault_state  # type: ignore
     from .vault_controls import (  # type: ignore
         root_has_link as _shared_root_has_link,
         root_with_links as _shared_root_with_links,
@@ -54,7 +54,6 @@ except ImportError:  # pragma: no cover - useful when imported as a package
         link_target,
         load_vertical_catalog,
         parse_schema,
-        relative_label,
         safe_read_bytes,
         safe_read_text,
         snapshot_id,
@@ -543,16 +542,6 @@ def _append_log_entry(
     return text + "".join(lines), True
 
 
-def _canonical_bytes(root: Path) -> Dict[str, bytes]:
-    result: Dict[str, bytes] = {}
-    for path in canonical_files(root):
-        content, error = safe_read_bytes(path)
-        if content is None:
-            raise OSError(error or f"unable to read {path}")
-        result[relative_label(path, root)] = content
-    return result
-
-
 def _known_areas(catalog: Mapping[str, Any]) -> set[str]:
     return {
         "core",
@@ -572,19 +561,6 @@ def _is_managed_control(label: str, catalog: Mapping[str, Any]) -> bool:
         return True
     parts = Path(label).parts
     return bool(parts) and parts[-1] == "index.md" and parts[0] in _known_areas(catalog)
-
-
-def _diff_bytes(
-    original: Mapping[str, bytes], proposed: Mapping[str, bytes]
-) -> Tuple[List[str], List[str], List[str]]:
-    created = sorted(set(proposed) - set(original))
-    deleted = sorted(set(original) - set(proposed))
-    modified = sorted(
-        label
-        for label in set(original).intersection(proposed)
-        if original[label] != proposed[label]
-    )
-    return created, modified, deleted
 
 
 def _custom_area_names(root: Path, catalog: Mapping[str, Any]) -> List[str]:
@@ -625,10 +601,18 @@ def _preservation_report(
 
 
 def _schema_contract_validation(
-    root: Path, *, allow_older: bool = False
+    root: Path,
+    *,
+    allow_older: bool = False,
+    schema_version: Optional[str] = None,
 ) -> Dict[str, Any]:
     errors: List[Dict[str, str]] = []
     warnings: List[Dict[str, str]] = []
+    expected_schema = str(
+        schema_version
+        if schema_version is not None
+        else default_migration_registry().latest_supported_schema
+    )
     try:
         schema = parse_schema(root)
         catalog = load_vertical_catalog()
@@ -644,12 +628,14 @@ def _schema_contract_validation(
         errors.append({"path": "references/verticals.json", "message": problem})
     if schema.get("error"):
         errors.append({"path": "SCHEMA.md", "message": str(schema["error"])})
-    if schema.get("version") != (0, 2):
-        errors.append({"path": "SCHEMA.md", "message": "resulting schema is not 0.2"})
+    if schema.get("version_text") != expected_schema:
+        errors.append({"path": "SCHEMA.md", "message": f"resulting schema is not {expected_schema}"})
     if not schema.get("contract_section_present"):
-        errors.append({"path": "SCHEMA.md", "message": "schema 0.2 must declare vertical_contracts"})
-    for problem in schema.get("contract_errors", []):
-        errors.append({"path": "SCHEMA.md", "message": str(problem)})
+        errors.append({"path": "SCHEMA.md", "message": f"schema {expected_schema} must declare vertical_contracts"})
+    errors.extend(
+        {"path": "SCHEMA.md", "message": str(problem)}
+        for problem in schema.get("contract_errors", [])
+    )
 
     records = {
         str(record.get("id")): record
@@ -800,7 +786,7 @@ def _validate_active_state(root: Path, plan: Mapping[str, Any]) -> Dict[str, Any
     result = _validation_summary(root)
     source = plan.get("_source_bytes", {})
     try:
-        current = _canonical_bytes(root)
+        current = vault_state.canonical_bytes(root)
         catalog = load_vertical_catalog()
         preservation = _preservation_report(
             source,
@@ -896,7 +882,7 @@ def _plan_0_1_to_0_2(vault: Path) -> Dict[str, Any]:
 
     try:
         source_snapshot = snapshot_id(supplied)
-        source_bytes = _canonical_bytes(supplied)
+        source_bytes = vault_state.canonical_bytes(supplied)
     except (OSError, ValueError, RuntimeError) as error:
         plan["findings"].append(
             _finding("error", "", f"unable to snapshot source vault: {error}", "snapshot")
@@ -1075,7 +1061,7 @@ def _plan_0_1_to_0_2(vault: Path) -> Dict[str, Any]:
             ]
             plan["catalog_blocks"] = list(plan["catalog_blocks_to_add_or_synchronize"])
 
-            before_log = _canonical_bytes(stage)
+            before_log = vault_state.canonical_bytes(stage)
             log_text, log_error = safe_read_text(stage / "log.md")
             if log_error or log_text is None:
                 plan["findings"].append(_finding("error", "log.md", log_error or "unable to read operation log", "control-file"))
@@ -1092,8 +1078,8 @@ def _plan_0_1_to_0_2(vault: Path) -> Dict[str, Any]:
                 else:
                     plan["log_entry"] = "existing-preserved"
 
-            proposed_bytes = _canonical_bytes(stage)
-            created, modified, deleted = _diff_bytes(source_bytes, proposed_bytes)
+            proposed_bytes = vault_state.canonical_bytes(stage)
+            created, modified, deleted = vault_state.diff_bytes(source_bytes, proposed_bytes)
             plan["created"] = created
             plan["modified"] = modified
             plan["files_to_create"] = created
@@ -1340,8 +1326,8 @@ def _no_op_plan(
 
 
 def _stage_apply_proposed_bytes(stage: Path, proposed: Mapping[str, bytes]) -> None:
-    current = _canonical_bytes(stage)
-    created, modified, deleted = _diff_bytes(current, proposed)
+    current = vault_state.canonical_bytes(stage)
+    created, modified, deleted = vault_state.diff_bytes(current, proposed)
     if deleted:
         raise ValueError("migration edge would delete staged files: " + ", ".join(deleted))
     for label in sorted(set(created + modified)):
@@ -1358,7 +1344,7 @@ def _edge_proposed_bytes(stage: Path, result: Mapping[str, Any]) -> Dict[str, by
     updates = result.get("_planned_updates")
     if not isinstance(updates, Mapping):
         raise ValueError("migration edge did not return a complete proposed byte set")
-    proposed_bytes = _canonical_bytes(stage)
+    proposed_bytes = vault_state.canonical_bytes(stage)
     for label, content in updates.items():
         proposed_bytes[str(label)] = bytes(content)
     return proposed_bytes
@@ -1444,8 +1430,8 @@ def _chain_plan(
                 final_validator = edge.validator
                 active_validator = edge.active_validator
 
-            proposed_bytes = _canonical_bytes(stage)
-            created, modified, deleted = _diff_bytes(source_bytes, proposed_bytes)
+            proposed_bytes = vault_state.canonical_bytes(stage)
+            created, modified, deleted = vault_state.diff_bytes(source_bytes, proposed_bytes)
             for label in deleted:
                 findings.append(
                     _finding("error", label, "migration would delete an existing file", "preservation")
@@ -1583,7 +1569,7 @@ def plan_migration(
 
     try:
         source_snapshot = snapshot_id(supplied)
-        source_bytes = _canonical_bytes(supplied)
+        source_bytes = vault_state.canonical_bytes(supplied)
     except (OSError, ValueError, RuntimeError) as error:
         plan["findings"].append(
             _finding("error", "", f"unable to snapshot source vault: {error}", "snapshot")
@@ -1595,6 +1581,7 @@ def plan_migration(
     plan["_source_bytes"] = source_bytes
 
     schema = parse_schema(supplied)
+    latest_schema = migration_registry.latest_supported_schema
     plan["from_schema"] = schema.get("version_text")
     plan["current_schema"] = schema.get("version_text")
     plan["source_schema_version"] = schema.get("version_text")
@@ -1617,24 +1604,28 @@ def plan_migration(
         )
     for error in schema.get("contract_errors", []):
         plan["findings"].append(_finding("error", "SCHEMA.md", str(error), "schema"))
-    if schema.get("version") == (0, 2) and not schema.get("contract_section_present"):
+    if schema.get("version_text") == latest_schema and not schema.get("contract_section_present"):
         plan["findings"].append(
             _finding(
                 "error",
                 "SCHEMA.md",
-                "schema 0.2 must declare vertical_contracts",
+                f"schema {latest_schema} must declare vertical_contracts",
                 "schema",
             )
         )
     if _blocking_findings(plan):
         return _mark_blocked(plan)
 
-    if schema.get("version") == (0, 2):
+    if schema.get("version_text") == latest_schema:
         # An older applied contract is valid, readable state for a schema-only
         # migration. Deep maintenance/upgrade owns its documented contract
         # migration; the schema helper must not turn that warning into a
         # schema blocker or silently rewrite the contract itself.
-        contract_validation = _schema_contract_validation(supplied, allow_older=True)
+        contract_validation = _schema_contract_validation(
+            supplied,
+            allow_older=True,
+            schema_version=latest_schema,
+        )
         plan["current_schema_contract_validation"] = contract_validation
         for item in contract_validation.get("errors", []):
             plan["findings"].append(

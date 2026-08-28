@@ -62,12 +62,6 @@ ALLOWED_ASSERTIONS = {
     "source_record",
     "mixed",
 }
-WRITING_ROLE_COMBINATIONS = {
-    ("primary", "user", "none"),
-    ("human_edited_ai_assisted", "shared", "assisted"),
-    ("generated_derived", "agent", "generated"),
-    ("unknown", "unknown", "unknown"),
-}
 
 
 # Resolve the catalog relative to the SelfContext skill that owns it, rather
@@ -687,7 +681,11 @@ def infer_enabled_contracts(
 ) -> Tuple[List[Dict[str, Any]], str]:
     catalog = catalog or load_vertical_catalog()
     schema = parse_schema(root)
-    if schema["version"] == (0, 2):
+    try:
+        latest = latest_schema_version()
+    except (ImportError, OSError, RuntimeError, ValueError):
+        latest = None
+    if latest is not None and schema.get("version_text") == latest:
         return list(schema["enabled_contracts"]), "schema"
     if schema["version"] != (0, 1):
         # An unrecognized or malformed schema cannot safely identify enabled
@@ -730,6 +728,20 @@ def _migration_registry() -> Any:
     except ImportError:  # pragma: no cover - package-style import fallback
         from . import migrate_vault  # type: ignore
     return migrate_vault.default_migration_registry()
+
+
+def latest_schema_version(registry: Optional[Any] = None) -> str:
+    """Return the current schema from the canonical migration registry."""
+
+    migration_registry = registry or _migration_registry()
+    return str(migration_registry.latest_supported_schema)
+
+
+def supported_schema_versions(registry: Optional[Any] = None) -> List[str]:
+    """Return schema versions recognized by the canonical migration registry."""
+
+    migration_registry = registry or _migration_registry()
+    return [str(value) for value in migration_registry.supported_versions]
 
 
 def _schema_number(value: Any) -> Optional[Tuple[int, int]]:
@@ -780,10 +792,8 @@ def runtime_compatibility(
 
     try:
         migration_registry = registry or _migration_registry()
-        latest = str(migration_registry.latest_supported_schema)
-        supported = {
-            str(value) for value in migration_registry.supported_versions
-        }
+        latest = latest_schema_version(migration_registry)
+        supported = set(supported_schema_versions(migration_registry))
         registry_findings = (
             migration_registry.validation_findings()
             if hasattr(migration_registry, "validation_findings")

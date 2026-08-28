@@ -28,10 +28,11 @@ try:
     import lint_vault
     import log_utils
     import sync_indexes
+    import vault_state
     import vault_utils
     from vault_controls import root_has_link, root_with_links, schema_with_contracts, vertical_index_template
 except ImportError:  # pragma: no cover - useful when imported as a package
-    from . import backup_vault, file_transaction, lint_vault, log_utils, sync_indexes, vault_utils  # type: ignore
+    from . import backup_vault, file_transaction, lint_vault, log_utils, sync_indexes, vault_state, vault_utils  # type: ignore
     from .vault_controls import (  # type: ignore
         root_has_link,
         root_with_links,
@@ -97,32 +98,6 @@ def _base_receipt(vault: Path) -> Dict[str, Any]:
         "rollback": {"status": "not-needed", "ok": True},
         "findings": [],
     }
-
-
-
-def _canonical_bytes(root: Path) -> Dict[str, bytes]:
-    result: Dict[str, bytes] = {}
-    for path in vault_utils.canonical_files(root):
-        content, error = vault_utils.safe_read_bytes(path)
-        if content is None:
-            raise OSError(error or f"unable to read {path}")
-        result[vault_utils.relative_label(path, root)] = content
-    return result
-
-
-
-def _diff_bytes(
-    original: Mapping[str, bytes], proposed: Mapping[str, bytes]
-) -> Tuple[List[str], List[str], List[str]]:
-    created = sorted(set(proposed) - set(original))
-    deleted = sorted(set(original) - set(proposed))
-    modified = sorted(
-        label
-        for label in set(original).intersection(proposed)
-        if original[label] != proposed[label]
-    )
-    return created, modified, deleted
-
 
 
 def _safe_snapshot(vault: Path) -> Tuple[Optional[str], Optional[str]]:
@@ -608,6 +583,7 @@ def _stage_activations(
                         {"id": str(entry["id"]), "version": int(entry["version"])}
                         for entry in new_contracts
                     ],
+                    schema_version=vault_utils.latest_schema_version(),
                 )
                 _apply_stage_write(stage, "SCHEMA.md", candidate.encode("utf-8"))
             except (KeyError, TypeError, ValueError) as error:
@@ -648,12 +624,13 @@ def _validate_control_state(root: Path) -> Dict[str, Any]:
         {"path": "references/verticals.json", "message": problem}
         for problem in catalog_problems
     )
+    latest_schema = vault_utils.latest_schema_version()
     schema = vault_utils.parse_schema(root)
-    if schema.get("version") != (0, 2):
-        errors.append({"path": "SCHEMA.md", "message": "resulting schema is not 0.2"})
+    if schema.get("version_text") != latest_schema:
+        errors.append({"path": "SCHEMA.md", "message": f"resulting schema is not {latest_schema}"})
     if not schema.get("contract_section_present"):
         errors.append(
-            {"path": "SCHEMA.md", "message": "schema 0.2 must declare vertical_contracts"}
+            {"path": "SCHEMA.md", "message": f"schema {latest_schema} must declare vertical_contracts"}
         )
     errors.extend(
         {"path": "SCHEMA.md", "message": str(problem)}
@@ -1013,7 +990,7 @@ def commit_mutation(vault: Path, proposal: Mapping[str, Any]) -> Dict[str, Any]:
         )
         return receipt
 
-    source_bytes = _canonical_bytes(supplied)
+    source_bytes = vault_state.canonical_bytes(supplied)
     temporary_directory: Optional[tempfile.TemporaryDirectory[str]] = None
     try:
         temporary_directory = tempfile.TemporaryDirectory(prefix="selfcontext-ordinary-")
@@ -1065,8 +1042,8 @@ def commit_mutation(vault: Path, proposal: Mapping[str, Any]) -> Dict[str, Any]:
             )
             return receipt
 
-        pre_log_bytes = _canonical_bytes(stage)
-        _, _, deleted_before_log = _diff_bytes(source_bytes, pre_log_bytes)
+        pre_log_bytes = vault_state.canonical_bytes(stage)
+        _, _, deleted_before_log = vault_state.diff_bytes(source_bytes, pre_log_bytes)
         if deleted_before_log:
             receipt["state"] = "unsupported-deletion"
             receipt["findings"].extend(
@@ -1080,7 +1057,7 @@ def commit_mutation(vault: Path, proposal: Mapping[str, Any]) -> Dict[str, Any]:
             )
             return receipt
 
-        pre_log_created, pre_log_modified, _ = _diff_bytes(source_bytes, pre_log_bytes)
+        pre_log_created, pre_log_modified, _ = vault_state.diff_bytes(source_bytes, pre_log_bytes)
         if not pre_log_created and not pre_log_modified:
             receipt["status"] = "noop"
             receipt["state"] = "no-op"
@@ -1124,8 +1101,8 @@ def commit_mutation(vault: Path, proposal: Mapping[str, Any]) -> Dict[str, Any]:
             return receipt
         _apply_stage_write(stage, "log.md", log_candidate.encode("utf-8"))
 
-        proposed_bytes = _canonical_bytes(stage)
-        created, modified, deleted = _diff_bytes(source_bytes, proposed_bytes)
+        proposed_bytes = vault_state.canonical_bytes(stage)
+        created, modified, deleted = vault_state.diff_bytes(source_bytes, proposed_bytes)
         if deleted:
             receipt["state"] = "unsupported-deletion"
             receipt["findings"].extend(
