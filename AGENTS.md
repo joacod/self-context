@@ -83,6 +83,27 @@ value; do not remove useful guardrails merely to reduce line count.
   validator cannot cover, and update this policy when validation ownership
   changes.
 
+## README stewardship
+
+- Treat the root `README.md` as the public front door: keep it focused on what
+  SelfContext is, who it helps, how to install/use it, and where to find deeper
+  documentation.
+- Keep the normal user flow centered on the three everyday requests:
+  `ingest` saves a specific known update, `query` retrieves or reasons without
+  writing by default, and `checkpoint` inspects a meaningful conversation for
+  durable outcomes without saving a transcript.
+- Treat `SKILL.md` and the workflow references as the behavioral source of
+  truth. The README should summarize them, not duplicate schema, backup,
+  maintenance, or other implementation detail unless it is needed for a new
+  user's first successful use.
+- Update the README when installation, normal usage, or another user-facing
+  claim changes. Do not update it merely because internal implementation,
+  schema, validation, or maintenance details change; do not make unrelated
+  README or documentation changes while fixing a focused issue.
+- When changing the README, verify commands, links, and claims against the
+  repository and run `python3 scripts/validate_repo.py`. Keep examples
+  synthetic and never use private vault content.
+
 Never copy, quote, paraphrase, or derive real personal vault content into
 tracked skills, docs, evals, tests, scripts, ADRs, or other operational files.
 Personal vault evidence may be used to answer the user's request, but any
