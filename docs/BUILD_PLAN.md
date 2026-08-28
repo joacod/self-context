@@ -1,5 +1,11 @@
 # SelfContext Bootstrap Build Plan
 
+> **Historical status:** This document records the original phased
+> bootstrap/build process and is retained for historical context. It is not the
+> current implementation plan, release process, runtime contract, or maintenance
+> workflow. Current behavior is defined by the present skill, architecture,
+> schema/references, scripts, tests, and repository guidance.
+
 ## Purpose
 
 This document is the handoff point for a new AI session. It records the phased bootstrap status, acceptance criteria, and decisions that must remain stable while SelfContext is built.

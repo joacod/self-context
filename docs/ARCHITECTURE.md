@@ -8,32 +8,44 @@ thesis is that context has a lifecycle.
 
 ## Layers
 
-SelfContext has a replaceable execution layer above a durable file layer:
+SelfContext has a replaceable execution layer, a semantic/policy layer, a
+deterministic mechanics layer, and a durable file layer:
 
 ```text
 existing AI harness/model
+(execution and semantic reasoning)
   |
   v
-SelfContext skills
+SelfContext Skills + Advisor Packs
+(semantic policy, operation selection, vertical reasoning)
   |
   v
-local Markdown Context Vault
-(Markdown + YAML frontmatter + standard Markdown links)
+deterministic vault mechanics
+(bounded context preparation, validation, indexing, migration, backups,
+and filesystem transactions)
+  |
+  v
+canonical Markdown Context Vault
+(durable portable context)
 ```
 
-The model and harness are already the agent. SelfContext does not ship a custom
-agent runtime or dedicated SelfContext subagents. Optional Advisor Packs are
-project-local specializations for a vertical; they help the current model
-reason over retrieved context but do not add a runtime or own a second durable
-context format.
+The harness/model remains the agent and owns execution and semantic reasoning.
+Skills and Advisor Packs decide what information means, which operation is
+appropriate, and how vertical context should be reasoned about. Advisor Packs
+are optional project-local specializations; they do not add storage or a second
+durable context format. Deterministic vault mechanics perform bounded
+operations selected by that semantic layer rather than making semantic
+decisions. This layer is not a standalone runtime, agent framework, daemon,
+service, or replacement harness.
 
-Dependency direction is always:
+Dependency direction is:
 
 ```text
-operational skills -> vault
+semantic/policy layer -> deterministic vault mechanics -> canonical vault
 ```
 
-The vault must never depend on a specific harness implementation.
+The local Markdown Context Vault is the canonical durable context and must
+never depend on a specific harness implementation.
 
 ## Horizontal Contextual Workflows
 
@@ -90,9 +102,10 @@ workflow.
 An optional context receipt provides bounded reasoning provenance—the relevant
 context, tradeoffs, uncertainty, and persistence outcome—without creating a
 receipt file, provenance system, private reasoning transcript, or exposed
-chain-of-thought. All of these workflows use the existing harness, model,
-project-local skills, and local Markdown Context Vault; none requires a
-dedicated SelfContext runtime or replacement harness.
+chain-of-thought. All of these workflows use the existing harness and model,
+project-local skills, deterministic vault mechanics, and the local Markdown
+Context Vault; none requires a dedicated SelfContext runtime or replacement
+harness.
 
 ## Optional Source Acquisition
 
@@ -109,7 +122,10 @@ Harness-provided retrieval capability
 SelfContext skills / normal ingest and provenance
       |
       v
-Canonical Markdown vault
+deterministic vault mechanics
+      |
+      v
+canonical Markdown vault
 ```
 
 The current harness and model can be replaced, and retrieval capabilities can
