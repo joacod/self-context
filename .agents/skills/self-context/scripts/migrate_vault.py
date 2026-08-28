@@ -17,8 +17,14 @@ try:
     import backup_vault
     import file_transaction
     import lint_vault
+    import migration_registry as _topology_registry
     import sync_indexes
     import vault_state
+    from migration_registry import (
+        MigrationEdge,
+        MigrationRegistry,
+        MigrationRegistryError,
+    )
     from vault_controls import (
         root_has_link as _shared_root_has_link,
         root_with_links as _shared_root_with_links,
@@ -40,6 +46,12 @@ try:
     )
 except ImportError:  # pragma: no cover - useful when imported as a package
     from . import backup_vault, file_transaction, lint_vault, sync_indexes, vault_state  # type: ignore
+    from . import migration_registry as _topology_registry  # type: ignore
+    from .migration_registry import (  # type: ignore
+        MigrationEdge,
+        MigrationRegistry,
+        MigrationRegistryError,
+    )
     from .vault_controls import (  # type: ignore
         root_has_link as _shared_root_has_link,
         root_with_links as _shared_root_with_links,
@@ -68,227 +80,11 @@ SCHEMA_SECTION_LINE = re.compile(
     r"^[ \t]*vertical_contracts:[^\r\n]*$", re.MULTILINE
 )
 MIGRATION_OPERATION = "migrate_schema_0_1_to_0_2"
-LATEST_SUPPORTED_SCHEMA = "0.2"
 ROOT_CONTROL_FILES = {"SCHEMA.md", "index.md", "log.md"}
 NON_CANONICAL_ROOTS = {".obsidian", "backups", ".DS_Store"}
 SCHEMA_VERSION_LINE = re.compile(
     r"^[ \t]*schema_version:[ \t]*([^\s#]+)[ \t]*(?:#.*)?$", re.MULTILINE
 )
-
-
-class MigrationRegistryError(ValueError):
-    """A migration registry cannot safely resolve the requested path."""
-
-    def __init__(self, code: str, message: str) -> None:
-        super().__init__(message)
-        self.code = code
-        self.message = message
-
-
-class MigrationEdge:
-    """One deterministic schema transition in a migration graph.
-
-    ``planner`` is read-only and must return a staged proposed state using the
-    same private byte-set keys as the built-in planner.  The optional validators
-    let unit tests model future, not-yet-supported edges without declaring a
-    production schema version or weakening the production validator.
-    """
-
-    def __init__(
-        self,
-        source: Any,
-        target: Any,
-        planner: Callable[[Path], Dict[str, Any]],
-        *,
-        validator: Optional[Callable[[Path], Dict[str, Any]]] = None,
-        active_validator: Optional[Callable[[Path, Mapping[str, Any]], Dict[str, Any]]] = None,
-        name: Optional[str] = None,
-    ) -> None:
-        self.source = _schema_label(source)
-        self.target = _schema_label(target)
-        self.planner = planner
-        self.validator = validator
-        self.active_validator = active_validator
-        self.name = name or f"{self.source}->{self.target}"
-
-    @property
-    def label(self) -> str:
-        return f"{self.source}->{self.target}"
-
-
-def _schema_label(value: Any) -> str:
-    if isinstance(value, tuple) and len(value) == 2:
-        return f"{int(value[0])}.{int(value[1])}"
-    if isinstance(value, str) and value.strip():
-        return value.strip()
-    raise ValueError(f"invalid schema label: {value!r}")
-
-
-def _numeric_schema_label(value: str) -> Optional[Tuple[int, int]]:
-    match = re.fullmatch(r"(\d+)\.(\d+)", value)
-    if not match:
-        return None
-    return int(match.group(1)), int(match.group(2))
-
-
-def _is_future_schema(value: str, latest: str) -> bool:
-    current_number = _numeric_schema_label(value)
-    latest_number = _numeric_schema_label(latest)
-    return bool(current_number and latest_number and current_number > latest_number)
-
-
-class MigrationRegistry:
-    """Dependency-free directed graph for supported schema migrations."""
-
-    def __init__(self, latest: Any, edges: Iterable[MigrationEdge]) -> None:
-        self.latest = _schema_label(latest)
-        self.edges = tuple(edges)
-
-    @property
-    def latest_supported_schema(self) -> str:
-        return self.latest
-
-    @property
-    def supported_versions(self) -> List[str]:
-        return sorted(
-            {self.latest, *(edge.source for edge in self.edges), *(edge.target for edge in self.edges)},
-            key=lambda value: (_numeric_schema_label(value) is None, _numeric_schema_label(value) or (0, 0), value),
-        )
-
-    def validation_findings(self) -> List[Dict[str, Any]]:
-        findings: List[Dict[str, Any]] = []
-        seen: Dict[Tuple[str, str], str] = {}
-        adjacency: Dict[str, List[MigrationEdge]] = {}
-        nodes = {self.latest}
-        for edge in self.edges:
-            nodes.update((edge.source, edge.target))
-            key = (edge.source, edge.target)
-            if key in seen:
-                findings.append(
-                    _finding(
-                        "error",
-                        "",
-                        f"duplicate migration edge {edge.label} ({seen[key]} and {edge.name})",
-                        "migration-registry",
-                        code="duplicate-edge",
-                    )
-                )
-            else:
-                seen[key] = edge.name
-            if edge.source == edge.target:
-                findings.append(
-                    _finding(
-                        "error",
-                        "",
-                        f"migration edge cannot point to itself: {edge.label}",
-                        "migration-registry",
-                        code="cycle",
-                    )
-                )
-            adjacency.setdefault(edge.source, []).append(edge)
-
-        for source in adjacency:
-            adjacency[source].sort(key=lambda edge: (edge.target, edge.name))
-
-        visit_state: Dict[str, int] = {}
-        cycle_keys: set[Tuple[str, str]] = set()
-
-        def visit(node: str) -> None:
-            visit_state[node] = 1
-            for edge in adjacency.get(node, []):
-                state = visit_state.get(edge.target, 0)
-                if state == 1:
-                    cycle = (node, edge.target)
-                    if cycle not in cycle_keys:
-                        cycle_keys.add(cycle)
-                        findings.append(
-                            _finding(
-                                "error",
-                                "",
-                                f"cyclic migration graph includes {edge.label}",
-                                "migration-registry",
-                                code="cycle",
-                            )
-                        )
-                elif state == 0:
-                    visit(edge.target)
-            visit_state[node] = 2
-
-        for node in sorted(nodes):
-            if visit_state.get(node, 0) == 0:
-                visit(node)
-
-        if self.latest not in nodes:
-            findings.append(
-                _finding(
-                    "error",
-                    "",
-                    f"latest supported schema is not represented: {self.latest}",
-                    "migration-registry",
-                    code="missing-latest",
-                )
-            )
-        return findings
-
-    def validate(self) -> List[str]:
-        """Return deterministic human-readable registry validation errors."""
-
-        return [str(item["message"]) for item in self.validation_findings()]
-
-    def resolve_path(self, source: Any, target: Any) -> List[MigrationEdge]:
-        source_label = _schema_label(source)
-        target_label = self.latest if _schema_label(target) == "latest" else _schema_label(target)
-        findings = self.validation_findings()
-        if findings:
-            raise MigrationRegistryError("invalid-registry", "; ".join(self.validate()))
-        if target_label not in self.supported_versions:
-            raise MigrationRegistryError(
-                "unsupported-target",
-                f"unsupported migration target schema: {target_label}",
-            )
-        if _is_future_schema(source_label, self.latest):
-            raise MigrationRegistryError(
-                "future-schema",
-                f"vault declares future unsupported schema: {source_label}",
-            )
-        if source_label not in self.supported_versions:
-            raise MigrationRegistryError(
-                "missing-path",
-                f"no migration path starts at schema {source_label}",
-            )
-        if source_label == target_label:
-            return []
-
-        adjacency: Dict[str, List[MigrationEdge]] = {}
-        for edge in self.edges:
-            adjacency.setdefault(edge.source, []).append(edge)
-        for source_edges in adjacency.values():
-            source_edges.sort(key=lambda edge: (edge.target, edge.name))
-
-        queue: List[Tuple[str, List[MigrationEdge]]] = [(source_label, [])]
-        visited = {source_label}
-        while queue:
-            node, path = queue.pop(0)
-            for edge in adjacency.get(node, []):
-                candidate = path + [edge]
-                if edge.target == target_label:
-                    return candidate
-                if edge.target not in visited:
-                    visited.add(edge.target)
-                    queue.append((edge.target, candidate))
-        raise MigrationRegistryError(
-            "missing-path",
-            f"no complete migration path from schema {source_label} to {target_label}",
-        )
-
-
-def default_migration_registry() -> MigrationRegistry:
-    """Return the production registry; test-only registries stay injectable."""
-
-    return MigrationRegistry(
-        LATEST_SUPPORTED_SCHEMA,
-        (MigrationEdge("0.1", "0.2", _plan_0_1_to_0_2, name="schema-0.1-to-0.2"),),
-    )
 
 
 def _finding(
@@ -1167,6 +963,39 @@ def _plan_0_1_to_0_2(vault: Path) -> Dict[str, Any]:
     return plan
 
 
+def _bind_executable_planners(registry: MigrationRegistry) -> MigrationRegistry:
+    """Derive an executable registry without mutating the topology registry."""
+
+    if not any(
+        edge.source == "0.1" and edge.target == "0.2" and edge.planner is None
+        for edge in registry.edges
+    ):
+        return registry
+
+    bound_edges: List[MigrationEdge] = []
+    for edge in registry.edges:
+        planner = edge.planner
+        if edge.source == "0.1" and edge.target == "0.2" and planner is None:
+            planner = _plan_0_1_to_0_2
+        bound_edges.append(
+            MigrationEdge(
+                edge.source,
+                edge.target,
+                planner,
+                validator=edge.validator,
+                active_validator=edge.active_validator,
+                name=edge.name,
+            )
+        )
+    return MigrationRegistry(registry.latest_supported_schema, bound_edges)
+
+
+def default_migration_registry() -> MigrationRegistry:
+    """Return the production topology with its executable planner bound."""
+
+    return _bind_executable_planners(_topology_registry.default_migration_registry())
+
+
 def _empty_registry_plan(
     vault: Path, target: Any, registry: MigrationRegistry
 ) -> Dict[str, Any]:
@@ -1371,7 +1200,10 @@ def _chain_plan(
         try:
             shutil.copytree(vault, stage, symlinks=True)
             for edge in path:
-                step = edge.planner(stage)
+                planner = edge.planner
+                if not callable(planner):
+                    raise ValueError(f"migration edge {edge.label} has no executable planner")
+                step = planner(stage)
                 if not isinstance(step, Mapping):
                     raise ValueError(f"migration edge {edge.label} returned no plan")
                 step_findings = [
@@ -1547,7 +1379,7 @@ def plan_migration(
     """Build a complete read-only plan from the detected schema to ``target``."""
 
     supplied = vault.expanduser()
-    migration_registry = registry or default_migration_registry()
+    migration_registry = _bind_executable_planners(registry or default_migration_registry())
     plan = _empty_registry_plan(supplied, target, migration_registry)
     registry_findings = migration_registry.validation_findings()
     plan["registry_validation"] = registry_findings
@@ -1665,7 +1497,7 @@ def plan_migration(
             )
         )
         return _mark_blocked(plan)
-    if _is_future_schema(current, migration_registry.latest_supported_schema):
+    if _topology_registry.is_future_schema(current, migration_registry.latest_supported_schema):
         plan["findings"].append(
             _finding(
                 "error",
