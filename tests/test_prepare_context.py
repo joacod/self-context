@@ -267,7 +267,11 @@ class PrepareContextTests(unittest.TestCase):
                 search_vault,
                 "durable_page_records",
                 wraps=search_vault.durable_page_records,
-            ) as load_records:
+            ) as load_records, mock.patch.object(
+                search_vault,
+                "_index_record",
+                wraps=search_vault._index_record,
+            ) as index_record:
                 packet = prepare_context.prepare_context(
                     vault,
                     scope=["career"],
@@ -278,6 +282,23 @@ class PrepareContextTests(unittest.TestCase):
                 )
 
             self.assertEqual(load_records.call_count, 1)
+            indexed_paths = [
+                str(call.args[0]["path"]) for call in index_record.call_args_list
+            ]
+            self.assertCountEqual(
+                indexed_paths,
+                [
+                    "career/harbor-launch.md",
+                    "career/archived-role.md",
+                    "career/superseded-launch.md",
+                ],
+            )
+            self.assertNotIn("core/decision-trail.md", indexed_paths)
+            self.assertNotIn("sources/harbor-notes.md", indexed_paths)
+            self.assertIn(
+                "sources/harbor-notes.md",
+                [item["path"] for item in packet["linked_sources"]],
+            )
             self.assertEqual(packet["matches"], expected_matches)
             self.assertEqual(packet["linked_sources"], expected_linked)
 

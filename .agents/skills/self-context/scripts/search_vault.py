@@ -175,15 +175,67 @@ def _load_vertical_catalog() -> Optional[Dict[str, Any]]:
         return None
 
 
-def _build_search_corpus(vault: Path) -> _SearchCorpus:
+def _record_is_search_candidate(
+    record: Dict[str, Any],
+    *,
+    catalog: Optional[Dict[str, Any]],
+    vertical: Optional[str],
+    scopes: Sequence[str],
+    include_sources: bool,
+    exclude_archived: bool,
+    exclude_superseded: bool,
+) -> bool:
+    path = str(record["path"])
+    if record.get("is_deep_report") or path.startswith("review/deep-reviews/"):
+        return False
+    fields = record.get("frontmatter")
+    if not isinstance(fields, dict):
+        return False
+    if vertical and _vertical_for_path(path, catalog) != vertical:
+        return False
+    if not _path_matches_scope(path, scopes):
+        return False
+    assertion = fields.get("assertion_kind")
+    if assertion == "source_record" and not include_sources:
+        return False
+    status = fields.get("status")
+    if status == "archived" and exclude_archived:
+        return False
+    if status == "superseded" and exclude_superseded:
+        return False
+    return True
+
+
+def _build_search_corpus(
+    vault: Path,
+    *,
+    vertical: Optional[str] = None,
+    scopes: Sequence[str] = (),
+    include_sources: bool = False,
+    exclude_archived: bool = False,
+    exclude_superseded: bool = False,
+) -> _SearchCorpus:
     records = tuple(durable_page_records(vault))
     records_by_path = {
         str(record.get("path")): record for record in records if record.get("path")
     }
-    indexed_records = tuple(_index_record(record) for record in records)
+    catalog = _load_vertical_catalog()
+    indexed_records = tuple(
+        _index_record(record)
+        for record in records
+        if _record_is_search_candidate(
+            record,
+            catalog=catalog,
+            vertical=vertical,
+            scopes=scopes,
+            include_sources=include_sources,
+            exclude_archived=exclude_archived,
+            exclude_superseded=exclude_superseded,
+        )
+    )
     return _SearchCorpus(
         vault=vault,
-        catalog=_load_vertical_catalog(),
+        catalog=catalog,
         records=indexed_records,
         records_by_path=records_by_path,
     )
@@ -564,11 +616,8 @@ def _search_corpus(
     vertical: Optional[str],
     scopes: Sequence[str],
     contextual: bool,
-    include_sources: bool,
     include_derived: bool,
     expand_linked_sources: bool,
-    exclude_archived: bool,
-    exclude_superseded: bool,
     include_identity: bool,
     compatibility: Dict[str, Any],
 ) -> Dict[str, Any]:
@@ -579,23 +628,8 @@ def _search_corpus(
     results: List[Dict[str, Any]] = []
     for indexed in corpus.records:
         record = indexed.record
-        path = str(record["path"])
-        if record.get("is_deep_report") or path.startswith("review/deep-reviews/"):
-            continue
         fields = record.get("frontmatter")
         if not isinstance(fields, dict):
-            continue
-        if vertical and _vertical_for_path(path, corpus.catalog) != vertical:
-            continue
-        if not _path_matches_scope(path, scopes):
-            continue
-        assertion = fields.get("assertion_kind")
-        if assertion == "source_record" and not include_sources:
-            continue
-        status = fields.get("status")
-        if status == "archived" and exclude_archived:
-            continue
-        if status == "superseded" and exclude_superseded:
             continue
 
         score, matched, summary = _score_record(
@@ -751,7 +785,14 @@ def search_vault(
             "findings": [str(compatibility.get("message") or "vault is not current")],
             "runtime_compatibility": compatibility,
         }
-    corpus = _build_search_corpus(vault)
+    corpus = _build_search_corpus(
+        vault,
+        vertical=vertical,
+        scopes=scopes,
+        include_sources=include_sources,
+        exclude_archived=exclude_archived,
+        exclude_superseded=exclude_superseded,
+    )
     return _search_corpus(
         corpus,
         query,
@@ -759,11 +800,8 @@ def search_vault(
         vertical=vertical,
         scopes=scopes,
         contextual=contextual,
-        include_sources=include_sources,
         include_derived=include_derived,
         expand_linked_sources=expand_linked_sources,
-        exclude_archived=exclude_archived,
-        exclude_superseded=exclude_superseded,
         include_identity=include_identity,
         compatibility=compatibility,
     )
