@@ -18,6 +18,11 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, Optional, Sequence, Tuple
 from urllib.parse import unquote
 
+try:
+    import migration_registry as _migration_registry_module
+except ImportError:  # pragma: no cover - package-style import fallback
+    from . import migration_registry as _migration_registry_module  # type: ignore
+
 
 NON_CANONICAL_DIRECTORIES = {".obsidian", "backups", ".DS_Store"}
 SCHEMA_VERSION_PATTERN = re.compile(
@@ -715,32 +720,17 @@ def infer_enabled_contracts(
     return inferred, "inferred-legacy"
 
 
-def _migration_registry() -> Any:
-    """Load the migration registry lazily to keep helpers importable.
-
-    The migration registry remains the source of truth for the latest schema.
-    Lazy loading avoids a module cycle because the migration helper uses lint
-    and vault utilities while constructing staged states.
-    """
-
-    try:
-        import migrate_vault  # type: ignore
-    except ImportError:  # pragma: no cover - package-style import fallback
-        from . import migrate_vault  # type: ignore
-    return migrate_vault.default_migration_registry()
-
-
 def latest_schema_version(registry: Optional[Any] = None) -> str:
     """Return the current schema from the canonical migration registry."""
 
-    migration_registry = registry or _migration_registry()
+    migration_registry = registry or _migration_registry_module.default_migration_registry()
     return str(migration_registry.latest_supported_schema)
 
 
 def supported_schema_versions(registry: Optional[Any] = None) -> List[str]:
     """Return schema versions recognized by the canonical migration registry."""
 
-    migration_registry = registry or _migration_registry()
+    migration_registry = registry or _migration_registry_module.default_migration_registry()
     return [str(value) for value in migration_registry.supported_versions]
 
 
@@ -791,7 +781,7 @@ def runtime_compatibility(
         return result
 
     try:
-        migration_registry = registry or _migration_registry()
+        migration_registry = registry or _migration_registry_module.default_migration_registry()
         latest = latest_schema_version(migration_registry)
         supported = set(supported_schema_versions(migration_registry))
         registry_findings = (

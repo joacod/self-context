@@ -17,6 +17,7 @@ for import_path in (SCRIPTS, TESTS):
 
 import lint_vault  # type: ignore  # noqa: E402
 import migrate_vault  # type: ignore  # noqa: E402
+import migration_registry  # type: ignore  # noqa: E402
 import search_vault  # type: ignore  # noqa: E402
 import sync_indexes  # type: ignore  # noqa: E402
 import ordinary_commit  # type: ignore  # noqa: E402
@@ -54,10 +55,10 @@ class RuntimeGateTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
-            registry = migrate_vault.MigrationRegistry("0.3", ())
+            registry = migration_registry.MigrationRegistry("0.3", ())
 
             with mock.patch.object(
-                migrate_vault, "default_migration_registry", return_value=registry
+                migration_registry, "default_migration_registry", return_value=registry
             ):
                 compatibility = vault_utils.runtime_compatibility(vault)
                 errors, _ = lint_vault.lint_vault(vault, date.date(2026, 8, 15))
