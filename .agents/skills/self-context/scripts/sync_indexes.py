@@ -317,11 +317,13 @@ def _known_areas() -> set[str]:
         return {"core", "review", "sources", "derived"}
 
 
-def _page_entries(vault: Path) -> Tuple[Dict[Path, List[str]], List[Dict[str, Any]]]:
+def _page_entries(
+    vault: Path, records: Iterable[Dict[str, Any]]
+) -> Tuple[Dict[Path, List[str]], List[Dict[str, Any]]]:
     by_index: Dict[Path, List[Tuple[Tuple[str, str, str], str]]] = {}
     findings: List[Dict[str, Any]] = []
     known_areas = _known_areas()
-    for record in durable_page_records(vault):
+    for record in records:
         page_path_text = str(record["path"])
         page_parts = Path(page_path_text).parts
         if page_parts and (
@@ -607,7 +609,12 @@ def _state_priority(states: Iterable[str]) -> List[str]:
     return [state for state in order if state in present]
 
 
-def synchronize(vault: Path, write: bool = False) -> Dict[str, Any]:
+def synchronize(
+    vault: Path,
+    write: bool = False,
+    *,
+    records: Optional[List[Dict[str, Any]]] = None,
+) -> Dict[str, Any]:
     vault = vault.expanduser()
     if not vault.exists():
         return {
@@ -654,10 +661,11 @@ def synchronize(vault: Path, write: bool = False) -> Dict[str, Any]:
                 "runtime_compatibility": compatibility,
             }
 
-    desired, findings = _page_entries(vault)
+    page_records = durable_page_records(vault) if records is None else records
+    desired, findings = _page_entries(vault, page_records)
     indexes = _index_paths(vault)
     records_by_path = {
-        str(record["path"]): record for record in durable_page_records(vault)
+        str(record["path"]): record for record in page_records
     }
     metadata_indexes = {
         str(finding["owner_index"])
