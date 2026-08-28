@@ -692,6 +692,24 @@ class SearchVaultTests(unittest.TestCase):
             self.assertIsNone(item["stale_after"])
             self.assertEqual(item["sources"], ["../sources/source.md"])
 
+    def test_standalone_invocations_observe_fresh_filesystem_state(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.make_vault(Path(temporary))
+            first = self.report(vault, "Synthetic Queue")
+            self.assertEqual(first["results"][0]["title"], "Synthetic Queue")
+
+            self.write_page(
+                vault,
+                "core/title.md",
+                title="Fresh Queue",
+                description="The updated standalone-search fixture.",
+                body="## Updated\n\nfresh queue body",
+            )
+
+            second = self.report(vault, "Fresh Queue")
+            self.assertEqual(second["results"][0]["path"], "core/title.md")
+            self.assertEqual(second["results"][0]["title"], "Fresh Queue")
+
     def test_ties_are_path_stable_across_repeated_searches(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             vault = self.make_task_vault(Path(temporary))
