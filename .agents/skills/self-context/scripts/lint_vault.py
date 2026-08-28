@@ -19,13 +19,13 @@ from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
 
 try:
     import sync_indexes
+    import writing_rules
     from vault_utils import (
         ALLOWED_ASSERTIONS,
         ALLOWED_STATUSES,
         ALLOWED_TYPES,
         REQUIRED_FIELDS,
         REQUIRED_NON_NULL_FIELDS,
-        WRITING_ROLE_COMBINATIONS,
         as_list,
         body_hash,
         canonical_files,
@@ -39,6 +39,7 @@ try:
         is_noncanonical,
         iter_markdown_links,
         iter_symlinks,
+        latest_schema_version,
         link_target,
         markdown_link_records,
         malformed_links,
@@ -50,20 +51,20 @@ try:
         relative_label,
         safe_read_text,
         snapshot_id,
+        supported_schema_versions,
         validate_vertical_catalog,
         load_vertical_catalog,
         runtime_compatibility,
         runtime_compatibility_finding,
     )
 except ImportError:  # pragma: no cover - useful when imported as a package
-    from . import sync_indexes  # type: ignore
+    from . import sync_indexes, writing_rules  # type: ignore
     from .vault_utils import (  # type: ignore
         ALLOWED_ASSERTIONS,
         ALLOWED_STATUSES,
         ALLOWED_TYPES,
         REQUIRED_FIELDS,
         REQUIRED_NON_NULL_FIELDS,
-        WRITING_ROLE_COMBINATIONS,
         as_list,
         body_hash,
         canonical_files,
@@ -77,6 +78,7 @@ except ImportError:  # pragma: no cover - useful when imported as a package
         is_noncanonical,
         iter_markdown_links,
         iter_symlinks,
+        latest_schema_version,
         link_target,
         markdown_link_records,
         malformed_links,
@@ -88,6 +90,7 @@ except ImportError:  # pragma: no cover - useful when imported as a package
         relative_label,
         safe_read_text,
         snapshot_id,
+        supported_schema_versions,
         validate_vertical_catalog,
         load_vertical_catalog,
         runtime_compatibility,
@@ -177,10 +180,14 @@ def _schema_findings(root: Path) -> List[Dict[str, Any]]:
     if schema.get("error"):
         error = str(schema["error"])
         return [_finding("error", _read_error_classification(error), error, "SCHEMA.md")]
-    version = schema.get("version")
-    if version is None:
+    version_text = schema.get("version_text")
+    if version_text is None:
         return [_finding("warning", "schema", "SCHEMA.md does not declare a parseable schema_version; activation state is ambiguous")]
-    if version not in {(0, 1), (0, 2)}:
+    try:
+        supported = set(supported_schema_versions())
+    except (ImportError, OSError, RuntimeError, ValueError):
+        supported = set()
+    if version_text not in supported:
         return [
             _finding(
                 "warning",
@@ -297,31 +304,8 @@ def _ordinary_findings(
         if not isinstance(assertion, str) or assertion not in ALLOWED_ASSERTIONS:
             findings.append(_finding("error", "metadata", f"invalid assertion_kind: {assertion!r}", relative))
 
-        tags = fields.get("tags")
-        if isinstance(page_type, str) and page_type in {"source", "synthesis"} and isinstance(tags, list) and "writing" in tags:
-            role_fields = (
-                fields.get("writing_evidence_role"),
-                fields.get("authorship"),
-                fields.get("ai_involvement"),
-            )
-            if any(not isinstance(value, str) or value in {"", "null"} for value in role_fields):
-                findings.append(
-                    _finding(
-                        "error",
-                        "writing-artifact",
-                        "writing source/artifact requires writing_evidence_role, authorship, and ai_involvement",
-                        relative,
-                    )
-                )
-            elif role_fields not in WRITING_ROLE_COMBINATIONS:
-                findings.append(
-                    _finding(
-                        "error",
-                        "writing-artifact",
-                        f"invalid Writing artifact role combination: {role_fields!r}",
-                        relative,
-                    )
-                )
+        for message in writing_rules.validate_writing_metadata(fields):
+            findings.append(_finding("error", "writing-artifact", message, relative))
 
         title = fields.get("title")
         if isinstance(title, str) and title.strip():
@@ -1102,12 +1086,16 @@ def _deep_findings(
     # expose inferred migration-source structure separately; the runtime gate
     # above blocks them from being reported as current.
     schema = parse_schema(root)
+    try:
+        latest_schema = latest_schema_version()
+    except (ImportError, OSError, RuntimeError, ValueError):
+        latest_schema = None
+    schema_is_current = latest_schema is not None and schema.get("version_text") == latest_schema
     enabled, enabled_source = infer_enabled_contracts(root, catalog)
     records_by_id = _contract_map(catalog)
-
-    if schema.get("version") == (0, 2):
+    if schema_is_current:
         if not schema.get("contract_section_present"):
-            findings.append(_finding("error", "vertical-contract", "schema 0.2 must declare a vertical_contracts section", "SCHEMA.md"))
+            findings.append(_finding("error", "vertical-contract", f"schema {latest_schema} must declare a vertical_contracts section", "SCHEMA.md"))
         for error in schema.get("contract_errors", []):
             findings.append(_finding("error", "vertical-contract", str(error), "SCHEMA.md"))
 
@@ -1115,10 +1103,10 @@ def _deep_findings(
     # older-but-migratable, or future-and-unsafe; current runtime currency is
     # enforced by the shared gate while deep lint retains detailed findings.
     # Schema 0.1 area inference is legacy structure, not an applied contract,
-    # so version comparison is only performed for explicit schema 0.2 entries.
+    # so version comparison is only performed for explicit current-schema entries.
     seen_ids: Set[str] = set()
     valid_applied: List[Dict[str, Any]] = []
-    contract_entries = schema.get("contract_entries", []) if schema.get("version") == (0, 2) else []
+    contract_entries = schema.get("contract_entries", []) if schema_is_current else []
     contracts_to_check = contract_entries
     for contract in contracts_to_check:
         identifier = contract.get("id")
@@ -1157,12 +1145,12 @@ def _deep_findings(
         if index_path not in (root_text or ""):
             findings.append(_finding("error", "vertical-contract", f"enabled vertical is missing its root index link: {index_path}", "index.md"))
 
-    if schema.get("version") == (0, 2):
+    if schema_is_current:
         explicit_ids = {str(item.get("id")) for item in valid_applied if item.get("id") is not None}
         for record in catalog_records(catalog):
             area = record.get("vault_area")
             if isinstance(area, str) and (root / area).is_dir() and str(record.get("id")) not in explicit_ids:
-                findings.append(_finding("error", "vertical-contract", f"known vertical area is present but not versioned in schema 0.2: {area}/", "SCHEMA.md"))
+                findings.append(_finding("error", "vertical-contract", f"known vertical area is present but not versioned in {latest_schema}: {area}/", "SCHEMA.md"))
     known_areas = {"core", "review", "sources", "derived"} | {
         str(record.get("vault_area")) for record in catalog_records(catalog)
     }
@@ -1216,7 +1204,7 @@ def _deep_findings(
     root_text, _ = safe_read_text(root / "index.md")
     enabled_verticals: Set[str] = set()
     legacy_inferred_verticals: Set[str] = set()
-    structural_entries = valid_applied if schema.get("version") == (0, 2) else []
+    structural_entries = valid_applied if schema_is_current else []
     for contract in structural_entries:
         identifier = contract.get("id")
         if isinstance(identifier, str) and identifier in records_by_id:
@@ -1250,7 +1238,7 @@ def _deep_findings(
     ]
     applied_contracts = (
         _contract_strings(contract_entries)
-        if schema.get("version") == (0, 2)
+        if schema_is_current
         else []
     )
     metadata = {

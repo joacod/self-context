@@ -147,7 +147,7 @@ class MigrateVaultTests(unittest.TestCase):
 
     def make_multi_step_registry(self, module):
         def test_only_planner(stage: Path) -> dict:
-            before = module._canonical_bytes(stage)
+            before = module.vault_state.canonical_bytes(stage)
             updated = before["SCHEMA.md"].replace(
                 b"schema_version: 0.2", b"schema_version: test-only-0.3"
             )
@@ -596,7 +596,7 @@ class MigrateVaultTests(unittest.TestCase):
 
     def test_missing_path_blocks_with_an_injected_registry(self) -> None:
         module = self.migration_module()
-        noop = lambda stage: {"status": "planned", "write_ready": True, "findings": [], "_proposed_bytes": module._canonical_bytes(stage)}
+        noop = lambda stage: {"status": "planned", "write_ready": True, "findings": [], "_proposed_bytes": module.vault_state.canonical_bytes(stage)}
         registry = module.MigrationRegistry(
             "test-only-0.3",
             (module.MigrationEdge("0.2", "test-only-0.3", noop),),

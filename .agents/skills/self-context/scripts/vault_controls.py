@@ -43,7 +43,7 @@ def schema_with_contracts(
     text: str,
     contracts: Sequence[Mapping[str, Any]],
     *,
-    schema_version: str = "0.2",
+    schema_version: str,
 ) -> str:
     """Render a schema version and exact applied contract list in place.
 
