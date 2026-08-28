@@ -412,42 +412,26 @@ Never use an agent inference or derived advice as if it were independent source
 evidence. If the vault is insufficient, say so and identify the missing context
 instead of guessing.
 
-For Writing retrieval, include the relevant mode, audience, language, dates,
-authorship, and evidence state. Generated drafts and derived style analyses are
-not independent evidence of the user's communication. A Writing query may
-report that no meaningful profile update was needed; retrieval and analysis do
-not require a new durable page.
+## Vertical-specific retrieval
 
-For Learning retrieval, read the relevant `learning/` concepts and linked
-sources, then include the qualitative knowledge state, scope, dated evidence,
-gaps, corrections, and prerequisite relationships. Distinguish exposure from
-understanding or demonstrated application. Use reviewable Learning observations
-as uncertainty, not settled knowledge. An explanation based on known concepts is
-still derived output and does not update the Learning profile automatically.
+When a query depends on a vertical, use its procedure for detailed evidence
+semantics and its Advisor Pack's local guides for personalized reasoning and
+output. Keep claims with their owning pages; cross-vertical retrieval links
+owners rather than copying facts.
 
-For Relationships retrieval, read only the relevant relationship pages, shared
-history, commitments, open loops, and linked source records. Keep reported
-statements, user observations, source-derived facts, and agent inferences
-separate. Do not expose unrelated third-party information or infer sensitive
-characteristics. Context before an interaction is a focused derived answer, not
-a complete person dossier.
+| Vertical | Retrieval guardrail and canonical procedure |
+| --- | --- |
+| Career | Retrieve relevant professional evidence, scope, outcomes, goals, and gaps; see [Career](career.md). |
+| Writing | Include mode, audience, language, dates, authorship, and evidence state; generated drafts are not independent evidence. See [Writing](writing.md). |
+| Learning | Include qualitative knowledge state, scope, dates, gaps, corrections, and prerequisites; exposure is not understanding and explanations remain derived. See [Learning](learning.md). |
+| Relationships | Retrieve only relevant shared history, commitments, open loops, and sources; keep reported statements and inferences separate and do not produce a person dossier. See [Relationships](relationships.md). |
+| Media / Taste | Retrieve actual work reactions, patterns, exceptions, and dates; consumption is not preference and recommendations remain derived. See [Media / Taste](media-taste.md). |
+| Ventures / Projects | Retrieve lifecycle, current state, decisions, commitments, milestones, outcomes, adoption evidence, evolution, and unknowns; keep initiative claims distinct from Career, Learning, Relationships, Writing, and `core/`. See [Ventures / Projects](ventures.md). |
 
-For Media / Taste retrieval, read individual work reactions, supporting pattern
-pages, exceptions, and dated evidence. Consumption is not preference, and
-external metadata, copied reviews, and generated reactions are not personal
-evidence. Explain recommendations through matches and conflicts in the user's
-actual reactions; keep the recommendation derived and do not update taste or
-`core/` automatically.
-
-For Ventures / Projects retrieval, read the relevant initiative records, lifecycle
-and current-state sections, decisions, commitments, milestones, outcomes,
-dogfooding/adoption evidence, evolution, review items, and linked sources. Keep
-ideas, candidates, proposals, engagements, discussions, agreements, decisions,
-and executed commitments distinct. Treat stale current state as needing
-freshness confirmation, not as false. Route professional meaning to Career,
-knowledge state to Learning, relationship continuity to Relationships, writing
-behavior to Writing, broad preferences to `core/`, and reusable recommendations
-to `derived/` without copying the initiative record into those owners.
+For any vertical, inspect the returned page's assertion kind, status,
+provenance, freshness, and review state before treating it as current evidence.
+If the vertical procedure says the evidence is insufficient or a no-op is
+appropriate, preserve that result rather than manufacturing a claim.
 
 ## Verification and Freshness at Query Time
 

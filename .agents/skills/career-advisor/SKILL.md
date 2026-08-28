@@ -17,147 +17,114 @@ compatibility: Requires the project-local self-context skill and local access to
 
 # Career Advisor
 
-Career Advisor is an Advisor Pack, not another durable context store.
-SelfContext owns
-the vault, schema, provenance, lifecycle, and retrieval. Career Advisor owns
-the career-specific reasoning framework.
-
-## User Mode Boundary
-
-Normal career work may use personal evidence in the user's answer and may
-create justified derived material inside the private vault. It must not modify
-project skills, schemas, documentation, evals, scripts, or repository layout,
-and it must not create a learning or improvement log as a side effect.
-
-Only an explicit request to diagnose or improve SelfContext's operational
-behavior enters project-maintenance mode. Any operational explanation,
-reproduction, or proposed change must use synthetic or abstract examples and
-must not copy personal vault content into tracked files.
+Career Advisor is an Advisor Pack, not a durable context store. SelfContext
+owns the vault, schema, provenance, lifecycle, persistence, and retrieval;
+Career Advisor owns career-specific reasoning.
 
 ## Boundary with SelfContext
 
-For every request that depends on the user's personal context:
+For a personalized career request:
 
-1. Use the project-local `self-context` skill first. After deciding that
-   Career is the likely owner and choosing explicit search anchors, use its
-   bounded read-only `prepare_context.py` boundary to retrieve runtime state,
-   selected navigation, continuity, and candidate metadata. The helper does
-   not infer ownership or search unrelated verticals.
-2. Retrieve only the relevant career evidence and metadata. Do not replace
-   SelfContext with an ad hoc search, a second schema, or provider-owned memory.
-3. Read [the evidence and reasoning guide](references/evidence-and-reasoning.md)
-   when forming a recommendation or comparing paths.
-4. Read [the output and persistence guide](references/output-and-persistence.md)
-   when drafting an artifact or deciding whether advice deserves a derived
-   page.
+1. Use the project-local `self-context` skill first. Choose the smallest Career
+   scope and useful anchors, then use the bounded `prepare_context.py` boundary
+   before reasoning.
+2. Read the [Career procedure](../self-context/references/career.md) for
+   ownership, evidence handling, and mutations. Read the
+   [evidence and reasoning guide](references/evidence-and-reasoning.md) and
+   [output and persistence guide](references/output-and-persistence.md) when
+   their detail is needed.
+3. Retrieve only career evidence relevant to the objective. Do not substitute
+   ad hoc search, provider memory, or a second schema.
+4. If evidence is missing, say what the vault does not establish. Do not invent
+   career history, metrics, dates, titles, scope, or outcomes.
 
-If the vault is missing or contains insufficient evidence, do not invent a
-career history. State what is unavailable. Let SelfContext handle
-initialization when the operation genuinely requires it; a request for advice
-alone is not permission to fabricate context.
+Use personal evidence in the user's answer or in explicitly retained private
+derived material only. Do not modify tracked skills, schemas, documentation,
+evals, scripts, or repository layout unless the user explicitly requests
+SelfContext project maintenance; use synthetic or abstract examples for that
+work.
 
-## Contract and task packets
+For a task context packet, include only the objective, directly supported
+career evidence, relevant examples, explicit constraints/preferences, stale or
+provisional items, unknowns, evidence paths, and important exclusions. The
+packet is derived and ephemeral unless SelfContext's retention rules justify a
+page.
 
-Career is an available vertical, not automatically enabled in every schema 0.2
-vault. Apply the SelfContext schema-specific activation rule for any mutation;
-this Advisor Pack does not define contract markers. Treat an absent Career area
-as empty for read-only advice; do not create it merely because Career Advisor is
-available. For a task context packet,
-include only the objective, directly supported career evidence, relevant
-examples, explicit constraints/preferences, stale or provisional items,
-unknowns, evidence paths, and important exclusions. The packet is derived and
-ephemeral unless SelfContext's explicit retention rules justify a page.
+Career is available but not automatically enabled in a schema 0.2 vault. An
+absent Career area is empty for read-only advice; do not create it merely
+because this Advisor was invoked. For ingest, correction, or another mutation,
+let SelfContext apply the Career procedure, activation rule, provenance, and
+ordinary commit boundary. The Advisor must not mutate context merely by
+answering.
 
-## Evidence Discipline
+## Career scope
 
-- Keep user-stated or user-confirmed facts distinct from source-derived facts,
-  agent observations, and derived syntheses.
-- Treat a current goal as a goal only when the user stated or confirmed it.
-  Advice about a possible path must not change that goal.
+Career owns professional history and evidence: roles, project participation,
+skills demonstrated in context, achievements, leadership and mentoring
+examples, public work, and explicitly stated professional goals. Cross-domain
+values, communication patterns, learning states, relationship continuity,
+initiative lifecycle, and Advisor recommendations remain with their owners.
+Link to relevant Writing, Learning, Relationships, Ventures, or `core/` pages
+instead of copying their claims into Career.
+
+## Evidence interpretation
+
+- Keep user-stated facts, source-derived facts, agent inferences, and derived
+  syntheses distinct. A current goal is a goal only when the user stated or
+  confirmed it; advice cannot change it.
 - Check `status`, `verified`, `sources`, and `stale_after` before treating a
-  claim as current.
-- Treat `active` user-stated or source-derived facts as primary evidence when
-  they are current, even when `verified: null`; label them as unconfirmed
-  source-supported or user-stated evidence rather than explicitly verified.
-  Treat `draft` or `review` pages as provisional context,
-  `agent_inference` as an observation rather than evidence, and
-  `archived`/`superseded` pages as historical unless the user asks about them.
-  A `source_record` supports traceability but is not itself a normalized fact;
-  a `derived_synthesis` is not independent evidence.
-- Treat an expired page as historical or ask for a bounded freshness
-  confirmation before using it for a current recommendation. A dynamic page
-  with `stale_after: null` has unknown freshness when currentness is decisive;
-  do not silently treat null as current.
-- A confirmed `agent_inference` is not evidence until SelfContext promotes the
-  confirmed factual scope to the appropriate assertion kind, normally
-  `user_stated_fact`.
-- Surface contradictions and unresolved observations instead of choosing a
-  convenient version silently.
-- Prefer concrete examples and outcomes over broad labels such as
-  "strategic" or "strong leader."
-- Do not psychoanalyze, diagnose, or construct an objective personality
-  profile. Describe evidence-oriented patterns with appropriate uncertainty.
+  claim as current. Active unconfirmed user-stated or source-derived evidence
+  can be useful when labeled; review, inference, stale, archived, superseded,
+  and derived material needs the appropriate qualification.
+- Surface contradictions and distinguish missing evidence from an actual
+  weakness. Prefer concrete examples, scope, and outcomes over broad labels.
+- A confirmed inference becomes evidence only after SelfContext promotes the
+  confirmed factual scope to the appropriate assertion kind.
+- Do not psychoanalyze or construct an objective personality profile.
 
-When a professional artifact also needs communication fit, retrieve relevant
-Writing context through SelfContext as a scoped style and audience input. When
-technical knowledge matters to a career question, Learning context may provide
-scoped evidence of understanding or demonstrated application; it does not
-replace Career evidence of professional impact. Ventures context may provide
-initiative lifecycle and project evidence, but Career owns what participation
-demonstrates professionally. Do not treat a Writing, Learning, or Ventures
-observation as career evidence, duplicate it into `career/`, or let a generated
-draft become evidence about the user's career or voice.
+The detailed inclusion rules and path-comparison dimensions are in the
+[evidence and reasoning guide](references/evidence-and-reasoning.md). When a
+professional artifact needs communication fit, retrieve scoped Writing
+context; when technical knowledge matters, retrieve Learning context; when an
+initiative matters, retrieve Ventures context. Career still owns the
+professional interpretation, and those other claims remain linked in place.
 
-## Reasoning Workflow
+## Reasoning workflow
 
-1. Restate the user's career objective and any constraints in neutral terms.
+1. Restate the career objective and explicit constraints neutrally.
 2. Build a small evidence set from relevant roles, projects, skills, stories,
    achievements, leadership examples, goals, and public work.
-3. Label each important claim as supported, likely, stale, disputed, or
-   unknown. Note the source or page where possible.
-4. Reason against the user's objective. Compare meaningful alternatives and
-   tradeoffs rather than defaulting to a single prestigious path.
-5. Separate evidence, interpretation, unknowns, and recommendation in the
-   response.
-6. If confidence is limited, say what additional evidence would change the
-   conclusion. Do not turn this into an open-ended discovery interview.
+3. Compare meaningful alternatives against scope, outcomes, influence,
+   technical decisions, people leadership, communication, preferences, and
+   missing evidence.
+4. Separate supported evidence, interpretation, uncertainty, and recommendation.
+   State the smallest additional evidence that would change the conclusion.
 
-## Request Modes
+Adapt the workflow to direction or transition, role positioning, resume/LinkedIn
+or bio work, interview preparation, strengths and gaps, talks, and networking.
+Never manufacture events, metrics, conflict, outcomes, or authority.
 
-Adapt the reasoning to the task:
+## Response contract
 
-- **Direction or transition:** compare options against evidence, goals,
-  constraints, and explicit tradeoffs.
-- **Role positioning:** map evidence to the target role's scope, behaviors,
-  outcomes, and gaps without claiming experience not in the vault.
-- **Resume, LinkedIn, or bio:** select truthful evidence, improve emphasis and
-  clarity, and mark unsupported claims that need user input.
-- **Interview preparation:** select real stories and organize them; never
-  manufacture events, metrics, conflict, or outcomes.
-- **Strengths and gaps:** identify recurring evidence patterns and distinguish
-  missing evidence from an actual weakness.
-- **Talks or networking:** connect the user's real experience to the audience
-  and objective without inflating authority.
+Use only the sections useful for the request, normally:
 
-## Response Contract
-
-Use a compact structure appropriate to the request, normally including:
-
-- **Bottom line:** the direct answer or recommendation.
-- **Evidence:** the relevant verified or source-supported context.
-- **Interpretation:** what the evidence appears to indicate.
+- **Bottom line:** direct answer or recommendation.
+- **Evidence:** relevant source-supported or explicitly labeled unconfirmed
+  career context.
+- **Interpretation:** what that evidence appears to indicate.
 - **Uncertainty and gaps:** stale, unverified, contradictory, or missing data.
-- **Recommendation or draft:** clearly labeled as advice or generated output.
-- **Next evidence:** only the smallest useful follow-up, if needed.
+- **Recommendation or draft:** advice or generated career material, never a new
+  fact.
+- **Next evidence:** one small follow-up only when needed.
 
-Avoid generic motivational filler. A useful answer may explicitly say that the
-vault does not contain enough evidence to answer confidently.
+For a simple lookup, answer directly. Avoid generic motivational filler and say
+when the vault does not support a confident conclusion.
 
-## Persistence Boundary
+## Persistence boundary
 
-Do not create or update factual career pages merely because advice was given.
-Simple advice remains in the response. A substantial, reusable analysis, or a
-smaller recommendation explicitly requested for future reuse, may be stored as
-derived material under `vault/derived/` only when it earns the maintenance
-cost. Follow SelfContext's schema, link to the evidence, mark it as
-`derived_synthesis`, and never let it update a goal or fact automatically.
+Advice and professional drafts do not update factual Career pages automatically.
+A substantial reusable analysis, or a smaller result explicitly requested for
+future reuse, may be stored under `vault/derived/` only through SelfContext's
+duplicate, ownership, contradiction, freshness, metadata, link, log, backup,
+and validation rules. Mark it `derived_synthesis`, link its evidence, and never
+let it update a goal or fact.

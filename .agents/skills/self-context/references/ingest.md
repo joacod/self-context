@@ -108,157 +108,50 @@ not evidence that can promote itself into `core/`. Trace the pattern back to
 user statements or source records and preserve the appropriate assertion kind;
 keep an unresolved interpretation under review.
 
-## 3a. Writing-specific comparison
+### 3a. Apply vertical-specific procedure
 
-When the supplied material is authored writing, a revision, or an AI-assisted
-draft, apply [the Writing vertical procedure](writing.md) before changing the
-vault. Identify authorship, AI involvement, language, date, likely mode, and
-reader context. Extract local observations first, then compare each candidate
-with existing Writing context.
+When the material belongs to a vertical, read its procedure before deciding
+what to retain. The procedure owns detailed scope, evidence interpretation,
+page shapes, cross-vertical boundaries, and vertical-specific reporting.
+Ingest owns shared normalization, duplicate checks, provenance, confirmation,
+freshness, navigation, logging, and the commit boundary.
 
-Classify the impact explicitly:
+| Material | Canonical procedure |
+| --- | --- |
+| Career evidence or professional context | [Career](career.md) |
+| Knowledge state, gap, correction, or progression | [Learning](learning.md) |
+| Authored writing or communication evidence | [Writing](writing.md) |
+| Shared history, relationship, commitment, or open loop | [Relationships](relationships.md) |
+| Media reaction or taste evidence | [Media / Taste](media-taste.md) |
+| Initiative lifecycle, project decision, milestone, or outcome | [Ventures / Projects](ventures.md) |
 
-- **No meaningful update:** preserve a useful source record, but leave durable
-  Writing concepts unchanged when the source is consistent with what is already
-  known.
-- **Reinforcement:** link an independent source to the existing observation and
-  update its evidence history without creating a duplicate, auto-verifying, or
-  churning an already established evidence state.
-- **Genuine new insight:** add one scoped, reviewable observation only when the
-  pattern is materially new and strong enough to retain.
-- **Context refinement:** narrow or split a pattern by mode, audience, language,
-  or time instead of overwriting a global statement.
-- **Contradiction:** preserve both evidence sets and create or retain a review
-  item until mode, exception, weak evidence, or evolution explains the conflict.
-- **Evolution:** preserve historical evidence and represent a dated change or
-  supersession; newer evidence is not automatically better.
+Keep these decision-point guardrails visible while routing:
 
-For AI-assisted writing, analyze meaningful human edits as separate revision
-evidence. A generated draft, summary, rewrite, critique, or untouched model
-output cannot independently establish a Writing pattern. One edit is a
-candidate signal, not a permanent preference.
+- **Writing:** identify authorship, AI involvement, mode, and reader context;
+  analyze locally before comparing with the Writing profile. Generated prose is
+  not independent evidence, and a consistent source may produce no profile
+  update.
+- **Learning:** distinguish exposure, intentional learning, understanding, and
+  demonstrated application. Record a scoped qualitative state, preserve
+  corrections, and do not treat a source or explanation as competence.
+- **Relationships:** keep the subject as the user's relationship. Separate
+  direct statements, reported statements, sources, observations, and
+  inferences; retain only useful continuity and never infer sensitive
+  third-party characteristics.
+- **Media / Taste:** separate consumption and external metadata from the user's
+  reaction. Require independent meaningful evidence for inferred patterns and
+  preserve exceptions, contradictions, and dated evolution.
+- **Ventures / Projects:** keep initiative lifecycle separate from page status
+  and distinguish ideas, proposals, discussions, decisions, and commitments.
+  Preserve unknowns and route professional, learning, relationship, writing,
+  core, source, review, and derived claims to their owners.
+- **Career:** keep professional evidence and concepts in Career, distinguish
+  source-supported evidence from inference, and do not invent scope, outcomes,
+  dates, titles, or management responsibility.
 
-Include a compact Writing impact report after the operation. It should state
-existing patterns reinforced, new meaningful patterns, context refinements,
-contradictions, potential profile updates, redundant observations ignored, and
-whether the result was a profile refinement or "No meaningful update." The
-second result is successful and is not a reason to manufacture a trait.
-
-## 3b. Learning-specific comparison
-
-When the supplied material concerns what the user understands, is learning,
-does not understand, corrected, or wants explained, apply [the Learning
-vertical procedure](learning.md) before changing the vault. Analyze the evidence
-locally first, then compare it with the relevant Learning concepts, gaps,
-corrections, and review observations.
-
-- Preserve a source, exercise, project, or explanation only when it provides
-  useful evidence about the person's knowledge; do not create a resource or
-  course archive.
-- Record the smallest scoped qualitative state in the Learning page body:
-  encountered, learning, partially understood, understood, demonstrated,
-  uncertain, or outdated. These are not numeric scores or automatic confidence.
-- Treat a user-stated understanding, uncertainty, or correction as scoped user
-  context. Treat an agent interpretation of an exercise, repeated question, or
-  misconception as reviewable until the user confirms it or the evidence is
-  otherwise explicit.
-- Keep Career projects, Ventures initiative records, and Writing artifacts in
-  their owning areas and link them as evidence rather than copying their facts
-  into `learning/`.
-- Preserve prior models and dated evidence when understanding changes. A new
-  source that repeats a known state is a successful no-op, not a reason to add a
-  duplicate concept.
-
-A Learning impact report should state evidence retained, concepts or gaps
-updated, contradictions or review items, cross-vertical links, and whether the
-result was a meaningful update or "No meaningful Learning update."
-
-## 3c. Relationships-specific comparison
-
-When the supplied material concerns a person, group, shared history,
-interaction, commitment, open loop, or relationship change, apply [the
-Relationships procedure](relationships.md) before changing the vault. Keep the
-subject as the user's relationship and analyze the smallest useful evidence:
-
-- Distinguish the user's direct statement, a report of what another person
-  said, a retained message or recollection, an observable interaction, and an
-  agent interpretation.
-- Find the existing relationship page before creating a person record. Retain
-  only interactions with future contextual value; prefer a compact dated fact
-  or linked commitment over a transcript or contact list.
-- Distinguish actual promises from vague conversation. Record actor, action,
-  status, context, and evidence when known, without creating a task manager.
-- Preserve meaningful relationship evolution and contradictions as dated,
-  scoped context. Motives, closeness, reliability judgments, and third-party
-  characteristics remain reviewable observations rather than facts.
-- Do not infer sensitive characteristics about third parties. Honor explicit
-  delete, redact, archive, and retention requests and do not recreate removed
-  details from old sources.
-- Keep Career, Ventures, Writing, Learning, Media / Taste, and `core/` claims
-  in their owning areas and link them when the relationship context needs them.
-
-A Relationships impact report should state the pages or source records changed,
-shared context or commitments retained, privacy or redaction decisions,
-reviewable items, cross-vertical links, and whether the result was meaningful or
-"No meaningful Relationships update."
-
-## 3d. Media / Taste-specific comparison
-
-When the supplied material concerns a work, consumption, reaction, taste
-pattern, exception, recommendation, or taste change, apply [the Media / Taste
-procedure](media-taste.md) before changing the vault. Analyze the user's
-experience and reaction locally before comparing it with existing work and
-pattern pages:
-
-- Separate consumption state and external metadata from the user's actual
-  reaction. Finishing or starting a work does not establish liking.
-- Update an existing work page when identity and reaction scope match. Retain
-  only intentional or future-useful reactions; do not create a catalog or
-  store every play, view, article, or song.
-- A single work supports a broad pattern only when the user explicitly states
-  that preference. Otherwise require multiple independently meaningful
-  reactions for a plausible inferred pattern, keep it scoped, and preserve
-  exceptions and contradictions.
-- Represent taste change with dated evidence rather than deleting older
-  reactions. Generated reviews, summaries, recommendations, and agent
-  reactions are derived output, not personal evidence.
-- Do not infer identity, ideology, politics, religion, sexuality, health,
-  personality, or other sensitive characteristics from cultural consumption.
-- Keep Learning, Relationships, Writing, Career, and `core/` claims in their
-  owning areas and link them rather than duplicating them.
-
-A Media / Taste impact report should state works and reactions retained,
-patterns reinforced or left unchanged, exceptions or evolution, review items,
-cross-vertical links, and whether the result was meaningful or "No meaningful
-Media / Taste update."
-
-## 3e. Ventures / Projects-specific comparison
-
-When supplied material describes a meaningful initiative, project, experiment,
-opportunity, proposal, collaboration, partnership, milestone, dogfooding,
-adoption, project decision, or project-specific commitment, apply the [Ventures
-/ Projects procedure](ventures.md) before changing the vault. Route by scope,
-not by importance:
-
-- distinguish an idea from an adopted project, a candidate from an active
-  initiative, an opportunity from an engagement, and a proposal from a
-  commitment;
-- preserve the initiative's purpose, origin, lifecycle, current state, role,
-  decisions, milestones, evidence, outcomes, unknowns, and evolution in one
-  flexible venture/project record when it has future value;
-- treat a prototype, repository activity, dogfooding, feedback, interest, or
-  stated outcome only as the limited evidence it actually provides; and
-- keep Career, Learning, Relationships, Writing, Core, Sources, Review, and
-  Derived claims in their owning areas, using links rather than duplicated
-  facts.
-
-Do not create a page for every coding task, repository, meeting, passing idea,
-vague maybe, or person/company mention. Search for an existing initiative
-first, preserve provenance, and keep sensitive data and wholesale workspace
-exports out of the vault. A Ventures impact report should state the lifecycle
-and evidence retained, decisions or open loops updated, cross-vertical links,
-unknowns, freshness choices, and whether the result was meaningful or "No
-meaningful Ventures update."
+Use each procedure's required impact or no-op report. A vertical-specific
+source or observation can be retained without changing its durable profile when
+the comparison finds no meaningful update.
 
 ## 3f. Triage Attention Without Blocking Ingest
 
