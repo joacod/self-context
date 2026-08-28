@@ -7,8 +7,9 @@ import argparse
 import json
 import re
 import sys
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, FrozenSet, Iterable, List, Optional, Sequence, Tuple
 
 try:
     from vault_utils import (
@@ -97,6 +98,94 @@ def _headings(body: str) -> List[str]:
 def _body_without_headings(body: str) -> str:
     return "\n".join(
         line for line in body.splitlines() if not re.match(r"^#{1,6}\s+", line)
+    )
+
+
+@dataclass(frozen=True)
+class _IndexedRecord:
+    record: Dict[str, Any]
+    normalized_identifier: str
+    normalized_title: str
+    normalized_aliases: Tuple[str, ...]
+    field_token_lists: Dict[str, Tuple[Tuple[str, ...], ...]]
+    field_token_sets: Dict[str, FrozenSet[str]]
+
+
+@dataclass(frozen=True)
+class _SearchCorpus:
+    vault: Path
+    catalog: Optional[Dict[str, Any]]
+    records: Tuple[_IndexedRecord, ...]
+    records_by_path: Dict[str, Dict[str, Any]]
+
+
+def _index_record(record: Dict[str, Any]) -> _IndexedRecord:
+    fields = record.get("frontmatter")
+    if not isinstance(fields, dict):
+        return _IndexedRecord(record, "", "", (), {}, {})
+
+    identifier = str(fields.get("id") or "")
+    title = str(fields.get("title") or "")
+    aliases = tuple(
+        str(item)
+        for item in fields.get("aliases", [])
+        if item is not None and str(item).strip()
+    ) if isinstance(fields.get("aliases"), list) else ()
+    description = str(fields.get("description") or "")
+    tags = tuple(
+        str(item)
+        for item in fields.get("tags", [])
+        if item is not None and str(item).strip()
+    ) if isinstance(fields.get("tags"), list) else ()
+    body = str(record.get("body") or "")
+    headings = _headings(body)
+    body_without_headings = _body_without_headings(body)
+    field_values: Dict[str, List[str]] = {
+        "title_or_alias": [title] + list(aliases),
+        "description_or_tags": [description] + list(tags),
+        "headings": headings,
+        "body": [body_without_headings],
+    }
+    field_token_lists = {
+        field: tuple(tuple(normalized_tokens(value)) for value in values)
+        for field, values in field_values.items()
+    }
+    field_token_sets = {
+        field: frozenset(token for tokens in values for token in tokens)
+        for field, values in field_token_lists.items()
+    }
+    return _IndexedRecord(
+        record=record,
+        normalized_identifier=normalized_text(identifier),
+        normalized_title=normalized_text(title),
+        normalized_aliases=tuple(normalized_text(alias) for alias in aliases),
+        field_token_lists=field_token_lists,
+        field_token_sets=field_token_sets,
+    )
+
+
+def _load_vertical_catalog() -> Optional[Dict[str, Any]]:
+    try:
+        return json.loads(
+            (Path(__file__).resolve().parent.parent / "references" / "verticals.json").read_text(
+                encoding="utf-8"
+            )
+        )
+    except (OSError, ValueError, json.JSONDecodeError):
+        return None
+
+
+def _build_search_corpus(vault: Path) -> _SearchCorpus:
+    records = tuple(durable_page_records(vault))
+    records_by_path = {
+        str(record.get("path")): record for record in records if record.get("path")
+    }
+    indexed_records = tuple(_index_record(record) for record in records)
+    return _SearchCorpus(
+        vault=vault,
+        catalog=_load_vertical_catalog(),
+        records=indexed_records,
+        records_by_path=records_by_path,
     )
 
 
@@ -243,10 +332,6 @@ def _snippet(body: str, terms: Sequence[str], limit: int = 220) -> str:
     return snippet
 
 
-def _contains_exact(value: str, query: str) -> bool:
-    return normalized_text(value) == normalized_text(query)
-
-
 def _unique_tokens(tokens: Iterable[str]) -> List[str]:
     unique: List[str] = []
     seen = set()
@@ -257,13 +342,17 @@ def _unique_tokens(tokens: Iterable[str]) -> List[str]:
     return unique
 
 
-def _contains_token_phrase(value: str, phrase_tokens: Sequence[str]) -> bool:
+def _contains_token_phrase_tokens(
+    tokens: Sequence[str], phrase_tokens: Sequence[str]
+) -> bool:
     if not phrase_tokens:
         return False
-    tokens = normalized_tokens(value)
-    phrase = list(phrase_tokens)
+    phrase = tuple(phrase_tokens)
     width = len(phrase)
-    return any(tokens[offset : offset + width] == phrase for offset in range(len(tokens) - width + 1))
+    return any(
+        tuple(tokens[offset : offset + width]) == phrase
+        for offset in range(len(tokens) - width + 1)
+    )
 
 
 def _minimum_token_span(tokens: Sequence[str], terms: Sequence[str]) -> Optional[int]:
@@ -306,9 +395,12 @@ def _record_adjustment(fields: Dict[str, Any]) -> int:
 
 
 def _score_record(
-    record: Dict[str, Any], query: str, query_tokens: Sequence[str]
+    indexed: _IndexedRecord,
+    query_normalized: str,
+    query_tokens: Sequence[str],
+    phrase_tokens: Sequence[str],
 ) -> Tuple[int, List[str], Dict[str, Any]]:
-    fields = record.get("frontmatter")
+    fields = indexed.record.get("frontmatter")
     if not isinstance(fields, dict):
         return 0, [], {
             "match_type": "none",
@@ -318,44 +410,11 @@ def _score_record(
             "phrase_fields": [],
         }
 
-    identifier = str(fields.get("id") or "")
-    title = str(fields.get("title") or "")
-    aliases = [
-        str(item)
-        for item in fields.get("aliases", [])
-        if item is not None and str(item).strip()
-    ] if isinstance(fields.get("aliases"), list) else []
-    description = str(fields.get("description") or "")
-    tags = [
-        str(item)
-        for item in fields.get("tags", [])
-        if item is not None and str(item).strip()
-    ] if isinstance(fields.get("tags"), list) else []
-    body = str(record.get("body") or "")
-    headings = _headings(body)
-    body_without_headings = _body_without_headings(body)
-    phrase_tokens = normalized_tokens(query)
-
-    exact_id = _contains_exact(identifier, query)
-    exact_title = _contains_exact(title, query)
-    exact_alias = any(_contains_exact(alias, query) for alias in aliases)
-    title_phrase = _contains_token_phrase(title, phrase_tokens)
-    alias_phrase = any(_contains_token_phrase(alias, phrase_tokens) for alias in aliases)
-
-    field_values: Dict[str, List[str]] = {
-        "title_or_alias": [title] + aliases,
-        "description_or_tags": [description] + tags,
-        "headings": headings,
-        "body": [body_without_headings],
-    }
-    field_token_lists: Dict[str, List[List[str]]] = {
-        field: [normalized_tokens(value) for value in values]
-        for field, values in field_values.items()
-    }
-    field_token_sets: Dict[str, set] = {
-        field: set(token for tokens in values for token in tokens)
-        for field, values in field_token_lists.items()
-    }
+    exact_id = indexed.normalized_identifier == query_normalized
+    exact_title = indexed.normalized_title == query_normalized
+    exact_alias = query_normalized in indexed.normalized_aliases
+    field_token_lists = indexed.field_token_lists
+    field_token_sets = indexed.field_token_sets
     field_matches = {
         field: [token for token in query_tokens if token in tokens]
         for field, tokens in field_token_sets.items()
@@ -369,18 +428,32 @@ def _score_record(
         token for token in query_tokens if token in field_token_sets["title_or_alias"]
     ]
 
+    title_phrase = _contains_token_phrase_tokens(
+        field_token_lists["title_or_alias"][0], phrase_tokens
+    )
+    alias_phrase = any(
+        _contains_token_phrase_tokens(tokens, phrase_tokens)
+        for tokens in field_token_lists["title_or_alias"][1:]
+    )
     phrase_fields: List[str] = []
-    if _contains_token_phrase(title, phrase_tokens):
+    if title_phrase:
         phrase_fields.append("title")
     if alias_phrase:
         phrase_fields.append("alias")
-    if _contains_token_phrase(description, phrase_tokens) or any(
-        _contains_token_phrase(tag, phrase_tokens) for tag in tags
+    if any(
+        _contains_token_phrase_tokens(tokens, phrase_tokens)
+        for tokens in field_token_lists["description_or_tags"]
     ):
         phrase_fields.append("description_or_tags")
-    if any(_contains_token_phrase(heading, phrase_tokens) for heading in headings):
+    if any(
+        _contains_token_phrase_tokens(tokens, phrase_tokens)
+        for tokens in field_token_lists["headings"]
+    ):
         phrase_fields.append("headings")
-    if _contains_token_phrase(body_without_headings, phrase_tokens):
+    if any(
+        _contains_token_phrase_tokens(tokens, phrase_tokens)
+        for tokens in field_token_lists["body"]
+    ):
         phrase_fields.append("body")
 
     if exact_id:
@@ -483,6 +556,150 @@ def _score_record(
     return score, matched_fields, summary
 
 
+def _search_corpus(
+    corpus: _SearchCorpus,
+    query: str,
+    *,
+    limit: int,
+    vertical: Optional[str],
+    scopes: Sequence[str],
+    contextual: bool,
+    include_sources: bool,
+    include_derived: bool,
+    expand_linked_sources: bool,
+    exclude_archived: bool,
+    exclude_superseded: bool,
+    include_identity: bool,
+    compatibility: Dict[str, Any],
+) -> Dict[str, Any]:
+    raw_terms = _unique_tokens(normalized_tokens(query))
+    terms = [token for token in raw_terms if token not in STOPWORDS] or raw_terms
+    phrase_tokens = normalized_tokens(query)
+    normalized_query = normalized_text(query)
+    results: List[Dict[str, Any]] = []
+    for indexed in corpus.records:
+        record = indexed.record
+        path = str(record["path"])
+        if record.get("is_deep_report") or path.startswith("review/deep-reviews/"):
+            continue
+        fields = record.get("frontmatter")
+        if not isinstance(fields, dict):
+            continue
+        if vertical and _vertical_for_path(path, corpus.catalog) != vertical:
+            continue
+        if not _path_matches_scope(path, scopes):
+            continue
+        assertion = fields.get("assertion_kind")
+        if assertion == "source_record" and not include_sources:
+            continue
+        status = fields.get("status")
+        if status == "archived" and exclude_archived:
+            continue
+        if status == "superseded" and exclude_superseded:
+            continue
+
+        score, matched, summary = _score_record(
+            indexed, normalized_query, terms, phrase_tokens
+        )
+        if score <= 0:
+            continue
+        if contextual and len(terms) > 1 and summary["query_term_coverage"] < 0.5:
+            continue
+        score += _record_adjustment(fields)
+        results.append(
+            _render_result(
+                record,
+                corpus.catalog,
+                terms,
+                matched,
+                summary,
+                score,
+                include_identity=include_identity,
+            )
+        )
+    results.sort(key=lambda item: (-int(item["rank_score"]), str(item["path"])))
+    result_limit = max(0, limit)
+    primary_limit = result_limit
+    if expand_linked_sources and result_limit:
+        # Reserve at most three result slots for provenance without allowing
+        # linked sources to expand an otherwise bounded retrieval.
+        primary_limit = max(1, result_limit - min(3, result_limit))
+    if contextual and not include_derived:
+        canonical_present = any(
+            (corpus.records_by_path.get(str(item.get("path")), {}).get("frontmatter") or {}).get(
+                "type"
+            )
+            != "synthesis"
+            for item in results
+        )
+        if canonical_present:
+            results = [
+                item
+                for item in results
+                if (
+                    corpus.records_by_path.get(str(item.get("path")), {}).get("frontmatter")
+                    or {}
+                ).get("type")
+                != "synthesis"
+            ]
+    results = results[:primary_limit]
+
+    if expand_linked_sources:
+        seen_paths = {str(item.get("path")) for item in results}
+        linked_budget = min(3, max(0, result_limit - len(results)))
+        linked_results: List[Dict[str, Any]] = []
+        linked_summary = {
+            "match_type": "linked_source",
+            "query_term_coverage": 0.0,
+            "matched_term_count": 0,
+            "query_term_count": len(terms),
+            "phrase_fields": [],
+        }
+        for item in list(results):
+            source_paths = _linked_source_paths(
+                corpus.records_by_path.get(str(item.get("path")), {}),
+                corpus.vault,
+                corpus.records_by_path,
+            )
+            for source_path in source_paths:
+                if len(linked_results) >= linked_budget:
+                    break
+                if source_path in seen_paths:
+                    continue
+                source_record = corpus.records_by_path.get(source_path)
+                if source_record is None:
+                    continue
+                linked_results.append(
+                    _render_result(
+                        source_record,
+                        corpus.catalog,
+                        terms,
+                        [],
+                        linked_summary,
+                        -1,
+                        linked_from=str(item.get("path")),
+                        include_identity=include_identity,
+                    )
+                )
+                seen_paths.add(source_path)
+            if len(linked_results) >= linked_budget:
+                break
+        results.extend(linked_results)
+
+    return {
+        "query": query,
+        "limit": limit,
+        "scope": list(scopes),
+        "vertical": vertical,
+        "contextual": contextual,
+        "include_derived": include_derived,
+        "expand_linked_sources": expand_linked_sources,
+        "results": results,
+        "findings": [],
+        "runtime_compatibility": compatibility,
+    }
+
+
 def search_vault(
     vault: Path,
     query: str,
@@ -534,131 +751,22 @@ def search_vault(
             "findings": [str(compatibility.get("message") or "vault is not current")],
             "runtime_compatibility": compatibility,
         }
-    try:
-        catalog = json.loads(
-            (Path(__file__).resolve().parent.parent / "references" / "verticals.json").read_text(encoding="utf-8")
-        )
-    except (OSError, ValueError, json.JSONDecodeError):
-        catalog = None
-
-    raw_terms = _unique_tokens(normalized_tokens(query))
-    terms = [token for token in raw_terms if token not in STOPWORDS] or raw_terms
-    records = durable_page_records(vault)
-    records_by_path = {
-        str(record.get("path")): record for record in records if record.get("path")
-    }
-    results: List[Dict[str, Any]] = []
-    for record in records:
-        path = str(record["path"])
-        if record.get("is_deep_report") or path.startswith("review/deep-reviews/"):
-            continue
-        fields = record.get("frontmatter")
-        if not isinstance(fields, dict):
-            continue
-        if vertical and _vertical_for_path(path, catalog) != vertical:
-            continue
-        if not _path_matches_scope(path, scopes):
-            continue
-        assertion = fields.get("assertion_kind")
-        if assertion == "source_record" and not include_sources:
-            continue
-        status = fields.get("status")
-        if status == "archived" and exclude_archived:
-            continue
-        if status == "superseded" and exclude_superseded:
-            continue
-
-        score, matched, summary = _score_record(record, query, terms)
-        if score <= 0:
-            continue
-        if contextual and len(terms) > 1 and summary["query_term_coverage"] < 0.5:
-            continue
-        score += _record_adjustment(fields)
-        results.append(
-            _render_result(
-                record,
-                catalog,
-                terms,
-                matched,
-                summary,
-                score,
-                include_identity=include_identity,
-            )
-        )
-    results.sort(key=lambda item: (-int(item["rank_score"]), str(item["path"])))
-    result_limit = max(0, limit)
-    primary_limit = result_limit
-    if expand_linked_sources and result_limit:
-        # Reserve at most three result slots for provenance without allowing
-        # linked sources to expand an otherwise bounded retrieval.
-        primary_limit = max(1, result_limit - min(3, result_limit))
-    if contextual and not include_derived:
-        canonical_present = any(
-            (records_by_path.get(str(item.get("path")), {}).get("frontmatter") or {}).get("type")
-            != "synthesis"
-            for item in results
-        )
-        if canonical_present:
-            results = [
-                item
-                for item in results
-                if (records_by_path.get(str(item.get("path")), {}).get("frontmatter") or {}).get("type")
-                != "synthesis"
-            ]
-    results = results[:primary_limit]
-
-    if expand_linked_sources:
-        seen_paths = {str(item.get("path")) for item in results}
-        linked_budget = min(3, max(0, result_limit - len(results)))
-        linked_results: List[Dict[str, Any]] = []
-        linked_summary = {
-            "match_type": "linked_source",
-            "query_term_coverage": 0.0,
-            "matched_term_count": 0,
-            "query_term_count": len(terms),
-            "phrase_fields": [],
-        }
-        for item in list(results):
-            source_paths = _linked_source_paths(
-                records_by_path.get(str(item.get("path")), {}), vault, records_by_path
-            )
-            for source_path in source_paths:
-                if len(linked_results) >= linked_budget:
-                    break
-                if source_path in seen_paths:
-                    continue
-                source_record = records_by_path.get(source_path)
-                if source_record is None:
-                    continue
-                linked_results.append(
-                    _render_result(
-                        source_record,
-                        catalog,
-                        terms,
-                        [],
-                        linked_summary,
-                        -1,
-                        linked_from=str(item.get("path")),
-                        include_identity=include_identity,
-                    )
-                )
-                seen_paths.add(source_path)
-            if len(linked_results) >= linked_budget:
-                break
-        results.extend(linked_results)
-
-    return {
-        "query": query,
-        "limit": limit,
-        "scope": scopes,
-        "vertical": vertical,
-        "contextual": contextual,
-        "include_derived": include_derived,
-        "expand_linked_sources": expand_linked_sources,
-        "results": results,
-        "findings": [],
-        "runtime_compatibility": compatibility,
-    }
+    corpus = _build_search_corpus(vault)
+    return _search_corpus(
+        corpus,
+        query,
+        limit=limit,
+        vertical=vertical,
+        scopes=scopes,
+        contextual=contextual,
+        include_sources=include_sources,
+        include_derived=include_derived,
+        expand_linked_sources=expand_linked_sources,
+        exclude_archived=exclude_archived,
+        exclude_superseded=exclude_superseded,
+        include_identity=include_identity,
+        compatibility=compatibility,
+    )
 
 
 def main(argv: Optional[List[str]] = None) -> int:

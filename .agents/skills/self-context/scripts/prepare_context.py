@@ -631,12 +631,14 @@ def prepare_context(
         # expansion.  The preparation packet applies the caller's smaller
         # linked-source cap after composition.
         search_limit += DEFAULT_LINKED_SOURCE_LIMIT
+    corpus = search_vault._build_search_corpus(root)
     for anchor_number, anchor in enumerate(search_anchors):
-        report = search_vault.search_vault(
-            root,
+        report = search_vault._search_corpus(
+            corpus,
             anchor,
             limit=search_limit,
-            scope=scopes,
+            vertical=None,
+            scopes=scopes,
             contextual=contextual,
             include_sources=include_sources,
             include_derived=include_derived,
@@ -644,6 +646,7 @@ def prepare_context(
             exclude_archived=exclude_archived,
             exclude_superseded=exclude_superseded,
             include_identity=True,
+            compatibility=runtime,
         )
         reports.append((anchor_number, anchor, report))
         for message in report.get("findings", []) or []:

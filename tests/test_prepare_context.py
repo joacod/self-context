@@ -6,6 +6,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / ".agents/skills/self-context/scripts"
@@ -15,6 +16,7 @@ for import_path in (SCRIPTS, TESTS):
         sys.path.insert(0, str(import_path))
 
 import prepare_context  # type: ignore  # noqa: E402
+import search_vault  # type: ignore  # noqa: E402
 from synthetic_vault import (  # type: ignore  # noqa: E402
     SENSITIVE_BODY_MARKER,
     build_synthetic_vault,
@@ -234,6 +236,78 @@ class PrepareContextTests(unittest.TestCase):
             self.assertEqual(by_alias["matches"][0]["match_type"], "exact_alias")
             self.assertEqual(by_alias["matches"][0]["path"], "core/stable-record.md")
             self.assertEqual(by_alias["matches"][0]["id"], "stable-record-42")
+
+    def test_multi_anchor_search_reuses_one_corpus_and_preserves_merged_results(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = build_synthetic_vault(Path(temporary))
+            anchors = ["Harbor Launch", "harbor delivery", "launch example"]
+            search_limit = 7
+            reports = [
+                (
+                    number,
+                    anchor,
+                    search_vault.search_vault(
+                        vault,
+                        anchor,
+                        limit=search_limit,
+                        scope=["career"],
+                        expand_linked_sources=True,
+                        include_identity=True,
+                    ),
+                )
+                for number, anchor in enumerate(anchors)
+            ]
+            expected_matches, expected_linked = prepare_context._merge_search_results(
+                reports,
+                result_limit=4,
+                linked_source_limit=2,
+            )
+
+            with mock.patch.object(
+                search_vault,
+                "durable_page_records",
+                wraps=search_vault.durable_page_records,
+            ) as load_records:
+                packet = prepare_context.prepare_context(
+                    vault,
+                    scope=["career"],
+                    anchors=anchors,
+                    result_limit=4,
+                    linked_source_limit=2,
+                    expand_linked_sources=True,
+                )
+
+            self.assertEqual(load_records.call_count, 1)
+            self.assertEqual(packet["matches"], expected_matches)
+            self.assertEqual(packet["linked_sources"], expected_linked)
+
+    def test_separate_preparations_rebuild_current_filesystem_corpus(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = build_synthetic_vault(Path(temporary))
+            first = prepare_context.prepare_context(
+                vault,
+                scope=["career"],
+                anchors=["Harbor Launch"],
+                result_limit=1,
+            )
+            self.assertEqual(first["matches"][0]["path"], "career/harbor-launch.md")
+
+            write_page(
+                vault,
+                "career/harbor-launch.md",
+                title="Fresh Launch Anchor",
+                description="A newly written fictional retrieval fixture.",
+                body="Fresh launch anchor content.\n",
+            )
+            second = prepare_context.prepare_context(
+                vault,
+                scope=["career"],
+                anchors=["Fresh Launch Anchor"],
+                result_limit=1,
+            )
+
+            self.assertEqual(second["matches"][0]["path"], "career/harbor-launch.md")
+            self.assertEqual(second["matches"][0]["title"], "Fresh Launch Anchor")
 
     def test_result_and_linked_source_caps_are_applied_after_composition(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
