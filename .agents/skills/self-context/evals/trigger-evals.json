@@ -658,5 +658,13 @@
   {
     "query": "Use a generic lexical search over a fictional documentation repository; I do not want personal context or SelfContext reasoning.",
     "should_trigger": false
+  },
+  {
+    "query": "--debug-mode what does my Context Vault say about John Doe's synthetic project decision?",
+    "should_trigger": true
+  },
+  {
+    "query": "--debug-mode checkpoint this synthetic discussion and keep only its explicit durable outcome.",
+    "should_trigger": true
   }
 ]

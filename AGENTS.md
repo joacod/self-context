@@ -50,6 +50,10 @@ diagnose, change, improve, evaluate, or redesign SelfContext's operational
 behavior. If the user specifically asks about an operational issue, explain it
 separately from their personal answer and use synthetic or abstract examples.
 
+An explicit prompt prefix `--debug-mode ` is only a temporary diagnostic
+overlay over one normal operation, not a third operating mode; its
+allowlisted report stays outside `vault/` and `backups/`.
+
 ## Future Architecture Tests
 
 For future SelfContext changes, ask:

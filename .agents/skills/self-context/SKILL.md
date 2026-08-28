@@ -85,6 +85,25 @@ change, improve, evaluate, or redesign SelfContext's operational behavior.
 Explain operational issues separately and use synthetic or abstract examples;
 never copy personal vault facts into tracked operational files.
 
+## Optional developer diagnostic overlay
+
+Recognize the exact raw prefix `--debug-mode ` only when it begins the
+prompt. Start the temporary diagnostic session before operation selection,
+remove that prefix and its separating space, and execute the remaining request
+through the normal SelfContext route. This is an explicit overlay, not a third
+operating mode.
+
+Read [Developer Diagnostic Overlay](references/debug-diagnostics.md) before
+using it. Start the dependency-free helper before vault orientation, route
+known SelfContext scripts through its fixed component mapping when practical,
+and append visible failures or retries only with its closed enums and numeric
+or boolean fields. Finish with a safe complete or incomplete status and tell
+the user the report location separately. Never forward or record the original
+prompt, ingest the report, or treat it as personal context. Do not read the
+report during ordinary use; read it only for an explicit project-maintenance
+diagnosis. The overlay captures only observable SelfContext execution and
+harness/tool failures; do not promise hidden provider behavior.
+
 ## Latest-first runtime gate
 
 For ordinary Query, Ingest, Checkpoint, and advisor orientation, choose the

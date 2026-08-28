@@ -1804,6 +1804,41 @@
         "No log mutation, cache, database, or duplicate recent-pages artifact is created."
       ],
       "files": []
+    },
+    {
+      "id": 159,
+      "prompt": "--debug-mode what does my context say about John Doe's synthetic Harbor CLI decision?",
+      "expected_output": "The exact developer prefix starts a temporary safe diagnostic overlay, is removed before Query routing, and the report contains no prompt or vault content.",
+      "expectations": [
+        "The exact prefix is recognized only at the beginning of the raw prompt.",
+        "The prefix and the remaining prompt are not forwarded to or recorded by the diagnostic helper.",
+        "The remaining request follows the ordinary bounded Query procedure.",
+        "The report contains only documented safe operational metadata and the report location is returned separately."
+      ],
+      "files": []
+    },
+    {
+      "id": 160,
+      "prompt": "--debug-mode checkpoint this synthetic John Doe discussion and keep only its explicit durable outcome.",
+      "expected_output": "The exact developer prefix enables diagnostics while Checkpoint keeps its ordinary candidate-routing and persistence behavior.",
+      "expectations": [
+        "The prefix is removed before Checkpoint candidate inspection and semantic processing.",
+        "Checkpoint does not store the prompt, transcript, or vault content in the diagnostic report.",
+        "Normal no-op, review, or persistence behavior remains unchanged.",
+        "The final report uses a fixed complete or incomplete status."
+      ],
+      "files": []
+    },
+    {
+      "id": 161,
+      "prompt": "Help John Doe compare the synthetic Harbor CLI options --debug-mode",
+      "expected_output": "The altered or embedded spelling is not a debug prefix; the ordinary SelfContext route is used without creating diagnostics.",
+      "expectations": [
+        "A prefix that does not begin the raw prompt does not activate diagnostics.",
+        "No diagnostic report is created for the ordinary request.",
+        "The request is not changed merely because the text contains the debug token."
+      ],
+      "files": []
     }
   ]
 }
