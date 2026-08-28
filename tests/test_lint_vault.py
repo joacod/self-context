@@ -450,6 +450,60 @@ class LintVaultTests(unittest.TestCase):
                 )
             )
 
+    def test_deep_lint_reuses_records_for_catalog_sync(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.make_vault(Path(temporary), schema="0.1")
+            (vault / "core" / "concept.md").write_text(
+                PAGE.format(slug="concept", title="Synthetic Concept", alias="concept alias"),
+                encoding="utf-8",
+            )
+            sys.path.insert(0, str(SCRIPTS))
+            import lint_vault
+            import sync_indexes
+
+            with mock.patch.object(
+                lint_vault,
+                "durable_page_records",
+                wraps=lint_vault.durable_page_records,
+            ) as records, mock.patch.object(
+                sync_indexes,
+                "durable_page_records",
+                wraps=sync_indexes.durable_page_records,
+            ) as sync_records:
+                report = lint_vault.deep_lint_vault(vault, date.date(2026, 8, 12))
+
+            self.assertTrue(report["pages"])
+            self.assertEqual(records.call_count, 1)
+            sync_records.assert_not_called()
+
+    def test_deep_lint_reuses_page_text_for_link_processing(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.make_vault(Path(temporary), schema="0.1")
+            page = vault / "core" / "concept.md"
+            page.write_text(
+                PAGE.format(slug="concept", title="Synthetic Concept", alias="concept alias"),
+                encoding="utf-8",
+            )
+            sys.path.insert(0, str(SCRIPTS))
+            import lint_vault
+
+            original_read = lint_vault.safe_read_text
+            page_reads = []
+
+            def track_read(path: Path):
+                if path == page:
+                    page_reads.append(path)
+                return original_read(path)
+
+            with mock.patch.object(
+                lint_vault, "_ordinary_findings", return_value=[]
+            ), mock.patch.object(
+                lint_vault, "safe_read_text", side_effect=track_read
+            ):
+                lint_vault.deep_lint_vault(vault, date.date(2026, 8, 12))
+
+            self.assertEqual(len(page_reads), 1)
+
     def test_json_omits_page_bodies_and_snapshot_is_deterministic(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             vault = self.make_vault(Path(temporary), schema="0.1")

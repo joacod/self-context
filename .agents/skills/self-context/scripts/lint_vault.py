@@ -809,6 +809,11 @@ def _deep_findings(
         findings.append(_finding("error", "vertical-catalog", f"vertical catalog cannot be loaded: {error}"))
 
     all_records = durable_page_records(root)
+    page_text_by_path = {
+        str(record["path"]): record["text"]
+        for record in all_records
+        if isinstance(record.get("text"), str)
+    }
     custom_records = [record for record in all_records if _is_custom_top_level(root / str(record["path"]), root)]
     for record in custom_records:
         findings.append(_finding("info", "custom-area", "unrecognized custom top-level area preserved", str(record["path"])))
@@ -919,7 +924,11 @@ def _deep_findings(
         if path.name == "index.md" and not _is_custom_top_level(path, root)
     }
     for path in canonical_markdown_paths:
-        text, error = safe_read_text(path)
+        label = relative_label(path, root)
+        text = page_text_by_path.get(label)
+        error = None
+        if text is None:
+            text, error = safe_read_text(path)
         if error or text is None:
             continue
         for link in markdown_link_records(path, root, text):
@@ -1018,7 +1027,7 @@ def _deep_findings(
             if target is None or target not in managed_labels:
                 findings.append(_finding("error", "dead-catalog-entry", f"dead catalog entry: {entry['path']}", label))
 
-    sync_result = sync_indexes.synchronize(root, write=False)
+    sync_result = sync_indexes.synchronize(root, write=False, records=all_records)
     for item in sync_result.get("findings", []):
         classification = item.get("classification")
         if classification in {"catalog-sync", "catalog-missing"}:

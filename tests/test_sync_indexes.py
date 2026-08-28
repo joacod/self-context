@@ -81,6 +81,25 @@ class SyncIndexesTests(unittest.TestCase):
             check = self.run_sync(vault, "--check", "--format", "json")
             self.assertEqual(check.returncode, 0, check.stdout + check.stderr)
 
+    def test_synchronization_builds_durable_records_once(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.make_vault(Path(temporary))
+            (vault / "core" / "one.md").write_text(
+                PAGE.format(title="Synthetic One", description="First synthetic page."), encoding="utf-8"
+            )
+            sys.path.insert(0, str(SCRIPTS))
+            import sync_indexes
+
+            with mock.patch.object(
+                sync_indexes,
+                "durable_page_records",
+                wraps=sync_indexes.durable_page_records,
+            ) as records:
+                report = sync_indexes.synchronize(vault, write=False)
+
+            self.assertEqual(records.call_count, 1)
+            self.assertEqual(report["indexes"], sorted(report["indexes"]))
+
     def test_check_detects_drift_without_writing(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             vault = self.make_vault(Path(temporary))
