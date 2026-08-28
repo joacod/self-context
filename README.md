@@ -2,57 +2,43 @@
 
 > Think with context you own.
 
-Meaningful AI conversations repeatedly start from zero even though your
-projects, decisions, goals, constraints, and previous thinking already have
-history. SelfContext helps you **continue thinking instead of starting over**:
-it keeps durable context worth carrying forward in portable Markdown you own
-and lets the AI tool or harness you already use reason from the relevant parts.
+SelfContext gives an existing AI tool a local-first context layer: project-local
+Agent Skills plus a portable Markdown Context Vault you own. It carries useful
+goals, decisions, projects, preferences, and evidence into future conversations
+so you can continue thinking instead of starting over.
 
-The technical thesis is simple: **context has a lifecycle.** A conversation is
-ephemeral by default. Reasoning is not automatically memory. Preserve what
-will make a future useful conversation better; do not record everything by
-default. Durable updates remain inspectable and user-correctable.
+Use it if your AI tool can load project-local Agent Skills and you want to:
 
-SelfContext is a context format and lifecycle, not a standalone chatbot, AI
-harness, or provider-owned memory service. It provides project-local skills and
-a local Markdown Context Vault; the existing AI harness and model remain the
-execution layer. Its operational loop is:
+- bring durable context across sessions and tools;
+- ask for answers, comparisons, and decisions grounded in relevant context; and
+- choose what is worth keeping instead of archiving every conversation.
 
-```text
-durable context
-→ targeted retrieval
-→ contextual reasoning
-→ ephemeral exploration
-→ optional checkpoint
-→ smallest durable update
-```
-
-The current foundation supports natural-language ingest, targeted retrieval,
-query, contextual thinking, checkpoint, targeted review, structural validation,
-and vault maintenance. Checkpoint inspects a conversation for the smallest
-durable changes without storing a transcript. These are horizontal workflows
-over existing context, not a separate assistant, runtime, storage system, or
-replacement harness.
-
-The core vault lifecycle and focused context areas are implemented.
-Future work is tracked as experiments in the [Roadmap](docs/ROADMAP.md), not
-promises.
+Your AI tool and model remain the execution layer. SelfContext is not a
+standalone chatbot, AI harness, hosted memory service, or transcript archive.
 
 ## Quick Start
 
-SelfContext works with an AI tool that can load project-local Agent Skills.
-The repository's `.agents/skills/` directory is the integration point. No server
-or dependency installation is needed for normal use.
+Normal use needs no server or dependency installation.
 
 ```bash
 git clone https://github.com/joacod/self-context.git
 cd self-context
 ```
 
-Open the repository root in your AI tool and use natural language:
+Open the repository root in an AI tool that loads project-local Agent Skills.
+Start with a source or fact that will be useful later:
 
 ```text
 ingest my resume into SelfContext
+```
+
+The skill initializes a missing `vault/` when an operation needs it. If you
+already have a vault, place it at `vault/`. The result is inspectable as
+ordinary Markdown; no custom CLI is required.
+
+Then try:
+
+```text
 what does my context say about X?
 help me think through X using my context
 compare these options against my current goals
@@ -63,102 +49,40 @@ show me the context behind that recommendation
 review my context for stale or conflicting information
 ```
 
-When an operation needs it, a missing `vault/` is initialized automatically,
-and you can inspect the result as ordinary Markdown. If you already have a
-vault, place it at `vault/`; the skill will orient itself from the vault's own
-files. No custom CLI is required.
+## The core idea
 
-## Update an Existing Vault
-
-When you update this repository, pull the latest changes and ask your AI tool:
-
-```bash
-git pull
-```
+Context has a lifecycle:
 
 ```text
-upgrade vault latest
+durable context
+→ targeted retrieval
+→ contextual reasoning
+→ ephemeral exploration
+→ optional checkpoint
+→ smallest durable update
 ```
 
-`upgrade vault latest` is the normal user-facing path for bringing an existing
-vault fully up to date. It checks the latest schema and contracts, delegates
-schema migration and other applicable bounded maintenance to their owning
-procedures, synchronizes managed controls, and validates the result. Existing
-evidence and history are preserved; ambiguous decisions are left for review.
-If your vault is already current, nothing is changed. You do not need to choose
-or run the underlying migration and maintenance procedures for a normal upgrade.
+Conversations and generated reasoning are ephemeral by default. Query and
+contextual thinking are read-only by default. A checkpoint inspects a
+conversation and routes only durable outcomes through normal ingest, query
+persistence, or review; it can leave the vault unchanged.
 
-## How It Works
+## What it supports
 
-```text
-existing AI harness/model
- |
- v
-SelfContext skills
- |
- v
-local Markdown Context Vault
-(Markdown + YAML frontmatter + standard links)
-```
-
-- The vault is the durable source of truth. You can inspect, edit, copy, and
-  back it up independently. Normal orientation uses a bounded recent operation
-  slice and only the relevant owner indexes; older history remains in the
-  complete `log.md` and is retrieved explicitly when needed.
-- The existing AI harness provides the model and execution. SelfContext
-  provides workflows for ingest, query, review, lint, advice, and maintenance.
-- User-stated facts, source-derived facts, agent inferences, and derived
-  analyses remain distinguishable.
-
-### Optional source retrieval
-
-When source material lives outside the vault, SelfContext can use retrieval
-capabilities already available in the selected AI harness—such as web fetching,
-browser tools, repository access, document parsers, or MCP tools—to supply
-material to the normal ingest workflow. These capabilities are optional and
-disposable, not part of SelfContext's durable architecture. The Markdown vault
-remains the canonical context store.
-
-## Thinking with Context
-
-SelfContext retrieves relevant existing context to support brainstorming,
-decisions, comparisons, and challenges across areas such as Career, Learning,
-Writing, Relationships, Media / Taste, and Ventures / Projects. This is a
-Query mode, not a new area. Conversations remain ephemeral by default; an
-explicit checkpoint can preserve only a durable outcome when it earns the
-maintenance cost.
-
-Query/contextual thinking is read-only by default. It does not update pages,
-logs, indexes, backups, metadata, or generated artifacts. When requested, a
-compact context receipt can explain scope, evidence coverage, freshness,
-uncertainty, assertion kind, and persistence without exposing private
-chain-of-thought.
-
-## What It Supports
-
-- **Portable storage:** ordinary Markdown, YAML frontmatter, and standard
-  relative links.
-- **Natural-language workflows:** ingest, targeted retrieval, contextual
-  thinking, decision support, checkpoint, targeted review, structural
-  validation, and keeping an existing vault current.
-- **Trustworthy context:** provenance, freshness, unresolved items,
-  contradictions, and explicit confirmation for important inferences.
-
-## Explicit Non-Goals
-
-The current non-goals are defined in the
-[Vision](docs/VISION.md#explicit-non-goals). They include no standalone
-chatbot, AI harness, hosted service, transcript archive, automatic recorder, or
-Brainstorming vertical. These boundaries keep the product focused on durable
-context and the existing harness boundary.
+- **Ingest:** add supplied facts, documents, corrections, and source-backed
+  context while preserving ownership and provenance.
+- **Query and contextual thinking:** retrieve relevant context for lookup,
+  brainstorming, comparisons, tradeoffs, and decisions.
+- **Checkpoint:** save only a durable result from a conversation, not a
+  transcript.
+- **Review and validation:** find stale, unresolved, or conflicting context and
+  check vault structure.
+- **Portable context:** keep Markdown, YAML frontmatter, and standard links
+  readable outside SelfContext.
 
 ### Context Areas
 
-SelfContext organizes durable context into focused areas such as Career,
-Learning, Writing, Relationships, Media / Taste, and Ventures / Projects. It
-uses the areas relevant to your context as needed.
-
-| Vertical | Vault area | Focus |
+| Area | Vault path | Focus |
 | --- | --- | --- |
 | Career | `career/` | Career evidence and concepts |
 | Learning | `learning/` | Knowledge states, gaps, corrections, and progression |
@@ -167,41 +91,57 @@ uses the areas relevant to your context as needed.
 | Media / Taste | `media/` | Reactions to cultural works and evolving taste |
 | Ventures / Projects | `ventures/` | Initiative lifecycle, decisions, commitments, evidence, and outcomes |
 
-- **Obsidian:** use `vault/` as an Obsidian vault if you want a visual editor.
-  Obsidian is optional.
+Areas are optional and created only when relevant durable context needs them.
 
-## Privacy and Portability
+## Your data
 
-SelfContext is local-first: `vault/` is local and Git-ignored. Never commit it
-or force-add files from it.
-- The canonical format remains useful without SelfContext, a particular model,
-  AI tool, search implementation, or Obsidian.
-- Git ignore helps prevent accidental commits, but it does not prevent a model
-  or provider from seeing information you give its tool.
-- No hosted service, database, embeddings, telemetry, background service, or
-  custom runtime is required.
+- `vault/` is the durable source of truth and is Git-ignored. `backups/` is
+  private operational state and is also ignored. Never commit or force-add
+  either directory.
+- You can inspect, edit, copy, or back up the vault independently. Obsidian is
+  optional.
+- Git ignore helps prevent accidental commits; it does not prevent a model or
+  provider from seeing information you give its tool.
+
+## Updating an existing vault
+
+Pull the latest skill and documentation:
+
+```bash
+git pull
+```
+
+Then ask your AI tool:
+
+```text
+upgrade vault latest
+```
+
+This is the normal path for bringing an existing vault up to date. It preserves
+evidence and history, leaves ambiguous meaning for review, and changes nothing
+when the vault is already current. See the
+[upgrade procedure](.agents/skills/self-context/references/upgrade.md) for the
+full lifecycle.
 
 ## Documentation
 
 - [Vision](docs/VISION.md): the problem, thesis, and design commitments.
 - [Architecture](docs/ARCHITECTURE.md): system boundaries, lifecycle, and vault
   structure.
+- [SelfContext skill](.agents/skills/self-context/SKILL.md): the full operating
+  contract and natural-language routing.
+- [Workflow references](.agents/skills/self-context/references/): detailed
+  ingest, query, checkpoint, migration, and maintenance procedures.
 - [Roadmap](docs/ROADMAP.md): the implemented foundation and future experiments.
-
-For repository rules and skill changes, see [Repository guidance](AGENTS.md) and
-[Skill maintenance](docs/SELF_CONTEXT_SKILL_MAINTENANCE.md).
 
 ## Development
 
-From the repository root, run the canonical dependency-free validation:
+Run the dependency-free repository validation from the repository root:
 
 ```bash
 python3 scripts/validate_repo.py
 ```
 
-For operational procedures, see the
-[upgrade procedure](.agents/skills/self-context/references/upgrade.md),
-[migration procedure](.agents/skills/self-context/references/migration.md), and
-[deep-maintenance procedure](.agents/skills/self-context/references/deep-maintenance.md).
+For skill changes, see [Skill maintenance](docs/SELF_CONTEXT_SKILL_MAINTENANCE.md).
 
 Licensed under the [MIT License](LICENSE).
