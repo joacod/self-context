@@ -31,44 +31,21 @@ recent continuity, and candidate metadata, then inspect:
 - important pages without a source or user verification;
 - new changes that were not linked from affected indexes.
 
-For Writing, also inspect whether an observation is scoped to an evidenced mode
-or period, whether generated material has been kept out of primary evidence,
-whether human revision signals are supported by meaningful deltas, and whether
-beliefs or career facts have been copied into the Writing vertical. The linter
-cannot decide these semantic questions; keep them visible for human review.
+For vertical-specific semantic review, read the owning procedure before
+interpreting a finding. The procedures own these boundaries:
 
-For Learning, inspect whether a page describes the person’s knowledge rather
-than merely a resource, whether its qualitative state is scoped and supported,
-whether exposure has been kept separate from understanding, and whether gaps,
-misconceptions, corrections, and prerequisites retain dated evidence. Check
-that Career projects and Writing artifacts are linked rather than duplicated,
-and that generated explanations remain derived. The linter cannot decide
-whether a person understands a concept; keep that judgment evidence-backed and
-reviewable.
+| Vertical | Review focus |
+| --- | --- |
+| Writing | Scope observations to evidenced modes and periods; keep generated material out of primary evidence and keep beliefs/career facts in their owners. See [Writing](writing.md). |
+| Learning | Keep knowledge claims about the person, not resources; scope states, gaps, corrections, and prerequisites to evidence. See [Learning](learning.md). |
+| Relationships | Keep pages about the user's relationship; label reported statements and sources, distinguish commitments from vague tasks, and avoid judgments or sensitive third-party inference. See [Relationships](relationships.md). |
+| Media / Taste | Keep work pages about actual reactions; require meaningful independent evidence for patterns and preserve exceptions, dates, and generated-artifact boundaries. See [Media / Taste](media-taste.md). |
+| Ventures / Projects | Keep initiative lifecycle separate from page status; evidence milestones, outcomes, dogfooding, and adoption, and keep recommendations derived. See [Ventures / Projects](ventures.md). |
+| Career | Keep professional scope, impact, leadership, and goals evidence-backed; distinguish missing evidence from a weakness and leave unsupported claims unresolved. See [Career](career.md). |
 
-For Relationships, inspect whether each page is about the user's relationship
-rather than an unrelated third-party dossier, whether reported statements and
-sources are labeled, whether commitments are real rather than vague tasks, and
-whether behavioral observations avoid unsupported judgments or sensitive
-inferences. Check deletion, redaction, stale threads, contradictions, and links
-to Career or other owning verticals.
-
-For Media / Taste, inspect whether work pages preserve the user's actual
-reaction rather than consumption or external metadata, whether inferred
-patterns have sufficient independent evidence, and whether exceptions, dates,
-contradictions, and generated-artifact boundaries remain visible. Check that
-recommendations stay derived and that taste pages do not infer sensitive
-identity, ideology, health, or personality.
-
-For Ventures / Projects, inspect whether records represent meaningful
-initiative continuity rather than tasks, repositories, meetings, or generic
-business notes. Check that idea/candidate/proposal/engagement/commitment states
-remain distinct; lifecycle is not overloaded into shared page status; current
-claims have appropriate freshness; milestones and outcomes remain evidenced;
-dogfooding is not called external adoption; and recommendations stay derived.
-Check project-specific collaborator context against Relationships ownership,
-professional relevance against Career, knowledge claims against Learning, and
-sensitive or unsupported business/third-party inferences for review or refusal.
+The linter cannot decide these semantic questions. Keep ownership,
+provenance, uncertainty, and human review visible rather than resolving them
+silently.
 
 For a broad semantic review, sample recent meaningful ingests from `log.md` and
 check category coverage: explicit context useful across domains should not be

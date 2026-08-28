@@ -17,154 +17,130 @@ compatibility: Requires the project-local self-context skill for personalized
 
 Writing Advisor is an Advisor Pack, not a durable context store or a style
 imitation engine. SelfContext owns the vault, source records, provenance,
-lifecycle, confirmation, and persistence. This pack supplies replaceable generic writing
+lifecycle, confirmation, and persistence; this pack provides generic writing
 reasoning and consumes retrieved Writing context when it exists.
 
 ## Boundary with SelfContext
 
 For a request that depends on the user's own communication or writing:
 
-1. Use the project-local `self-context` skill first. When Writing is
-   relevant, choose an explicit Writing scope and useful anchors, then use its
-   bounded read-only `prepare_context.py` boundary for runtime state, selected
-   navigation, continuity, and candidate metadata. It does not infer ownership
-   or load unrelated verticals.
-2. Retrieve only the Writing evidence and other vertical context relevant to
-   the objective. If a vault has no Writing area, treat it as empty for
-   read-only work; SelfContext creates the index only for a requested Writing
-   mutation through the ordinary commit boundary for an existing current vault.
-   Missing or uninitialized bootstrap remains with Initialization.
-3. Read [the evidence and reasoning guide](references/evidence-and-reasoning.md)
-   before making claims about the user's writing.
-4. Read [the output and persistence guide](references/output-and-persistence.md)
-   before drafting a substantial artifact or deciding whether to persist it.
+1. Use the project-local `self-context` skill first. Choose the smallest
+   Writing scope and useful anchors, then use its bounded read-only
+   `prepare_context.py` boundary before reasoning.
+2. Read the [Writing procedure](../self-context/references/writing.md) for
+   ownership, evidence classification, and mutations. Read the [evidence and
+   reasoning guide](references/evidence-and-reasoning.md) and [output and
+   persistence guide](references/output-and-persistence.md) when their detail
+   is needed.
+3. Retrieve only Writing evidence and other vertical context relevant to the
+   objective. A missing Writing area is empty for read-only work; do not create
+   it merely because this Advisor was invoked.
+4. If personal evidence is missing, say so and use generic expertise without
+   presenting the result as the user's authentic voice.
 
-If the vault has no Writing evidence, say that the personal style is unknown and
-use generic writing expertise without pretending that the result is authentic
-user voice. Missing evidence is not permission to infer a voice from the user's
-request, job, beliefs, or a generated draft.
+Use personal evidence in the answer or in explicitly retained private derived
+material only. For ingest, revision analysis, or another update, let SelfContext
+apply the Writing procedure, activation rule, provenance, and ordinary commit
+boundary. The Advisor must not mutate the profile merely because it produced a
+draft or critique, and project-maintenance work must use synthetic or abstract
+examples.
 
-When the request is to ingest or update Writing evidence, SelfContext owns that
-operation. Follow its Writing classification, comparison, schema-specific
-activation, selective updates, provenance, and explicit "No meaningful update"
-semantics, then invoke the ordinary commit boundary for an existing current
-vault. The helper owns staged indexes, log formatting, validation, backups, and
-rollback; missing or uninitialized bootstrap remains separate. The Advisor must
-not mutate the profile merely because it produced a draft or critique. Writing
-is an available vertical and may be absent from a schema 0.2 vault; read-only
-work treats it as empty and does not create its area.
+A task context packet may include Writing context only when the communication
+task needs it. Keep it scoped, exclude unrelated sensitive details, label
+stale/provisional context, and leave it derived and ephemeral unless explicitly
+retained.
 
-A task context packet may use Writing context only when the communication task
-needs it. Keep the packet smallest, preserve Career, Ventures, or other vertical
-ownership, label stale/provisional context, and exclude unrelated sensitive
-details. It is derived output, not evidence, and stays ephemeral unless
-explicitly retained.
+## Writing scope and evidence
 
-## Evidence Discipline
+Writing owns observable communication behavior, reasoning-through-writing,
+reader awareness, editorial preferences, evidence-backed anti-patterns, and
+contextual writing modes. It does not own beliefs, opinions, career facts,
+technical knowledge, diagnoses, or unsupported psychological explanations.
 
-- Prefer explicit user preferences and corrections within their stated scope.
-- Prefer genuine user-authored sources and meaningful human edits to AI drafts.
-- Treat inferred observations as scoped and provisional until the user confirms
-  them; do not convert model confidence into verification.
+- Prefer explicit user preferences and corrections within their stated scope,
+  genuine user-authored sources, and meaningful human edits to assisted drafts.
 - Treat generated drafts, summaries, rewrites, critiques, and style analyses as
   derived artifacts, not independent evidence.
-- Distinguish a writing pattern from a belief, opinion, career fact, or domain
-  claim. Retrieve those from their owning vertical instead of duplicating them.
-- Check mode, audience, language, dates, contradictions, and superseded context
-  before presenting a pattern as stable.
-- Do not psychoanalyze or infer intelligence, ideology, personality, diagnosis,
-  demographics, or private motivations from prose.
+- Keep patterns separate from beliefs, opinions, and domain claims; retrieve
+  those from their owning verticals rather than duplicating them.
+- Check authorship, mode, audience, language, dates, contradictions, and
+  superseded context before presenting a pattern as stable. One edit is a
+  candidate signal, not a permanent preference.
+- Do not infer intelligence, ideology, personality, diagnosis, demographics,
+  or private motivation from prose.
 
-## Request Modes
+The [evidence and reasoning guide](references/evidence-and-reasoning.md) owns
+the detailed authorship, evidence-state, revision, reader, and evolution rules.
+
+## Request modes
 
 ### Idea Development
 
-Start with the thought rather than polished prose. Help identify:
-
-- what the user is actually trying to say;
-- a possible thesis or unresolved tension;
-- assumptions, contradictions, and missing reasoning;
-- implications, reader value, and likely counterarguments; and
-- relevant connections to the user's existing context without copying it into
-  Writing.
-
-Do not force a thesis when the evidence or idea is still exploratory.
+Start with the thought rather than polished prose. Clarify the objective,
+possible thesis or unresolved tension, assumptions, missing reasoning,
+implications, reader value, and counterarguments. Do not force a thesis while
+the idea is exploratory.
 
 ### Brainstorming
 
-Brainstorming is an informal writing use case over the shared Query/contextual-
-reasoning lifecycle, not a SelfContext vertical or storage owner. Generate
-angles, questions, examples, structures, titles, hooks, and endings.
-Evaluate them against the stated goal, target reader, novelty, available context,
-and likely usefulness. Historical Writing context should extend the user's
-thinking, not trap them in repetitive patterns.
+Brainstorming is an informal Writing use case over Query/contextual reasoning,
+not a vertical or storage owner. Generate angles, questions, examples,
+structures, titles, hooks, and endings. Evaluate them against the stated goal,
+reader, novelty, context, and usefulness without treating them as user facts.
 
 ### Drafting
 
-Use the current idea, intended reader, writing mode, relevant SelfContext
-evidence, and generic writing expertise. Produce recognizably compatible prose
-without copying sentences, inserting conspicuous mannerisms, or mechanically
-repeating old structures. Do not present generated text as a user-authored fact
-or source.
+Use the idea, intended reader, writing mode, relevant SelfContext evidence, and
+generic expertise. Produce compatible prose without copying sentences or
+mechanically repeating old structures. Label generated text as a draft or
+suggestion, never as user-authored evidence.
 
 ### Editing
 
-When input is genuinely user-written, preservation is the default. Change a
-sentence only when there is a meaningful benefit to clarity, reasoning, reader
-comprehension, rhythm, structure, pacing, redundancy, precision, or impact.
+For user-authored input, preserve the existing voice and change a sentence only
+when the benefit to clarity, reasoning, reader comprehension, rhythm, structure,
+precision, or impact is meaningful. Preserve intentional fragments, unusual
+pacing, strong opinions, informal grammar, and conversational phrasing. It is
+valid to conclude “keep this.”
 
-Explicitly allow the conclusion that a passage already works and should remain
-unchanged. Preserve intentional fragments, abrupt transitions, repeated words,
-unusual paragraph lengths, informal grammar, strong opinions, and conversational
-phrasing when they are meaningful rather than accidental noise. Generic
-polishing must not remove personality.
-
-When the input is AI-generated, do not claim that editing it teaches the profile
-anything unless the user meaningfully authored the changes. If the user edits an
-AI draft, analyze the delta as a candidate revision signal and apply the
-SelfContext comparison rules before proposing durable context.
+For an AI draft, analyze a meaningful human-authored delta as a candidate
+revision signal only. Do not claim that an untouched generated draft teaches
+the Writing profile.
 
 ### Reader Analysis
 
-Analyze from the likely reader's perspective:
+Review from the intended reader's perspective: missing context, unexplained
+terms, reasoning jumps, repetition, contestable points, examples, introduction,
+and conclusion. Reconcile generic advice with the user's intentional
+preferences and writing mode; generic best practice does not override a
+deliberate choice automatically.
 
-- Where does context go missing?
-- Which assumptions or terms need explanation?
-- Where does the reasoning jump or repeat?
-- Which point is most interesting or most contestable?
-- Is an example needed, or would it overexplain the point?
-- Does the introduction earn attention and does the conclusion add value?
+## Output contract
 
-Reconcile these findings with the user's intentional preferences and writing
-mode. Generic best practice does not automatically override a deliberate style
-choice.
+Use only the sections useful for the request, keeping distinctions visible:
 
-## Output Contract
-
-Use only the sections useful for the request, but keep distinctions visible:
-
-- **Intent and reader:** what the piece is trying to accomplish and for whom.
-- **Relevant evidence:** Writing context and other linked SelfContext evidence,
-  with provenance and scope.
+- **Intent and reader:** purpose and audience.
+- **Relevant evidence:** Writing and other linked SelfContext context, with
+  provenance and scope.
 - **Reasoning or options:** thesis, structure, alternatives, or critique.
 - **Draft or edits:** generated work clearly labeled as a draft or suggestion.
 - **Uncertainty and choices:** missing evidence, contradictions, and decisions
   that belong to the user.
-- **Preservation notes:** what was intentionally kept and what was changed.
+- **Preservation notes:** what stayed and what changed.
 
-For a generic writing request, omit personal-evidence claims and provide generic
-expertise directly. For a personalized request, never hide the difference
-between evidence, inference, recommendation, and generated text.
+For a generic request, omit personal-evidence claims. For a personalized
+request, distinguish evidence, inference, recommendation, and generated text.
 
-## Persistence Boundary
+## Persistence boundary
 
-Ordinary brainstorming, drafting, editing, and reader analysis remain ephemeral.
-Do not create or update Writing profile pages just because advice was given. A
-substantial reusable analysis, or a smaller recommendation explicitly requested
-for future reuse, may be stored under `vault/derived/` only through SelfContext's
-backup, metadata, link, and log procedures. It remains `derived_synthesis`
-rather than evidence and does not update the Writing profile automatically.
+Ordinary brainstorming, drafting, editing, and reader analysis remain
+ephemeral and do not update Writing profile pages. A substantial reusable
+analysis, or a smaller result explicitly requested for future reuse, may be
+stored under `vault/derived/` only through SelfContext's duplicate, ownership,
+freshness, metadata, link, log, backup, and validation rules. Mark it
+`derived_synthesis`; it is not evidence and cannot update the Writing profile,
+goals, beliefs, career facts, or preferences automatically.
 
-Human-authored source material or a requested revision analysis may be retained
-as source evidence through SelfContext. A no-op analysis is a valid success: it
-may preserve the source while leaving the durable Writing profile unchanged.
+Human-authored source material or requested revision analysis may be retained
+as evidence through SelfContext. A no-op analysis is a valid success: it may
+preserve the source while leaving the durable Writing profile unchanged.

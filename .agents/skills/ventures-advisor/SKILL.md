@@ -14,115 +14,123 @@ compatibility: Requires the project-local self-context skill and local access to
 
 # Ventures Advisor
 
-Ventures Advisor is an Advisor Pack, not a project-management runtime, business
-intelligence system, CRM, or second durable context store. SelfContext owns
- the vault, shared schema, provenance, lifecycle, freshness, persistence, and
- retrieval.
-This pack supplies initiative-specific reasoning after SelfContext retrieves the
-relevant evidence.
+Ventures Advisor is an Advisor Pack, not a project-management runtime,
+business-intelligence system, CRM, or second durable context store. SelfContext
+owns the vault, shared schema, provenance, lifecycle, freshness, persistence,
+and retrieval; this pack supplies initiative-specific reasoning.
 
 ## Boundary with SelfContext
 
-For personal-context questions:
+For a personal-context question:
 
-1. Use the project-local `self-context` skill first. When Ventures / Projects
-   is relevant, choose an explicit Ventures scope and useful anchors, then use
-   its bounded read-only `prepare_context.py` boundary for runtime state,
-   selected navigation, continuity, and candidate metadata. It does not infer
-   ownership or load unrelated verticals.
-2. Read the [Ventures procedure](../self-context/references/ventures.md) before
-   ingesting, updating, reviewing, or interpreting initiative evidence.
-3. Read [evidence and reasoning](references/evidence-and-reasoning.md) before
-   comparing ventures, opportunities, collaborators, milestones, or adoption.
-4. Read [output and persistence](references/output-and-persistence.md) before
-   retaining a comparison, recommendation, or task packet.
-5. Retrieve only the relevant venture records, sources, review items, and
-   links to other owning verticals. Do not build a second durable context store.
+1. Use the project-local `self-context` skill first. Choose the smallest
+   Ventures scope and useful anchors, then use its bounded read-only
+   `prepare_context.py` boundary before reasoning.
+2. Read the [Ventures procedure](../self-context/references/ventures.md) for
+   ownership, evidence, and mutations. Read [evidence and reasoning](references/evidence-and-reasoning.md)
+   and [output and persistence](references/output-and-persistence.md) when
+   their detail is needed.
+3. Retrieve only relevant venture records, sources, review items, and links to
+   other owning verticals. Do not use a second schema or durable store.
+4. If evidence is missing, say what is unknown instead of completing a
+   plausible project narrative.
 
-Ventures may be available but absent in a schema 0.2 vault. Treat an absent
-area as empty for read-only reasoning; do not create an index, contract marker,
-placeholder page, or backup merely because the Advisor was triggered. A
-requested ingest or adoption prepares semantic bytes and explicit activation
-metadata, then follows SelfContext's ordinary commit boundary for an existing
-current vault; missing or uninitialized bootstrap remains separate.
+Ventures may be available but absent in a schema 0.2 vault. An absent area is
+empty for read-only reasoning; do not create an index, marker, placeholder, or
+backup merely because this Advisor was triggered. For ingest or adoption, let
+SelfContext apply activation, provenance, and the ordinary or deep-maintenance
+commit boundary. The Advisor must not mutate project context merely by
+answering.
 
-## Evidence discipline
+## Ventures scope
 
-Keep idea, candidate, proposal, discussion, decision, commitment, and executed
-commitment separate. Distinguish initiative lifecycle from shared page status
-and evidence/assertion kind. Treat active user-stated or source-derived claims
-as evidence with their freshness and verification labels; treat `review`,
-`agent_inference`, stale, disputed, and derived material as provisional or
-qualified. A prototype is not a shipped product, dogfooding is not external
-adoption, feedback is not validated demand, and enthusiasm is not viability.
+Ventures / Projects owns meaningful initiative lifecycle and project-specific
+context: purpose, origin, current state, the user's role, decisions,
+trade-offs, commitments, milestones, evidence, outcomes, dogfooding, adoption,
+commercial exploration, unknowns, and evolution. It is not a task manager,
+repository catalog, CRM, generic business system, or source archive.
 
-Never invent customers, users, revenue, demand, business viability, product-
-market fit, compensation, equity, employment, ownership, contractual authority,
-deadlines, collaborator intent, collaborator reliability, or future commitment.
-Do not infer sensitive characteristics about collaborators or organizations.
+Career owns professional relevance; Learning owns knowledge state; Relationships
+owns shared relationship context; Writing owns communication behavior; `core/`
+owns broad constraints and preferences; Sources, Review, and Derived own their
+respective material. Link to those owners instead of copying their claims.
+
+## Evidence interpretation
+
+- Keep idea, candidate, proposal, discussion, decision, commitment, and executed
+  commitment distinct. Keep initiative lifecycle separate from shared page
+  status and assertion kind.
+- Treat active user-stated or source-derived claims according to their
+  verification and freshness labels. Treat review, inference, stale, disputed,
+  historical, and derived material as qualified rather than settled.
+- A prototype is not a shipped product; dogfooding is not external adoption;
+  feedback is not validated demand; interest is not purchase intent; and a
+  recommendation is not a decision.
+- Never invent customers, users, revenue, demand, viability, product-market
+  fit, compensation, equity, employment, ownership, authority, deadlines,
+  collaborator intent, reliability, or future commitments.
+- Do not infer sensitive characteristics about collaborators or organizations.
+  Preserve abandoned, paused, completed, failed, and superseded initiatives as
+  useful history.
+
+The [evidence and reasoning guide](references/evidence-and-reasoning.md) owns
+the detailed state distinctions, comparison dimensions, adoption evidence, and
+freshness treatment.
 
 ## Retrieval and reasoning
 
-SelfContext retrieves Ventures evidence first. Then retrieve Core constraints
-and preferences when they affect the question. Add Career, Learning,
-Relationships, Writing, Sources, or other vertical evidence only when needed:
+Retrieve Ventures evidence first, then Core constraints and preferences when
+they affect the question. Add Career, Learning, Relationships, Writing,
+Sources, or other vertical evidence only when it can materially change the
+answer, and keep each claim attached to its owning page.
 
-- Career explains professional relevance and what participation demonstrates.
-- Learning explains demonstrated knowledge, gaps, and progression.
-- Relationships explains how the user knows a collaborator and shared history.
-- Writing explains communication behavior and public-message fit.
-- Sources explain provenance.
+Adapt to comparisons, prioritization, opportunity or collaboration assessment,
+current-state and open-loop inspection, dogfooding/adoption analysis,
+trade-off evaluation, continuity preparation, evidence-gap discovery, and
+next-step recommendations. For a generic career, learning, relationship, or
+writing question, route to that owner rather than forcing Ventures into it.
 
-Keep each claim with its owning page and use links rather than duplicate
-records. Separate current, stale, disputed, reviewable, historical, and unknown
-items before reasoning. Preserve abandoned, paused, completed, failed, and
-superseded initiatives as useful history.
-
-## Supported request modes
-
-Adapt naturally to the user's request. Common modes include comparing projects
-or opportunities, prioritizing attention under explicit constraints, assessing a
-proposal or collaboration, examining current state and open loops, interpreting
-dogfooding or adoption evidence, evaluating project trade-offs, preparing
-continuity around a partnership, finding evidence gaps, and recommending a
-reasonable next step. For a generic career question, knowledge-state question,
-relationship question, or writing question, route to the owning vertical rather
-than forcing Ventures into the answer.
+For comparisons, state the objective and explicit constraints, compare
+supported dimensions and meaningful alternatives, surface trade-offs and
+unknowns, and say what evidence would change the conclusion.
 
 ## Recommendation boundary
 
 A recommendation is derived reasoning, not a project decision, goal, fact,
-commitment, or executed action. State the alternatives and trade-offs, the
-constraints used, the evidence that supports each point, the unknowns, and what
-would change the recommendation. Do not invent a deadline or claim that an
-opportunity is objectively viable from enthusiasm alone. A useful recommendation
-may remain ephemeral.
+commitment, or executed action. Keep it conditional and explainable. Do not
+invent deadlines or claim that an opportunity is viable from enthusiasm alone.
+A suggested next step is not an executed commitment, and the user remains the
+person who adopts a plan or makes a decision.
 
-## Persistence and privacy
+## Response and persistence
 
-Do not persist Advisor output automatically. SelfContext may retain a
-substantial, reusable comparison or an explicitly requested result as a linked
-`derived_synthesis` after checking duplicates, ownership, contradictions,
-freshness, and sources. Never use the Advisor's own recommendation as factual
-Ventures evidence or update a goal, preference, commitment, or decision merely
-because it was suggested.
+Keep current context, evidence, constraints, unknowns, alternatives,
+trade-offs, recommendation, and next step visibly distinct when the request is
+substantial. Identify stale, reviewable, disputed, historical, and
+unconfirmed evidence where it matters.
+
+Do not persist Advisor output automatically. A substantial reusable comparison
+or an explicitly retained result may be stored by SelfContext as a linked
+`derived_synthesis` after duplicate, ownership, contradiction, freshness,
+provenance, metadata, link, log, backup, and validation checks. Never use the
+recommendation as factual Ventures evidence or update a goal, preference,
+commitment, or decision merely because it was suggested.
 
 Reject credentials, secrets, tokens, API keys, authentication material,
-complete private workspace dumps, wholesale Slack/email/message histories, and
+complete private workspace dumps, wholesale communication histories, and
 unnecessary third-party data. Keep collaborator context to the minimum needed
 to understand the initiative.
 
 ## Failure modes
 
-- If the evidence is missing, say what is unknown and what small evidence would
-  resolve it; do not fill the gap with a plausible startup narrative.
-- If status is stale, label it as needing confirmation rather than false.
+- If evidence is missing, name the smallest evidence that would resolve it.
+- If status is stale, say it needs confirmation rather than calling it false.
 - If a proposal, discussion, or interest is not an agreement, preserve that
   distinction and do not create a commitment.
-- If ownership is mixed, link Career, Learning, Relationships, Writing, Core, or
-  Sources and leave ambiguous classification for review.
-- If the request is a task list, CRM, repository inventory, or generic business
-  strategy request, explain the scope boundary and offer only the relevant
+- If ownership is mixed, link the relevant owner and leave ambiguous
+  classification for review.
+- If the request is task management, CRM, repository inventory, or generic
+  business strategy, state the boundary and offer only a relevant,
   evidence-backed alternative.
 - If the request seeks sensitive third-party inference or secrets, refuse that
   part and continue only with safe initiative context.

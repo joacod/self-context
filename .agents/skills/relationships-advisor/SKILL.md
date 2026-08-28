@@ -17,89 +17,82 @@ compatibility: Requires the project-local self-context skill and local access to
 # Relationships Advisor
 
 Relationships Advisor is an Advisor Pack, not a contact manager, CRM, social
-graph, surveillance tool, or third-party profile database. SelfContext owns the
-vault, shared schema, provenance, lifecycle, confirmation, deletion, and
-retrieval. This pack supplies relationship-specific reasoning after SelfContext
-retrieves the smallest relevant evidence set.
+graph, surveillance tool, or third-party profile database. SelfContext owns
+the vault, shared schema, provenance, lifecycle, confirmation, deletion,
+retention, and retrieval; this pack supplies relationship-specific reasoning
+after the smallest relevant evidence is retrieved.
 
 ## Boundary with SelfContext
 
-For every request that depends on the user's relationship context:
+For a request that depends on the user's relationship context:
 
-1. Use the project-local `self-context` skill first. When Relationships is
-   relevant, choose an explicit Relationships scope and useful anchors, then
-   use its bounded read-only `prepare_context.py` boundary for runtime state,
-   selected navigation, continuity, and candidate metadata. It does not infer
-   ownership or load unrelated verticals.
-2. Read [the Relationships procedure](../self-context/references/relationships.md)
-   before ingesting, updating, reviewing, or interpreting relationship evidence.
-3. Read [the evidence and reasoning guide](references/evidence-and-reasoning.md)
-   before answering questions about a person, shared history, commitments, or
-   relationship evolution.
-4. Read [the output and persistence guide](references/output-and-persistence.md)
-   before preparing a substantial interaction brief or deciding whether a
-   result deserves a derived page.
-5. Retrieve only the relationship pages, source records, review items, and
-   owning-vertical links needed for the request. Do not produce a dossier about
-   a person merely because more files exist.
+1. Use the project-local `self-context` skill first. Choose the smallest
+   Relationships scope and useful anchors, then use its bounded read-only
+   `prepare_context.py` boundary before reasoning.
+2. Read the [Relationships procedure](../self-context/references/relationships.md)
+   for ownership, privacy, and mutations. Read the [evidence and reasoning
+   guide](references/evidence-and-reasoning.md) and [output and persistence
+   guide](references/output-and-persistence.md) when their detail is needed.
+3. Retrieve only relevant relationship pages, source records, review items, and
+   owning-vertical links. Do not build a dossier or use a second durable store.
+4. If context is missing, say so. Generic social or communication advice must
+   be labeled generic rather than presented as knowledge about a relationship.
 
-If the Relationships area or relevant evidence is missing, say so. Generic
-social or communication expertise may still help, but it must be labeled
-generic rather than presented as knowledge about the user's relationships.
-Relationships is available but not automatically enabled in schema 0.2; a
-read-only question about an absent area creates no person page or index.
+Relationships is available but not automatically enabled in schema 0.2. An
+absent area is empty for read-only work and creates no person page or index.
+For an ingest, correction, redaction, deletion, or update, let SelfContext
+apply the procedure, activation rule, provenance, and ordinary commit boundary.
+The Advisor must not mutate relationship context merely by answering.
 
-Task context packets must exclude unrelated relationship or third-party detail
-unless the named task directly requires it. Keep reported, observed,
-reviewable, stale, and unknown context labeled, and keep the packet derived and
-ephemeral unless the user explicitly asks to retain it.
+Task context packets must exclude unrelated relationship or third-party detail.
+Keep reported, observed, reviewable, stale, and unknown context labeled; the
+packet is derived and ephemeral unless explicitly retained.
 
-For an ingest, correction, deletion, or request to update the vault, let
-SelfContext apply the Relationships procedure, schema-specific activation, and
-the provisional/final backup lifecycle. The Advisor does not define contract
-markers or mutate relationship context merely by answering.
+## Relationships scope
 
-## Evidence discipline
+Relationships owns how the user knows a person or group, meaningful shared
+history and interactions, commitments, open loops, explicitly evidenced shared
+interests, dated evolution, and the user's observations about the connection.
+Career, Ventures, Writing, Learning, Media / Taste, and `core/` retain their
+own claims; link to them rather than copying professional facts, initiative
+lifecycle, writing patterns, knowledge states, media reactions, or general
+values into a relationship answer.
 
-- Distinguish what the user directly says, what the user reports another person
-  said, what a retained source documents, what the user observed, and what the
-  agent infers.
-- Treat an explicit user statement about the relationship or a commitment as
-  scoped context, not permission to infer unrelated facts about the other
-  person.
-- Treat a message, invitation, or recollection as evidence for the interaction
-  it documents, not as a complete or objective profile of its author.
-- Treat motives, reliability, closeness, psychological traits, and relationship
-  strength as observations at most; never silently convert them into facts.
-- Never infer or repeat sensitive third-party characteristics such as medical or
-  mental-health information, sexuality, religion, politics, ethnicity, criminal
-  history, finances, or diagnoses. If the user explicitly supplied a sensitive
-  detail for a genuinely necessary narrow purpose, mention only the minimum
-  stated context and its uncertainty.
+## Evidence interpretation
+
+- Distinguish what the user says, reports another person said, a retained source
+  documents, the user observed, and the agent infers.
+- Treat an explicit relationship statement or commitment as scoped context, not
+  permission to infer unrelated facts about the other person.
+- Treat motives, reliability, closeness, relationship strength, and psychology
+  as observations at most; never silently convert them into facts.
+- Never infer or repeat sensitive third-party characteristics. If the user
+  explicitly supplied a sensitive detail for a necessary narrow purpose, use
+  only the minimum stated context and its uncertainty.
 - Treat `status: review`, `agent_inference`, stale pages, and contradictions as
-  provisional. Explain the effect instead of selecting a convenient version.
-- Keep Career, Ventures, Writing, Learning, Media / Taste, and `core/`
-  ownership intact. Link to their evidence rather than copying professional
-  facts, initiative lifecycle, writing patterns, knowledge states, media taste,
-  or general values into a relationship answer.
+  provisional. Do not select a convenient version silently.
+- Honor explicit delete, redact, archive, and retention requests; do not
+  resurrect removed context from an old source.
 
-## Request modes
+The [evidence and reasoning guide](references/evidence-and-reasoning.md) owns
+the detailed commitment, evolution, privacy, and insufficient-evidence rules.
 
-Adapt reasoning to the task:
+## Reasoning modes
 
-- **Orientation:** explain how the user knows the person and the relevant
-  shared context, not everything known about them.
-- **Interaction preparation:** retrieve only useful history, recent topics,
-  commitments, open loops, and unresolved questions for the named interaction.
-- **Commitments:** distinguish a promise, a reported promise, a tentative plan,
-  and a resolved or obsolete thread. Do not invent due dates or turn the result
-  into a task list.
-- **Evolution:** use dated relationship entries and preserve earlier periods,
-  scope changes, and uncertainty. Do not invent closeness scores.
+Adapt to the task:
+
+- **Orientation:** explain how the user knows the person and the relevant shared
+  context, not everything known about them.
+- **Interaction preparation:** retrieve only useful history, topics,
+  commitments, open loops, and unresolved questions.
+- **Commitments:** distinguish promises, reported promises, tentative plans, and
+  resolved or obsolete threads; do not invent due dates or tasks.
+- **Evolution:** use dated entries and preserve earlier periods, scope changes,
+  and uncertainty without inventing closeness scores.
 - **Consolidation:** combine repeated evidence into the smallest relationship
-  fact, preserve provenance, and avoid storing transcripts or duplicate pages.
-- **Message support:** provide interpersonal context to Writing, while keeping
-  the draft, audience analysis, and wording in the Writing operation.
+  fact, preserve provenance, and avoid transcripts or duplicate pages.
+- **Message support:** provide history and interpersonal constraints to Writing;
+  Writing owns the draft, reader analysis, and wording.
 - **Review and privacy:** surface stale, contradictory, overly broad, or
   sensitive retained context and suggest the smallest user-controlled action.
 
@@ -116,20 +109,15 @@ Use only the sections useful for the request, normally:
   clearly labeled as advice rather than relationship fact.
 - **What would change the answer:** one bounded evidence request when needed.
 
-Do not repeat sensitive details just because they are present in a source. A
+Do not repeat sensitive details merely because they are present in a source. A
 useful answer may say that the vault does not establish something and avoid
 speculation.
 
 ## Persistence boundary
 
-Simple relationship lookups and interaction preparation remain ephemeral. Do
-not create a person page or derived synthesis merely because an answer was
-useful. A substantial reusable interaction brief, or a smaller result the user
-explicitly asks to retain, may be stored by SelfContext under `derived/` as a
-linked `derived_synthesis`; it must remain visibly derived and must not update
-relationship facts, commitments, or core preferences automatically.
-
-If the user asks to remember, update, redact, or delete relationship context,
-route that mutation through SelfContext's backup, provenance, review, and
-navigation rules. Honor deletion and retention choices rather than restoring a
-removed fact from an old source.
+Simple lookups and interaction preparation remain ephemeral. A substantial
+reusable interaction brief, or a smaller result explicitly requested for reuse,
+may be stored under `derived/` only through SelfContext's duplicate, ownership,
+contradiction, freshness, metadata, link, log, backup, and validation rules.
+Mark it `derived_synthesis`; it must remain visibly derived and must not update
+relationship facts, commitments, or `core/` preferences automatically.

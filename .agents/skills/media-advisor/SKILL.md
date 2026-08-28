@@ -15,116 +15,105 @@ compatibility: Requires the project-local self-context skill and local access to
 
 # Media Advisor
 
-Media Advisor is an evidence-and-reasoning pack, not Goodreads, Letterboxd,
-Spotify, IMDb, a ratings database, or a recommendation engine with its own
-durable context. SelfContext owns the vault, shared schema, provenance,
-lifecycle,
-confirmation, persistence, and retrieval. This pack reasons from the user's
-individual work reactions and taste observations.
+Media Advisor is an evidence-and-reasoning pack, not a media catalog, ratings
+database, or second durable context store. SelfContext owns the vault, shared
+schema, provenance, lifecycle, confirmation, persistence, and retrieval; this
+pack reasons from the user's individual work reactions and taste observations.
 
 ## Boundary with SelfContext
 
-For every personalized media or taste request:
+For a personalized media or taste request:
 
-1. Use the project-local `self-context` skill first. When Media / Taste is
-   relevant, choose an explicit Media scope and useful anchors, then use its
-   bounded read-only `prepare_context.py` boundary for runtime state, selected
-   navigation, continuity, and candidate metadata. It does not infer ownership
-   or load unrelated verticals.
-2. Read [the Media / Taste procedure](../self-context/references/media-taste.md)
-   before ingesting or updating work reactions, patterns, exceptions, or taste
-   evolution.
-3. Read [the evidence and reasoning guide](references/evidence-and-reasoning.md)
-   before deciding what a work or pattern supports.
-4. Read [the output and persistence guide](references/output-and-persistence.md)
-   before making a recommendation or deciding whether a comparison should be
-   retained.
-5. Retrieve only relevant work pages, pattern pages, source records, review
-   items, and cross-vertical links. Do not build a complete media catalog from
-   whatever happens to be in the vault.
+1. Use the project-local `self-context` skill first. Choose the smallest Media
+   scope and useful anchors, then use its bounded read-only
+   `prepare_context.py` boundary before reasoning.
+2. Read the [Media / Taste procedure](../self-context/references/media-taste.md)
+   for ingest, update, review, and ownership rules. Read the [evidence and
+   reasoning guide](references/evidence-and-reasoning.md) and [output and
+   persistence guide](references/output-and-persistence.md) when their detail
+   is needed.
+3. Retrieve only relevant work pages, taste observations, source records,
+   review items, and cross-vertical links. Do not build a complete catalog or
+   use provider memory as personal evidence.
+4. If reactions are missing, say so. Generic media knowledge or recommendations
+   must be labeled generic rather than attributed to the user.
 
-If the Media / Taste area or personal reactions are missing, say so. Generic
-media knowledge and a generic recommendation can still be offered, but must be
-labeled generic rather than attributed to the user. Media / Taste is available
-but not automatically enabled in schema 0.2; read-only work does not create a
-media area or catalog.
+Media / Taste is available but not automatically enabled in schema 0.2. An
+absent area is empty for read-only work and creates no files. For a request to
+record, correct, abandon, revisit, supersede, or delete taste context, let
+SelfContext apply the procedure, activation rule, provenance, and ordinary
+commit boundary. The Advisor must not mutate the profile merely by answering.
 
-For a task context packet, include only the reactions and taste evidence that
-serve the task, plus conflicts, freshness, unknowns, paths, and exclusions.
-Never expose unrelated relationship details merely because they exist. The
-packet is derived output and remains ephemeral unless explicitly retained.
+For a task context packet, include only reactions and taste evidence relevant to
+the task, plus conflicts, freshness, unknowns, paths, and exclusions. The
+packet is derived and ephemeral unless explicitly retained under SelfContext's
+persistence rules.
 
-For a request to record, correct, abandon, revisit, supersede, or delete taste
-context, let SelfContext apply the Media / Taste procedure, schema-specific
-activation, and provisional/final backup lifecycle. The Advisor does not define
-contract markers or mutate the profile merely by answering.
+## Media / Taste scope
 
-## Evidence discipline
+Media / Taste owns meaningful reactions to experienced cultural works,
+consumption state when it helps interpret a reaction, recurring or competing
+taste patterns, exceptions, and dated taste evolution. Learning owns what the
+user learned, Relationships owns shared experiences, Writing owns
+communication behavior, Career owns professional evidence, and `core/` owns
+deliberately broad preferences. Link to those owners instead of copying claims.
 
-- Treat an individual work reaction as the primary evidence. Consumption or
-  completion alone establishes exposure, not liking or preference.
-- Prefer the user's explicit reaction and comparisons. External metadata,
-  summaries, copied reviews, and an agent's interpretation are not personal
-  taste evidence.
-- Do not derive an inferred pattern from one work unless the user explicitly
-  states that broader preference. Otherwise look for multiple independent,
-  meaningful reactions and keep the pattern scoped and reviewable.
-- Explain why each supporting work fits a pattern and retain exceptions,
-  contradictions, medium differences, and dates.
+## Evidence interpretation
+
+- Individual user reactions are the primary evidence. Consumption or completion
+  establishes exposure, not liking or preference.
+- External metadata, plot summaries, copied reviews, and agent-generated
+  reactions can identify or discuss a work but are not personal taste evidence.
+- Do not infer a broad pattern from one work unless the user explicitly states
+  that preference. Otherwise use multiple independent meaningful reactions and
+  keep the pattern scoped and reviewable.
+- Explain why supporting works fit, preserve exceptions, contradictions,
+  medium differences, and dates, and treat review, stale, superseded, or
+  inferred context as qualified.
 - Never infer politics, religion, sexuality, identity, morality, health,
   personality, intelligence, or psychological traits from cultural consumption.
-- Keep Learning ownership for what the user learned from a work, Relationships
-  ownership for shared media experiences, Writing ownership for authored
-  communication, and `core/` ownership for deliberately broad preferences.
-- Treat `status: review`, `agent_inference`, stale pages, and superseded context
-  as provisional or historical. Do not present them as current preference
-  without qualification.
 
-## Request modes
+The [evidence and reasoning guide](references/evidence-and-reasoning.md) owns
+the detailed pattern, recommendation, privacy, and insufficient-evidence rules.
 
-Adapt reasoning to the task:
+## Reasoning modes
+
+Adapt to the request:
 
 - **Taste inventory:** group evidenced reactions by themes, styles, mechanics,
-  pacing, creators, or media without flattening the user into a genre label.
-- **Why this worked:** trace a liked work to the user's own reaction and the
-  supporting patterns, including conflicts and uncertainty.
-- **Recommendation:** compare the candidate with several evidenced works;
-  explain matches and mismatches conditionally rather than predicting certainty.
-- **Cross-media pattern:** link work pages across media and state the shared
-  feature that the evidence supports, without over-generalizing.
-- **Exceptions:** preserve a work that conflicts with a usual preference and
-  the reason it was meaningful.
-- **Taste evolution:** use dates and prior reactions to distinguish a real change
-  from medium, mood, or context differences.
-- **Capture or update:** route the mutation through SelfContext's Media / Taste
-  procedure, including no-update outcomes and noise prevention.
+  pacing, creators, or media without flattening the user into a label.
+- **Why this worked:** trace a liked work to the user's reaction and supporting
+  patterns, including conflicts and uncertainty.
+- **Recommendation:** compare a candidate with several evidenced works and
+  explain matches and mismatches conditionally.
+- **Cross-media pattern:** link work pages and state the shared feature the
+  evidence supports without over-generalizing.
+- **Exceptions:** preserve an outlier and why it mattered.
+- **Taste evolution:** use dates and prior reactions to distinguish change from
+  medium, mood, or context.
+- **Capture or update:** route mutations through SelfContext, including
+  no-update outcomes and noise prevention.
 
 ## Response contract
 
 Use only the sections useful for the request, normally:
 
 - **Bottom line:** direct answer or conditional recommendation.
-- **Evidence:** the individual works, reactions, dates, and linked patterns.
-- **Matches and conflicts:** what fits the evidence and what cuts against it.
+- **Evidence:** individual works, reactions, dates, and linked patterns.
+- **Matches and conflicts:** what fits and what cuts against the evidence.
 - **Exceptions and evolution:** relevant outliers or changed preferences.
 - **Uncertainty:** missing reactions, review pages, stale context, or generic
   assumptions.
-- **Recommendation:** clearly labeled derived advice, never a new fact.
+- **Recommendation:** derived advice, never a new fact.
 
-If the evidence does not support a pattern, say so. Do not fill the gap with a
-plot summary, genre stereotype, rating, or personality explanation.
+If the evidence does not support a pattern, say so instead of filling the gap
+with a genre stereotype, rating, plot summary, or personality explanation.
 
 ## Persistence boundary
 
-Ordinary recommendations, comparisons, and taste explanations remain ephemeral.
-A substantial reusable synthesis, or a smaller recommendation the user
-explicitly asks to retain, may be stored by SelfContext under `derived/` as a
-linked `derived_synthesis`. It must remain derived and must not update a work
+Ordinary recommendations, comparisons, and taste explanations remain
+ephemeral. A substantial reusable synthesis, or a smaller result explicitly
+requested for reuse, may be stored under `derived/` only through SelfContext's
+duplicate, ownership, contradiction, freshness, metadata, link, log, backup,
+and validation rules. Mark it `derived_synthesis`; it must not update a work
 reaction, taste pattern, `core/` preference, or verification state automatically.
-
-A supplied work reaction or explicit request to update taste context is an
-ingest operation: prepare the smallest semantic proposal and invoke SelfContext's
-ordinary commit boundary for an existing current vault. It stages the evidence,
-managed index, and log, validates, owns both backups and rollback, and reports
-whether the result was a meaningful update or **No meaningful Media / Taste
-update**. Missing or uninitialized bootstrap remains with Initialization.
