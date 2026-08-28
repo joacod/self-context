@@ -191,6 +191,19 @@ def safe_read_bytes(path: Path) -> Tuple[Optional[bytes], Optional[str]]:
         return None, f"{type(error).__name__}: {error}"
 
 
+def _safe_read_page(
+    path: Path,
+) -> Tuple[Optional[bytes], Optional[str], Optional[str]]:
+    content, error = safe_read_bytes(path)
+    if content is None:
+        error_type = error.split(":", 1)[0] if error else "OSError"
+        return None, None, f"{error_type}: unable to read file"
+    try:
+        return content, content.decode("utf-8"), None
+    except UnicodeError:
+        return content, None, "UnicodeDecodeError: file is not valid UTF-8"
+
+
 def relative_label(path: Path, root: Path) -> str:
     try:
         return path.relative_to(root).as_posix()
@@ -1007,7 +1020,7 @@ def snapshot_id(root: Path) -> str:
 
 def page_record(path: Path, root: Path) -> Dict[str, Any]:
     label = relative_label(path, root)
-    text, error = safe_read_text(path)
+    content, text, error = _safe_read_page(path)
     record: Dict[str, Any] = {
         "path": label,
         "is_index": path.name == "index.md",
@@ -1015,11 +1028,10 @@ def page_record(path: Path, root: Path) -> Dict[str, Any]:
         "is_deep_report": is_deep_report(path, root),
         "read_error": error,
     }
-    if text is None:
+    if content is None or text is None:
         record["content_hash"] = hashlib.sha256(b"").hexdigest()
         return record
-    content, _ = safe_read_bytes(path)
-    record["content_hash"] = hashlib.sha256(content or b"").hexdigest()
+    record["content_hash"] = hashlib.sha256(content).hexdigest()
     fields, frontmatter_errors, body = parse_frontmatter_text(text)
     record.update(
         {
