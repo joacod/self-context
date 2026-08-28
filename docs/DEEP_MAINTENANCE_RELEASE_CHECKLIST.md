@@ -14,8 +14,7 @@ not use the ignored real `vault/` as a mutation target.
   `python3 scripts/validate_json.py`.
 - [ ] Run the repository consistency checks:
   `python3 -m unittest tests.test_repository_consistency`.
-- [ ] Confirm the supported CI matrix remains green on Ubuntu Python 3.10,
-  Ubuntu Python 3.12, and Windows Python 3.12.
+- [ ] Confirm the single Ubuntu Python 3.12 CI job remains green.
 
 ## Synthetic maintenance smoke tests
 
