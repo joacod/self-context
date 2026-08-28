@@ -341,6 +341,37 @@ class SearchVaultTests(unittest.TestCase):
             self.assertEqual(paths[:3], ["core/title.md", "review/review.md", "core/body.md"])
             self.assertEqual(report["results"][0]["match_type"], "title_phrase")
 
+    def test_direct_search_preserves_primary_result_metadata_and_score(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            vault = self.make_vault(Path(temporary))
+            report = self.report(vault, "queue")
+
+            self.assertEqual(
+                report["results"][0],
+                {
+                    "assertion_kind": "user_stated_fact",
+                    "description": "A page about an unrelated concept.",
+                    "generated": "2026-08-12",
+                    "linked_from": None,
+                    "match_type": "title_phrase",
+                    "matched_fields": ["title_or_alias"],
+                    "matched_term_count": 1,
+                    "path": "core/title.md",
+                    "phrase_fields": ["title", "alias"],
+                    "query_term_count": 1,
+                    "query_term_coverage": 1.0,
+                    "rank_score": 121902100,
+                    "snippet": "## Concept body only",
+                    "sources": [],
+                    "stale_after": None,
+                    "status": "active",
+                    "title": "Synthetic Queue",
+                    "type": "concept",
+                    "verified": None,
+                    "vertical": None,
+                },
+            )
+
     def test_sources_remain_opt_in_while_historical_pages_are_default_visible(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             vault = self.make_vault(Path(temporary))
