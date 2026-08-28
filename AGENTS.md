@@ -50,6 +50,24 @@ diagnose, change, improve, evaluate, or redesign SelfContext's operational
 behavior. If the user specifically asks about an operational issue, explain it
 separately from their personal answer and use synthetic or abstract examples.
 
+## Future Architecture Tests
+
+For future SelfContext changes, ask:
+
+- **Markdown, skills, or instruction changes:** Is this semantic policy the
+  model genuinely needs, or are we repeating an invariant already owned
+  somewhere else?
+- **Deterministic code changes:** Is this deterministic vault mechanics, or are
+  we accidentally teaching Python to make semantic decisions the model/skill
+  should own?
+- **New concepts or abstractions:** Does this improve continuity of context
+  enough to justify another concept in the system?
+
+Do not pursue DRYness mechanically in Agent Skill instructions. Repeating a
+critical behavioral guardrail where it materially improves correct agent
+behavior can be intentional. Remove duplication when it has no behavioral
+value; do not remove useful guardrails merely to reduce line count.
+
 ## CI and repository validation
 
 - Keep `.github/workflows/ci.yml` thin: it has one Ubuntu job running
