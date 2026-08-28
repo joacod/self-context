@@ -50,6 +50,21 @@ diagnose, change, improve, evaluate, or redesign SelfContext's operational
 behavior. If the user specifically asks about an operational issue, explain it
 separately from their personal answer and use synthetic or abstract examples.
 
+## CI and repository validation
+
+- Keep `.github/workflows/ci.yml` thin: it has one Ubuntu job running
+  `python scripts/validate_repo.py` as the single repository gate under Python
+  3.12.
+- `scripts/validate_repo.py` owns Agent Skill metadata validation, tracked JSON
+  validation, full unittest discovery and execution, and the repository
+  consistency checks included in that suite. Do not repeat those checks as
+  separate CI steps.
+- Do not add an operating-system or Python-version matrix unless the repository
+  gains platform-specific behavior or an explicit compatibility requirement.
+  Add another CI step only for an independent check that the canonical
+  validator cannot cover, and update this policy when validation ownership
+  changes.
+
 Never copy, quote, paraphrase, or derive real personal vault content into
 tracked skills, docs, evals, tests, scripts, ADRs, or other operational files.
 Personal vault evidence may be used to answer the user's request, but any
