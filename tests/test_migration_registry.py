@@ -62,14 +62,53 @@ assert \"migrate_vault\" not in sys.modules
             registry = migration_registry.default_migration_registry()
             self.assertIsNone(registry.edges[0].planner)
 
+            bound = migrate_vault._bind_executable_planners(registry)
+            self.assertIsNot(bound, registry)
+            self.assertIs(
+                bound.edges[0].planner,
+                migrate_vault._plan_0_1_to_0_2,
+            )
+            self.assertIsNone(registry.edges[0].planner)
+
             result = migrate_vault.apply_migration(vault, registry=registry)
 
             self.assertEqual(result["status"], "success")
-            self.assertIs(
-                registry.edges[0].planner,
-                migrate_vault._plan_0_1_to_0_2,
-            )
+            self.assertIsNone(registry.edges[0].planner)
             self.assertEqual(result["migration_path"], ["0.1", "0.2"])
+
+
+    def test_binding_preserves_custom_planner_and_edge_metadata(self) -> None:
+        if str(SCRIPTS) not in sys.path:
+            sys.path.insert(0, str(SCRIPTS))
+        import migration_registry  # type: ignore
+        import migrate_vault  # type: ignore
+
+        def custom_planner(stage: Path) -> dict:
+            return {}
+
+        def validator(stage: Path) -> dict:
+            return {}
+
+        def active_validator(stage: Path, plan: dict) -> dict:
+            return {}
+
+        edge = migration_registry.MigrationEdge(
+            "0.1",
+            "0.2",
+            custom_planner,
+            validator=validator,
+            active_validator=active_validator,
+            name="caller-edge",
+        )
+        registry = migration_registry.MigrationRegistry("0.2", (edge,))
+        bound = migrate_vault._bind_executable_planners(registry)
+
+        self.assertIs(bound.edges[0].planner, custom_planner)
+        self.assertIs(bound.edges[0].validator, validator)
+        self.assertIs(bound.edges[0].active_validator, active_validator)
+        self.assertEqual(bound.edges[0].source, "0.1")
+        self.assertEqual(bound.edges[0].target, "0.2")
+        self.assertEqual(bound.edges[0].name, "caller-edge")
 
 
 if __name__ == "__main__":

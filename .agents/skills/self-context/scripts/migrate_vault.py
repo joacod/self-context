@@ -21,7 +21,6 @@ try:
     import sync_indexes
     import vault_state
     from migration_registry import (
-        LATEST_SUPPORTED_SCHEMA,
         MigrationEdge,
         MigrationRegistry,
         MigrationRegistryError,
@@ -49,7 +48,6 @@ except ImportError:  # pragma: no cover - useful when imported as a package
     from . import backup_vault, file_transaction, lint_vault, sync_indexes, vault_state  # type: ignore
     from . import migration_registry as _topology_registry  # type: ignore
     from .migration_registry import (  # type: ignore
-        LATEST_SUPPORTED_SCHEMA,
         MigrationEdge,
         MigrationRegistry,
         MigrationRegistryError,
@@ -966,12 +964,30 @@ def _plan_0_1_to_0_2(vault: Path) -> Dict[str, Any]:
 
 
 def _bind_executable_planners(registry: MigrationRegistry) -> MigrationRegistry:
-    """Bind production planners only when the migration engine needs them."""
+    """Derive an executable registry without mutating the topology registry."""
 
+    if not any(
+        edge.source == "0.1" and edge.target == "0.2" and edge.planner is None
+        for edge in registry.edges
+    ):
+        return registry
+
+    bound_edges: List[MigrationEdge] = []
     for edge in registry.edges:
-        if edge.source == "0.1" and edge.target == "0.2" and edge.planner is None:
-            edge.planner = _plan_0_1_to_0_2
-    return registry
+        planner = edge.planner
+        if edge.source == "0.1" and edge.target == "0.2" and planner is None:
+            planner = _plan_0_1_to_0_2
+        bound_edges.append(
+            MigrationEdge(
+                edge.source,
+                edge.target,
+                planner,
+                validator=edge.validator,
+                active_validator=edge.active_validator,
+                name=edge.name,
+            )
+        )
+    return MigrationRegistry(registry.latest_supported_schema, bound_edges)
 
 
 def default_migration_registry() -> MigrationRegistry:
