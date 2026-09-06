@@ -24,12 +24,10 @@ from synthetic_vault import build_synthetic_vault, tree_snapshot  # noqa: E402
 
 
 class UpgradeWorkflowTests(unittest.TestCase):
-    """Exercise upgrade's observable seams without adding a second runtime.
+    """Exercise deterministic helpers used by upgrade on temporary fixtures.
 
-    The user-facing operation is a skill procedure, while deterministic helpers
-    remain the owners of schema, catalog, and validation behavior. These tests
-    therefore compose those existing seams and assert the documented phase
-    boundaries against fictional temporary vaults.
+    These checks cover compatibility, preservation, and valid control changes.
+    They do not execute the agent's orchestration or semantic decisions.
     """
 
     @staticmethod
@@ -38,7 +36,7 @@ class UpgradeWorkflowTests(unittest.TestCase):
 
     @staticmethod
     def assess(vault: Path) -> dict[str, object]:
-        """Read-only Phase A assessment used by the procedure contract tests."""
+        """Collect read-only results from upgrade assessment helpers."""
 
         migration = migrate_vault.plan_migration(vault, target="latest")
         ordinary_errors, ordinary_warnings = lint_vault.lint_vault(
@@ -74,31 +72,23 @@ class UpgradeWorkflowTests(unittest.TestCase):
             self.assertEqual(self.backup_paths(project), [])
             self.assertFalse((vault / "review" / "deep-reviews").exists())
 
-    def test_schema_phase_uses_migration_then_reorients_active_vault(self) -> None:
+    def test_applied_migration_is_visible_to_schema_and_planning_helpers(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             vault = build_synthetic_vault(project, schema_version="0.1")
             before_page = (vault / "career" / "harbor-launch.md").read_bytes()
-            phases: list[str] = []
 
             plan = migrate_vault.plan_migration(vault, target="latest")
             self.assertEqual(plan["migration_path"], ["0.1", "0.2"])
-            phases.append("assess")
             result = migrate_vault.apply_migration(vault, target="latest")
             self.assertEqual(result["status"], "success")
-            phases.append("schema")
 
-            # This re-read is the seam that prevents pre-migration inventories
-            # from being used for contract/adoption decisions.
             schema = vault_utils.parse_schema(vault)
-            phases.append("reorient")
             self.assertEqual(schema["version"], (0, 2))
             self.assertEqual(
                 migrate_vault.plan_migration(vault, target="latest")["already_current"],
                 True,
             )
-            phases.append("semantic-assessment")
-            self.assertEqual(phases, ["assess", "schema", "reorient", "semantic-assessment"])
             self.assertEqual(before_page, (vault / "career" / "harbor-launch.md").read_bytes())
             self.assertEqual(len(self.backup_paths(project)), 2)
 
@@ -226,32 +216,6 @@ class UpgradeWorkflowTests(unittest.TestCase):
             self.assertTrue((vault / "career" / "harbor-launch.md").is_file())
             self.assertIn("ventures@1", schema_path.read_text(encoding="utf-8"))
             self.assertIn("ventures/index.md", root_index.read_text(encoding="utf-8"))
-
-    def test_selective_adoption_contract_leaves_irrelevant_verticals_disabled(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary:
-            project = Path(temporary)
-            vault = build_synthetic_vault(project, schema_version="0.2")
-            catalog = vault_utils.load_vertical_catalog()
-            records = {
-                str(record["id"]): record
-                for record in vault_utils.catalog_records(catalog)
-            }
-            schema = vault_utils.parse_schema(vault)
-            enabled = {str(entry["id"]) for entry in schema["contract_entries"]}
-
-            self.assertIn("career", enabled)
-            self.assertNotIn("media", enabled)
-            self.assertNotIn("ventures", enabled)
-            self.assertFalse((vault / "media").exists())
-            self.assertFalse((vault / "ventures").exists())
-
-            # A disabled area remains absent when there is no durable reason to
-            # adopt it. The catalog supplies the candidate set; no detector is
-            # added here or to the production skill.
-            for identifier in ("media", "ventures"):
-                self.assertIn(identifier, records)
-                self.assertNotIn(identifier, enabled)
-            self.assertEqual(self.backup_paths(project), [])
 
     def test_future_schema_or_contract_blocks_before_upgrade_mutation(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
