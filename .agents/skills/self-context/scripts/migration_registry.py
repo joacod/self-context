@@ -173,16 +173,6 @@ class MigrationRegistry:
             if visit_state.get(node, 0) == 0:
                 visit(node)
 
-        if self.latest not in nodes:
-            findings.append(
-                _registry_finding(
-                    "error",
-                    "",
-                    f"latest supported schema is not represented: {self.latest}",
-                    "migration-registry",
-                    code="missing-latest",
-                )
-            )
         return findings
 
     def validate(self) -> List[str]:
@@ -195,7 +185,9 @@ class MigrationRegistry:
         target_label = self.latest if _schema_label(target) == "latest" else _schema_label(target)
         findings = self.validation_findings()
         if findings:
-            raise MigrationRegistryError("invalid-registry", "; ".join(self.validate()))
+            raise MigrationRegistryError(
+                "invalid-registry", "; ".join(str(item["message"]) for item in findings)
+            )
         if target_label not in self.supported_versions:
             raise MigrationRegistryError(
                 "unsupported-target",

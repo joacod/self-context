@@ -105,10 +105,6 @@ def parse_scalar(value: str) -> Any:
     return value
 
 
-def is_empty(value: Any) -> bool:
-    return value is None or value == "" or value == "null"
-
-
 def parse_frontmatter_text(text: str) -> Tuple[Optional[Dict[str, Any]], List[str], str]:
     """Parse the deliberately small YAML subset used by durable pages."""
 

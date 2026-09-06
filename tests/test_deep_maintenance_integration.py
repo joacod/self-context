@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import datetime as date
 import json
 import subprocess
 import sys
@@ -19,9 +18,7 @@ for import_path in (TESTS, SCRIPTS):
         sys.path.insert(0, str(import_path))
 
 import backup_vault  # type: ignore  # noqa: E402
-import lint_vault  # type: ignore  # noqa: E402
 import migrate_vault  # type: ignore  # noqa: E402
-import search_vault  # type: ignore  # noqa: E402
 import sync_indexes  # type: ignore  # noqa: E402
 import vault_utils  # type: ignore  # noqa: E402
 from synthetic_vault import (  # noqa: E402
@@ -33,8 +30,6 @@ from synthetic_vault import (  # noqa: E402
     build_synthetic_vault,
     canonical_page_snapshot,
     copy_project,
-    managed_index_paths,
-    packet_from_results,
     tree_snapshot,
 )
 
@@ -46,12 +41,10 @@ SYNC = SCRIPTS / "sync_indexes.py"
 
 
 class DeepMaintenanceIntegrationTests(unittest.TestCase):
-    """Exercise the complete maintenance lifecycle against fictional vaults.
+    """Exercise maintenance helpers together against fictional vaults.
 
-    Deep review, vertical adoption, deep update, and task packets are skill
-    procedures rather than production CLI commands in this repository.  Their
-    tests therefore use the existing deterministic lint/search/catalog seams
-    and a small in-memory procedure harness; no new runtime is introduced.
+    These tests protect filesystem preservation, migration, catalogs, retrieval,
+    and backups. Agent decisions and authorization are covered by skill evals.
     """
 
     def run_script(
@@ -77,69 +70,13 @@ class DeepMaintenanceIntegrationTests(unittest.TestCase):
         self.assertEqual(before, after, label)
         return result
 
-    def assess_vertical(self, vault: Path, identifier: str) -> dict[str, object]:
-        """Read-only adoption assessment from the canonical catalog/schema."""
-
-        catalog = vault_utils.load_vertical_catalog()
-        records = {
-            str(record["id"]): record
-            for record in vault_utils.catalog_records(catalog)
-        }
-        schema = vault_utils.parse_schema(vault)
-        enabled = {
-            str(entry.get("id"))
-            for entry in schema.get("contract_entries", [])
-            if entry.get("id")
-        }
-        record = records[identifier]
-        return {
-            "available": identifier in records,
-            "enabled": identifier in enabled,
-            "vault_area": record["vault_area"],
-            "index_path": record["index_path"],
-            "recommended": identifier not in enabled and identifier == "media",
-        }
-
-    def deep_review_without_retention(self, vault: Path) -> dict[str, object]:
-        """Run the documented deep-review preflight without retaining output."""
-
-        inventory = lint_vault.deep_lint_vault(vault, date.date(2026, 8, 12))
-        return {
-            "snapshot_id": inventory["snapshot_id"],
-            "finding_count": len(inventory["findings"]),
-            "retained": False,
-            "report_path": None,
-            "page_bodies_retained": False,
-        }
-
-    def task_packet_without_retention(self, vault: Path) -> dict[str, object]:
-        """Compose a metadata-only packet in memory from relevant search seams."""
-
-        career = search_vault.search_vault(
-            vault, "Harbor Launch", vertical="career"
-        )
-        writing = search_vault.search_vault(
-            vault, "Explanation Pattern", vertical="writing"
-        )
-        # A packet keeps the smallest relevant hit per requested vertical;
-        # historical duplicates remain searchable but are not pulled in when
-        # they are not needed for this task.
-        results = [career["results"][0], writing["results"][0]]
-        return packet_from_results(
-            results,
-            requested_verticals=("career", "writing"),
-            excluded_verticals=("relationships",),
-            retained=False,
-        )
-
-    def adopt_vertical_with_explicit_authorization(
+    def enable_vertical_fixture(
         self, project_root: Path, vault: Path, identifier: str
     ) -> Path:
-        """Model the documented, explicitly authorized adoption boundary.
+        """Enable fixture controls between recovery and final backups.
 
-        The production skill has no adoption CLI.  This test-only harness
-        creates a recovery snapshot, applies exactly the documented control-file
-        contract, validates it, then creates and retains the final snapshot.
+        The caller selects the vertical; this setup does not test the agent's
+        adoption decision or authorization handling.
         """
 
         catalog = vault_utils.load_vertical_catalog()
@@ -258,38 +195,6 @@ class DeepMaintenanceIntegrationTests(unittest.TestCase):
             self.assertEqual(json.loads(dry_run.stdout)["from_schema"], "0.1")
             self.assertEqual(backup_paths(legacy_project), [])
 
-            assessment = self.assert_read_only(
-                project,
-                lambda: self.assess_vertical(vault, "media"),
-                "vertical adoption assessment changed the synthetic project",
-            )
-            self.assertEqual(assessment["available"], True)
-            self.assertEqual(assessment["enabled"], False)
-            self.assertEqual(assessment["recommended"], True)
-
-            review = self.assert_read_only(
-                project,
-                lambda: self.deep_review_without_retention(vault),
-                "no-retention deep review changed the synthetic project",
-            )
-            self.assertEqual(review["retained"], False)
-            self.assertIsNone(review["report_path"])
-            self.assertFalse((vault / "review" / "deep-reviews").exists())
-
-            packet = self.assert_read_only(
-                project,
-                lambda: self.task_packet_without_retention(vault),
-                "ephemeral task packet changed the synthetic project",
-            )
-            self.assertEqual(packet["retained"], False)
-            self.assertTrue(packet["derived"])
-            self.assertEqual(
-                set(packet["evidence_paths"]),
-                {"career/harbor-launch.md", "writing/explanation-pattern.md"},
-            )
-            self.assertIn("Excluded unrelated relationships context.", packet["important_exclusions"])
-            self.assertNotIn(SENSITIVE_BODY_MARKER, json.dumps(packet))
-
             self.assertEqual(before_schema, (vault / "SCHEMA.md").read_bytes())
             self.assertEqual(before_log, (vault / "log.md").read_bytes())
             self.assertEqual(backup_paths(project), [])
@@ -375,12 +280,6 @@ class DeepMaintenanceIntegrationTests(unittest.TestCase):
             )
             self.assert_success(search, "search failed after migration")
             self.assertEqual(json.loads(search.stdout)["results"][0]["path"], "career/harbor-launch.md")
-            packet = self.task_packet_without_retention(vault)
-            self.assertEqual(packet["retained"], False)
-            self.assertEqual(
-                set(packet["evidence_paths"]),
-                {"career/harbor-launch.md", "writing/explanation-pattern.md"},
-            )
 
     def test_bounded_catalog_refresh_keeps_recovery_and_final_backups(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -412,7 +311,7 @@ class DeepMaintenanceIntegrationTests(unittest.TestCase):
                 "catalog check failed after repeated write",
             )
 
-    def test_explicit_media_adoption_is_selective_and_validated(self) -> None:
+    def test_enabled_media_controls_are_validated_without_changing_pages(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             vault = build_synthetic_vault(project, schema_version="0.2")
@@ -421,7 +320,7 @@ class DeepMaintenanceIntegrationTests(unittest.TestCase):
             self.assertFalse((vault / "media").exists())
             self.assertEqual(backup_paths(project), [])
 
-            self.adopt_vertical_with_explicit_authorization(project, vault, "media")
+            self.enable_vertical_fixture(project, vault, "media")
             self.assertEqual(len(backup_paths(project)), 2)
             schema = (vault / "SCHEMA.md").read_text(encoding="utf-8")
             self.assertIn("- media@1", schema)
@@ -506,52 +405,6 @@ class DeepMaintenanceIntegrationTests(unittest.TestCase):
             self.assertNotEqual(deep_json.returncode, 0)
             invalid_report = json.loads(deep_json.stdout)
             self.assertTrue(invalid_report["severity_counts"]["error"])
-
-    def test_fixture_exposes_required_medium_vault_surfaces(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary:
-            vault = build_synthetic_vault(Path(temporary), schema_version="0.2")
-            schema = (vault / "SCHEMA.md").read_text(encoding="utf-8")
-            self.assertIn("schema_version: 0.2", schema)
-            self.assertEqual(
-                [line.strip()[2:] for line in schema.splitlines() if line.strip().startswith("-")],
-                [f"{identifier}@1" for identifier in ENABLED_VERTICALS],
-            )
-            self.assertTrue(all((vault / identifier / "index.md").is_file() for identifier in ENABLED_VERTICALS))
-            self.assertTrue(all(not (vault / identifier).exists() for identifier in DISABLED_VERTICALS))
-            self.assertIn("Manual root navigation", (vault / "index.md").read_text())
-            self.assertIn(CATALOG_START, (vault / "career" / "index.md").read_text())
-            self.assertIn("aliases:", (vault / "career" / "harbor-launch.md").read_text())
-            statuses = {
-                "active": "career/harbor-launch.md",
-                "archived": "career/archived-role.md",
-                "review": "review/maintenance-candidate.md",
-                "superseded": "career/superseded-launch.md",
-            }
-            for status, relative in statuses.items():
-                self.assertIn(f"status: {status}", (vault / relative).read_text())
-            self.assertTrue((vault / "sources" / "current-signal.md").is_file())
-            derived = (vault / "derived" / "maintenance-brief.md").read_text()
-            self.assertIn("../sources/current-signal.md", derived)
-            self.assertTrue((vault / "custom-notes" / "field-log.md").is_file())
-            self.assertIn(SENSITIVE_BODY_MARKER, (vault / "custom-notes" / "field-log.md").read_text())
-            self.assertIn("../writing/explanation-pattern.md", (vault / "core" / "decision-trail.md").read_text())
-            self.assertEqual(
-                managed_index_paths(vault),
-                sorted(
-                    [
-                        "core/index.md",
-                        "derived/index.md",
-                        "index.md",
-                        "career/index.md",
-                        "learning/index.md",
-                        "writing/index.md",
-                        "relationships/index.md",
-                        "review/index.md",
-                        "sources/index.md",
-                    ]
-                ),
-            )
-
 
 if __name__ == "__main__":
     unittest.main()

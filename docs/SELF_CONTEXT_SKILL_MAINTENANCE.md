@@ -67,9 +67,10 @@ changes rather than merely shortening wording.
 5. **Add synthetic coverage.** Add behavior evals for the new operation and
    trigger evals when the invocation boundary changes. Keep examples fictional
    and provenance-aware.
-6. **Validate the whole contract.** Run metadata validation, targeted tests,
-   `python3 scripts/validate_repo.py`, and the relevant direct test or CI
-   commands. Inspect the final diff for duplicated rules, private data, and
+6. **Validate the whole contract.** Run relevant focused checks while editing,
+   then `python3 scripts/validate_repo.py` as the final repository gate. It owns
+   metadata, tracked JSON, and the full unittest suite, including consistency
+   checks. Inspect the final diff for duplicated rules, private data, and
    accidental changes.
 
 ## Description-change checklist

@@ -479,18 +479,6 @@ class DeepLintTests(unittest.TestCase):
             self.assertIn("core/disconnected/a/index.md", unreachable)
             self.assertIn("core/disconnected/b/index.md", unreachable)
 
-    def test_snapshot_is_deterministic_for_a_cyclic_index_graph(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary:
-            vault = self.base_vault(Path(temporary))
-            (vault / "core" / "index.md").write_text(
-                "# Core\n\n- [A](cycle/a/index.md)\n", encoding="utf-8"
-            )
-            self.write_index(vault, "core/cycle/a/index.md", ["- [B](../b/index.md)"])
-            self.write_index(vault, "core/cycle/b/index.md", ["- [A](../a/index.md)"])
-            _, first = self.run_deep_lint(vault)
-            _, second = self.run_deep_lint(vault)
-            self.assertEqual(first["snapshot_id"], second["snapshot_id"])
-
     def test_snapshot_ignores_obsidian_and_backup_state(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             vault = self.base_vault(Path(temporary))

@@ -450,6 +450,50 @@ class LintVaultTests(unittest.TestCase):
                 )
             )
 
+    def test_catalog_reads_do_not_grow_with_page_count(self) -> None:
+        sys.path.insert(0, str(SCRIPTS))
+        import lint_vault
+
+        for operation in (lint_vault.lint_vault, lint_vault.deep_lint_vault):
+            with self.subTest(operation=operation.__name__), tempfile.TemporaryDirectory() as temporary:
+                vault = self.make_vault(Path(temporary), career=True, custom_area=True)
+                read_counts = []
+                for count in (1, 12):
+                    for area in ("core", "career", "archive"):
+                        for number in range(count):
+                            (vault / area / f"page-{number}.md").write_text(
+                                "# Synthetic page without frontmatter\n", encoding="utf-8"
+                            )
+                    with mock.patch.object(
+                        lint_vault, "load_vertical_catalog", wraps=lint_vault.load_vertical_catalog
+                    ) as catalog_reads:
+                        result = operation(vault, date.date(2026, 8, 12))
+                    read_counts.append(catalog_reads.call_count)
+
+                    if operation is lint_vault.lint_vault:
+                        errors, _ = result
+                        for area in ("core", "career"):
+                            self.assertTrue(any(f"{area}/page-0.md:" in error for error in errors))
+                        self.assertFalse(any("archive/page-" in error for error in errors))
+                    else:
+                        self.assertEqual(
+                            {page["path"] for page in result["pages"]},
+                            {
+                                f"{area}/page-{number}.md"
+                                for area in ("core", "career")
+                                for number in range(count)
+                            },
+                        )
+                        self.assertEqual(
+                            {
+                                item["path"] for item in result["findings"]
+                                if item["classification"] == "custom-area"
+                            },
+                            {"archive/"} | {f"archive/page-{number}.md" for number in range(count)},
+                        )
+                self.assertGreater(read_counts[0], 0)
+                self.assertEqual(read_counts[0], read_counts[1])
+
     def test_deep_lint_reuses_records_for_catalog_sync(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             vault = self.make_vault(Path(temporary), schema="0.1")

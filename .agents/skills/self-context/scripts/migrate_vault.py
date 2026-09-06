@@ -35,8 +35,6 @@ try:
         canonical_files,
         catalog_records,
         infer_enabled_contracts,
-        iter_markdown_links,
-        link_target,
         load_vertical_catalog,
         parse_schema,
         safe_read_bytes,
@@ -62,8 +60,6 @@ except ImportError:  # pragma: no cover - useful when imported as a package
         canonical_files,
         catalog_records,
         infer_enabled_contracts,
-        iter_markdown_links,
-        link_target,
         load_vertical_catalog,
         parse_schema,
         safe_read_bytes,
@@ -73,12 +69,6 @@ except ImportError:  # pragma: no cover - useful when imported as a package
     )
 
 
-SCHEMA_LINE = re.compile(
-    r"^([ \t]*schema_version:[ \t]*)0\.1([ \t]*)$", re.MULTILINE
-)
-SCHEMA_SECTION_LINE = re.compile(
-    r"^[ \t]*vertical_contracts:[^\r\n]*$", re.MULTILINE
-)
 MIGRATION_OPERATION = "migrate_schema_0_1_to_0_2"
 ROOT_CONTROL_FILES = {"SCHEMA.md", "index.md", "log.md"}
 NON_CANONICAL_ROOTS = {".obsidian", "backups", ".DS_Store"}

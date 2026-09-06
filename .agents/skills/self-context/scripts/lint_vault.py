@@ -164,11 +164,11 @@ def _known_top_level_areas() -> Set[str]:
     return known
 
 
-def _is_custom_top_level(path: Path, root: Path) -> bool:
+def _is_custom_top_level(path: Path, root: Path, known_areas: Set[str]) -> bool:
     parts = path.relative_to(root).parts
     if len(parts) == 1 and parts[0] in {"SCHEMA.md", "index.md", "log.md"}:
         return False
-    return bool(parts) and parts[0] not in _known_top_level_areas() and parts[0] not in {".obsidian", "backups", ".DS_Store"}
+    return bool(parts) and parts[0] not in known_areas and parts[0] not in {".obsidian", "backups", ".DS_Store"}
 
 
 def _schema_findings(root: Path) -> List[Dict[str, Any]]:
@@ -200,12 +200,15 @@ def _ordinary_findings(
     today: date.date,
     *,
     allow_legacy_source: bool = False,
+    known_areas: Optional[Set[str]] = None,
 ) -> List[Dict[str, Any]]:
     findings: List[Dict[str, Any]] = []
     if not root.exists():
         return [_finding("error", "vault", f"vault does not exist: {root}")]
     if not root.is_dir():
         return [_finding("error", "vault", f"vault path is not a directory: {root}")]
+    if known_areas is None:
+        known_areas = _known_top_level_areas()
 
     for required in ("SCHEMA.md", "index.md", "log.md"):
         if not (root / required).is_file():
@@ -273,7 +276,7 @@ def _ordinary_findings(
                     _finding("error", "links", f"broken link: {destination}", relative)
                 )
 
-        if is_control_page(path, root) or _is_custom_top_level(path, root):
+        if is_control_page(path, root) or _is_custom_top_level(path, root, known_areas):
             # Custom top-level areas retain their own portable taxonomy. Keep
             # universal link safety above, but do not require SelfContext page
             # frontmatter or managed metadata for content the migration must
@@ -445,10 +448,6 @@ def lint_vault(
     errors = [_legacy(item) for item in findings if item["severity"] == "error"]
     warnings = [_legacy(item) for item in findings if item["severity"] == "warning"]
     return errors, warnings
-
-
-def _record_path(record: Dict[str, Any]) -> str:
-    return str(record.get("path", ""))
 
 
 _PAGE_DATE_FIELDS = ("generated", "verified", "observed", "reviewed", "updated", "stale_after")
@@ -747,15 +746,16 @@ def _deep_findings(
     allow_legacy_source: bool = False,
 ) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
     root = root.expanduser()
+    known_areas = _known_top_level_areas()
     ordinary_findings = _ordinary_findings(
-        root, today, allow_legacy_source=allow_legacy_source
+        root, today, allow_legacy_source=allow_legacy_source, known_areas=known_areas
     )
     # Unknown custom top-level areas are informational in deep lint. Preserve
     # ordinary findings for the known canonical contract, but do not validate a
     # user's custom taxonomy as if it were SelfContext-managed content.
     findings = [
         item for item in ordinary_findings
-        if not (item.get("path") and _is_custom_top_level(root / str(item["path"]), root))
+        if not (item.get("path") and _is_custom_top_level(root / str(item["path"]), root, known_areas))
     ]
     reported_read_paths = {
         str(item["path"])
@@ -810,10 +810,12 @@ def _deep_findings(
         for record in all_records
         if isinstance(record.get("text"), str)
     }
-    custom_records = [record for record in all_records if _is_custom_top_level(root / str(record["path"]), root)]
-    for record in custom_records:
-        findings.append(_finding("info", "custom-area", "unrecognized custom top-level area preserved", str(record["path"])))
-    records = [record for record in all_records if record not in custom_records]
+    records: List[Dict[str, Any]] = []
+    for record in all_records:
+        if _is_custom_top_level(root / str(record["path"]), root, known_areas):
+            findings.append(_finding("info", "custom-area", "unrecognized custom top-level area preserved", str(record["path"])))
+        else:
+            records.append(record)
     records_by_path = {str(record["path"]): record for record in records}
     page_metadata: List[Dict[str, Any]] = []
     for record in records:
@@ -912,12 +914,12 @@ def _deep_findings(
     managed_labels = {
         relative_label(path, root)
         for path in canonical_markdown_paths
-        if not _is_custom_top_level(path, root)
+        if not _is_custom_top_level(path, root, known_areas)
     }
     managed_index_labels = {
         relative_label(path, root)
         for path in canonical_markdown_paths
-        if path.name == "index.md" and not _is_custom_top_level(path, root)
+        if path.name == "index.md" and not _is_custom_top_level(path, root, known_areas)
     }
     for path in canonical_markdown_paths:
         label = relative_label(path, root)
@@ -970,7 +972,7 @@ def _deep_findings(
     root_index = root / "index.md"
     reachable: Set[str] = set()
     queue: deque[str] = deque()
-    processed_indexes: Set[str] = set()
+    # Keep every scheduled index in the set, even after visiting it, to stop cycles.
     scheduled_indexes: Set[str] = set()
     if root_index.is_file():
         root_label = relative_label(root_index, root)
@@ -979,12 +981,6 @@ def _deep_findings(
         scheduled_indexes.add(root_label)
     while queue:
         source_label = queue.popleft()
-        if source_label in processed_indexes:
-            continue
-        # Mark before expanding links. A permanent processed set is required
-        # for both cycles and duplicate links; queue membership alone is not a
-        # traversal invariant.
-        processed_indexes.add(source_label)
         for link in by_source.get(source_label, []):
             target = link.get("target")
             if not target or target not in canonical_labels:
@@ -993,7 +989,6 @@ def _deep_findings(
                 reachable.add(target)
             if (
                 target in managed_index_labels
-                and target not in processed_indexes
                 and target not in scheduled_indexes
             ):
                 queue.append(target)
