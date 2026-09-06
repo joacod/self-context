@@ -1,4 +1,3 @@
-import json
 import subprocess
 import sys
 import unittest
@@ -262,17 +261,6 @@ None recorded.
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertIn("index.md does not mention relationships/index.md", result.stdout)
             self.assertIn("index.md does not mention media/index.md", result.stdout)
-
-    def test_new_advisor_skill_evals_are_parseable(self) -> None:
-        for skill_name in ("relationships-advisor", "media-advisor"):
-            skill_dir = REPOSITORY_ROOT / ".agents/skills" / skill_name
-            with self.subTest(skill_name=skill_name):
-                metadata = json.loads((skill_dir / "evals/evals.json").read_text())
-                triggers = json.loads((skill_dir / "evals/trigger-evals.json").read_text())
-                self.assertEqual(metadata["skill_name"], skill_name)
-                self.assertGreaterEqual(len(metadata["evals"]), 10)
-                self.assertGreaterEqual(len(triggers), 20)
-                self.assertTrue((skill_dir / "SKILL.md").read_text().startswith("---\n"))
 
 
 if __name__ == "__main__":

@@ -116,10 +116,6 @@ def is_under_noncanonical_directory(path: Path, root: Path) -> bool:
     return is_noncanonical(path, root)
 
 
-def is_non_durable_page(path: Path, root: Path) -> bool:
-    return is_control_page(path, root)
-
-
 def _finding(
     severity: str,
     classification: str,

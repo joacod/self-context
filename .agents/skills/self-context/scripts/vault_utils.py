@@ -236,10 +236,28 @@ def is_deep_report(path: Path, root: Path) -> bool:
     return len(parts) >= 2 and parts[0] == "review" and parts[1] == "deep-reviews"
 
 
-def iter_vault_entries(root: Path) -> Iterator[Path]:
-    """Yield all entries below root without following symlinked directories."""
+def iter_vault_entries(
+    root: Path, scopes: Optional[Sequence[str]] = None
+) -> Iterator[Path]:
+    """Yield canonical entries, pruning branches outside optional relative scopes.
 
-    if not root.exists() or not root.is_dir() or root.is_symlink():
+    None retains unrestricted maintenance traversal; an empty selection yields
+    nothing. Ancestors of a selected file or nested directory are traversed,
+    but only selected entries are yielded. Overlapping scopes visit each entry
+    once, and symlinked directories are never followed.
+    """
+
+    def selected(path: Path) -> bool:
+        label = relative_label(path, root)
+        return scopes is None or any(
+            label == scope or label.startswith(scope + "/") for scope in scopes
+        )
+
+    def leads_to_scope(path: Path) -> bool:
+        label = relative_label(path, root)
+        return selected(path) or any(scope.startswith(label + "/") for scope in scopes or ())
+
+    if (scopes is not None and not scopes) or not root.exists() or not root.is_dir() or root.is_symlink():
         return
     for current, directories, files in os.walk(root, followlinks=False):
         current_path = Path(current)
@@ -248,15 +266,16 @@ def iter_vault_entries(root: Path) -> Iterator[Path]:
         kept_directories: List[str] = []
         for name in directories:
             path = current_path / name
-            if is_noncanonical(path, root):
+            if is_noncanonical(path, root) or not leads_to_scope(path):
                 continue
-            yield path
+            if selected(path):
+                yield path
             if not path.is_symlink():
                 kept_directories.append(name)
         directories[:] = kept_directories
         for name in files:
             path = current_path / name
-            if not is_noncanonical(path, root):
+            if not is_noncanonical(path, root) and selected(path):
                 yield path
 
 
@@ -286,19 +305,21 @@ def iter_all_entries(root: Path) -> Iterator[Path]:
         directories[:] = [name for name in directories if not (current_path / name).is_symlink()]
 
 
-def canonical_files(root: Path) -> List[Path]:
+def canonical_files(root: Path, scopes: Optional[Sequence[str]] = None) -> List[Path]:
     return sorted(
         (
             path
-            for path in iter_vault_entries(root)
+            for path in iter_vault_entries(root, scopes=scopes)
             if path.is_file() and not path.is_symlink()
         ),
         key=lambda path: relative_label(path, root),
     )
 
 
-def canonical_markdown_files(root: Path) -> List[Path]:
-    return [path for path in canonical_files(root) if path.suffix.lower() == ".md"]
+def canonical_markdown_files(
+    root: Path, scopes: Optional[Sequence[str]] = None
+) -> List[Path]:
+    return [path for path in canonical_files(root, scopes=scopes) if path.suffix.lower() == ".md"]
 
 
 def normalized_text(value: str) -> str:
@@ -1060,15 +1081,14 @@ def page_record(path: Path, root: Path) -> Dict[str, Any]:
     return record
 
 
-def durable_page_records(root: Path, include_reports: bool = False) -> List[Dict[str, Any]]:
+def durable_page_records(
+    root: Path, include_reports: bool = False, *, scopes: Optional[Sequence[str]] = None
+) -> List[Dict[str, Any]]:
     records: List[Dict[str, Any]] = []
-    for path in canonical_markdown_files(root):
-        if is_control_page(path, root):
+    for path in canonical_markdown_files(root, scopes=scopes):
+        if is_control_page(path, root) or (is_deep_report(path, root) and not include_reports):
             continue
-        record = page_record(path, root)
-        if record.get("is_deep_report") and not include_reports:
-            continue
-        records.append(record)
+        records.append(page_record(path, root))
     return records
 
 

@@ -340,12 +340,6 @@ def _compact_link(link: Mapping[str, Any]) -> Dict[str, Any]:
     }
 
 
-def _compact_sources(value: Any) -> List[str]:
-    return _compact_text_list(
-        value, count=SOURCE_REFERENCE_LIMIT, limit=PATH_LIMIT
-    )
-
-
 def _compact_match(item: Mapping[str, Any], anchors: Sequence[str]) -> Dict[str, Any]:
     result: Dict[str, Any] = {
         "id": _bounded_optional(item.get("id"), PATH_LIMIT),
@@ -361,7 +355,9 @@ def _compact_match(item: Mapping[str, Any], anchors: Sequence[str]) -> Dict[str,
         "generated": _bounded_optional(item.get("generated"), DATE_LIMIT),
         "verified": _bounded_optional(item.get("verified"), DATE_LIMIT),
         "stale_after": _bounded_optional(item.get("stale_after"), DATE_LIMIT),
-        "sources": _compact_sources(item.get("sources")),
+        "sources": _compact_text_list(
+            item.get("sources"), count=SOURCE_REFERENCE_LIMIT, limit=PATH_LIMIT
+        ),
         "vertical": _bounded_optional(item.get("vertical"), DATE_LIMIT),
         "matched_fields": _compact_text_list(
             item.get("matched_fields"), count=SOURCE_REFERENCE_LIMIT, limit=DATE_LIMIT
@@ -637,6 +633,7 @@ def prepare_context(
         include_sources=include_sources,
         exclude_archived=exclude_archived,
         exclude_superseded=exclude_superseded,
+        load_candidates=result_limit > 0,
     )
     for anchor_number, anchor in enumerate(search_anchors):
         report = search_vault._search_corpus(
