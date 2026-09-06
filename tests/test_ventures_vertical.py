@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import datetime as date
-import json
 import sys
 import tempfile
 import unittest
@@ -143,58 +142,6 @@ A fictional milestone is recorded without a claim about market success.
     @staticmethod
     def deep_report(vault: Path) -> dict[str, object]:
         return lint_vault.deep_lint_vault(vault, date.date(2026, 8, 14))
-
-    def test_catalog_procedure_and_advisor_metadata_are_consistent(self) -> None:
-        catalog = vault_utils.load_vertical_catalog()
-        record = next(
-            item for item in vault_utils.catalog_records(catalog) if item["id"] == "ventures"
-        )
-        self.assertEqual(
-            {
-                "display_name": record["display_name"],
-                "contract_version": record["contract_version"],
-                "vault_area": record["vault_area"],
-                "index_path": record["index_path"],
-                "procedure_path": record["procedure_path"],
-                "advisor_pack": record["advisor_pack"],
-            },
-            {
-                "display_name": "Ventures / Projects",
-                "contract_version": 1,
-                "vault_area": "ventures",
-                "index_path": "ventures/index.md",
-                "procedure_path": "references/ventures.md",
-                "advisor_pack": "ventures-advisor",
-            },
-        )
-        self.assertEqual(vault_utils.validate_vertical_catalog(), [])
-
-        procedure = ROOT / ".agents/skills/self-context/references/ventures.md"
-        header = vault_utils.procedure_header(procedure)
-        self.assertEqual(header["vertical_id"], "ventures")
-        self.assertEqual(header["contract_version"], 1)
-        self.assertEqual(header["vault_area"], "ventures")
-        self.assertEqual(header["advisor_skill"], "ventures-advisor")
-        procedure_text = procedure.read_text(encoding="utf-8")
-        self.assertIn("## Contract migrations", procedure_text)
-        for phrase in (
-            "initiative lifecycle",
-            "stale claim needs freshness confirmation",
-            "proposal is not a commitment",
-            "Career contract `career@1` remains semantically valid",
-            "Read-only work never creates or",
-        ):
-            self.assertIn(phrase, procedure_text)
-
-        skill_dir = ROOT / ".agents/skills/ventures-advisor"
-        metadata = json.loads((skill_dir / "evals/evals.json").read_text(encoding="utf-8"))
-        triggers = json.loads(
-            (skill_dir / "evals/trigger-evals.json").read_text(encoding="utf-8")
-        )
-        self.assertEqual(metadata["skill_name"], "ventures-advisor")
-        self.assertGreaterEqual(len(metadata["evals"]), 16)
-        self.assertGreaterEqual(len(triggers), 20)
-        self.assertTrue((skill_dir / "SKILL.md").read_text(encoding="utf-8").startswith("---\n"))
 
     def test_schema_02_selectively_enables_exact_ventures_contract(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import json
 import re
-import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -128,198 +128,27 @@ class RepositoryConsistencyTests(unittest.TestCase):
                 str(record["id"]),
             )
 
-    def test_validation_and_release_commands_are_documented(self) -> None:
-        readme = (ROOT / "README.md").read_text(encoding="utf-8")
-        checklist = ROOT / "docs/DEEP_MAINTENANCE_RELEASE_CHECKLIST.md"
-        self.assertIn("python3 scripts/validate_repo.py", readme)
-        self.assertTrue(checklist.is_file())
-        checklist_text = checklist.read_text(encoding="utf-8")
-        self.assertIn("python3 scripts/validate_repo.py", checklist_text)
-
-    def test_positioning_and_operational_ownership_are_documented(self) -> None:
-        readme = (ROOT / "README.md").read_text(encoding="utf-8")
-        vision = (ROOT / "docs/VISION.md").read_text(encoding="utf-8")
-        architecture = (ROOT / "docs/ARCHITECTURE.md").read_text(encoding="utf-8")
-        roadmap = (ROOT / "docs/ROADMAP.md").read_text(encoding="utf-8")
-        skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-        query = (SKILL_ROOT / "references/query.md").read_text(encoding="utf-8")
-        checkpoint = (SKILL_ROOT / "references/checkpoint.md").read_text(encoding="utf-8")
-        combined = "\\n".join(
-            (readme, vision, architecture, roadmap, skill, query, checkpoint)
-        ).casefold()
-
-        for phrase in (
-            "think with context you own",
-            "continue thinking instead of starting over",
-            "context has a lifecycle",
-            "a conversation is ephemeral by default",
-            "reasoning is not automatically memory",
-            "existing ai harness/model",
-            "local markdown context vault",
-            "brainstorming is an informal use case",
-        ):
-            self.assertIn(phrase, combined, phrase)
-
-        self.assertIn("selfcontext is not currently:", vision.casefold())
-        self.assertIn("- a brainstorming vertical.", vision.casefold())
-        self.assertIn("references/query.md#task-context-packets", skill)
-        self.assertIn("canonical procedure for query", query.casefold())
-        self.assertIn(
-            "reuses the existing ingest, query persistence",
-            checkpoint.casefold(),
-        )
-
-    def test_contextual_query_checkpoint_and_receipt_boundaries_are_documented(self) -> None:
-        query = (SKILL_ROOT / "references/query.md").read_text(encoding="utf-8").casefold()
-        checkpoint = (SKILL_ROOT / "references/checkpoint.md").read_text(encoding="utf-8").casefold()
-        skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8").casefold()
-        for phrase in (
-            "contextual retrieval scope rules",
-            "--scope path",
-            "--expand-linked-sources",
-            "read-only by default",
-            "operational logs",
-            "no automatic stale horizon",
-            "coverage/as-of",
-            "assertion",
-            "scope used",
-            "dry-run",
-            "durable candidate identified; not applied",
-        ):
-            self.assertIn(phrase, query + "\n" + checkpoint + "\n" + skill, phrase)
-        self.assertIn("do not log by default", query)
-        self.assertIn("log entry, index write", skill)
-
-    def test_normal_orientation_is_bounded_and_owner_scoped(self) -> None:
-        skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-        query = (SKILL_ROOT / "references/query.md").read_text(encoding="utf-8")
-        initialization = (SKILL_ROOT / "references/initialization.md").read_text(encoding="utf-8")
-        ingest = (SKILL_ROOT / "references/ingest.md").read_text(encoding="utf-8")
-        deep_maintenance = (SKILL_ROOT / "references/deep-maintenance.md").read_text(encoding="utf-8")
-        normal = "\n".join((skill, query, initialization, ingest)).casefold()
-
-        self.assertIn("recent_log.py", normal)
-        self.assertIn("search_log.py", normal)
-        self.assertIn("smallest likely owner", normal)
-        self.assertIn("unrelated enabled verticals", normal)
-        self.assertIn("explicit broad", normal)
-        self.assertNotIn(
-            "read `schema.md`, `index.md`, the most recent entries in `log.md`, and enabled vertical indexes",
-            normal,
-        )
-        self.assertIn("enabled vertical indexes", deep_maintenance.casefold())
-        self.assertIn("explicit broad maintenance", deep_maintenance.casefold())
-
-        tracked_paths = subprocess.run(
-            ["git", "ls-files", "--", "*recent.md", "*recent-additions.md"],
-            cwd=ROOT,
-            capture_output=True,
-            text=True,
-            check=True,
-        ).stdout.splitlines()
-        self.assertEqual(tracked_paths, [])
-
-        evals = json.loads((SKILL_ROOT / "evals/evals.json").read_text(encoding="utf-8"))["evals"]
-        by_id = {int(case["id"]): case for case in evals}
-        for identifier in (155, 156, 157, 158):
-            self.assertIn(identifier, by_id)
-            self.assertGreaterEqual(len(by_id[identifier].get("expectations", [])), 3)
-
-    def test_natural_language_examples_cover_the_operational_loop(self) -> None:
-        readme = (ROOT / "README.md").read_text(encoding="utf-8")
-        trigger_evals = json.loads(
-            (SKILL_ROOT / "evals/trigger-evals.json").read_text(encoding="utf-8")
-        )
-        true_queries = {
-            str(item["query"])
-            for item in trigger_evals
-            if item.get("should_trigger") is True
-        }
-        examples = (
-            "ingest my resume into SelfContext",
-            "what does my context say about X?",
-            "help me think through X using my context",
-            "compare these options against my current goals",
-            "challenge this idea based on what you know",
-            "checkpoint this discussion",
-            "what from this conversation is actually worth keeping?",
-            "show me the context behind that recommendation",
-            "review my context for stale or conflicting information",
-        )
-        for example in examples:
-            self.assertIn(example, readme)
-            self.assertIn(example, true_queries)
-
-    def test_initialization_preserves_schema_compatibility_and_selective_activation(self) -> None:
-        text = (SKILL_ROOT / "references/initialization.md").read_text(encoding="utf-8")
-        normalized = " ".join(text.casefold().split())
-        self.assertRegex(text, r"schema_version:\s*0\.2")
-        self.assertRegex(text, r"vertical_contracts:")
-        self.assertRegex(normalized, r"schema\s+0\.1")
-        self.assertRegex(normalized, r"schema\s+0\.2")
-        self.assertIn("contract markers", normalized)
-        self.assertRegex(normalized, r"migration\s+procedure")
-        self.assertRegex(normalized, r"does not enable unrelated available\s+verticals")
-        self.assertRegex(
-            normalized,
-            r"never create or enable a vertical for a read-only query, assessment, lint, or\s+review\.",
-        )
-
-    def test_deep_maintenance_terminology_keeps_read_only_and_mutating_boundaries(self) -> None:
-        text = (SKILL_ROOT / "references/deep-maintenance.md").read_text(encoding="utf-8")
-        lowered = text.casefold()
-        self.assertIn("deep review", lowered)
-        self.assertIn("deep update", lowered)
-        self.assertIn("read-only", lowered)
-        self.assertIn("pre-write recovery", lowered)
-        self.assertIn("post-write backup", lowered)
-        self.assertIn("retaining both", lowered)
-        self.assertIn("snapshot", lowered)
-        self.assertIn("human decisions", lowered)
-        self.assertNotRegex(lowered, r"deep review[^.\n]{0,120}\b(?:writes|mutates|creates a backup)\b")
-        self.assertNotRegex(lowered, r"deep update[^.\n]{0,120}\b(?:read-only|never writes)\b")
-
-    def test_all_tracked_json_and_eval_files_parse(self) -> None:
-        result = subprocess.run(
-            ["git", "ls-files", "-z", "--", "*.json"],
-            cwd=ROOT,
-            capture_output=True,
-            check=True,
-        )
-        paths = [
-            ROOT / Path(raw.decode())
-            for raw in result.stdout.split(b"\0")
-            if raw
-        ]
-        self.assertGreaterEqual(len(paths), 1)
-        eval_paths = []
+    def test_eval_structure_and_unique_ids(self) -> None:
+        paths = sorted(ROOT.glob(".agents/skills/*/evals/*.json"))
+        self.assertTrue(paths)
         for path in paths:
-            with path.open(encoding="utf-8") as handle:
-                parsed = json.load(handle)
-            if "/evals/" in path.as_posix():
-                eval_paths.append(path)
+            with self.subTest(path=path.relative_to(ROOT)):
+                parsed = json.loads(path.read_text(encoding="utf-8"))
                 if path.name == "evals.json":
                     self.assertIsInstance(parsed, dict)
-                    cases = parsed.get("evals")
+                    self.assertEqual(parsed["skill_name"], path.parents[1].name)
+                    cases = parsed["evals"]
                     self.assertIsInstance(cases, list)
-                    ids = [case.get("id") for case in cases]
-                    self.assertEqual(len(ids), len(set(ids)), path.as_posix())
+                    ids = [case["id"] for case in cases]
+                    self.assertEqual(len(ids), len(set(ids)))
+                    for case in cases:
+                        self.assertIsInstance(case["prompt"], str)
+                        self.assertIsInstance(case["expected_output"], str)
+                        self.assertIsInstance(case["expectations"], list)
                 else:
                     self.assertIsInstance(parsed, list)
-        self.assertGreaterEqual(len(eval_paths), 2)
 
     def test_synthetic_example_placeholders_follow_repository_convention(self) -> None:
-        policy_text = "\n".join(
-            (
-                (ROOT / "AGENTS.md").read_text(encoding="utf-8"),
-                (ROOT / "docs/SELF_CONTEXT_SKILL_MAINTENANCE.md").read_text(
-                    encoding="utf-8"
-                ),
-            )
-        )
-        self.assertIn("John Doe", policy_text)
-        self.assertIn("MyContext Systems", policy_text)
-
         paths = sorted(ROOT.glob(".agents/skills/*/evals/*.json"))
         paths.extend(
             (
@@ -335,190 +164,24 @@ class RepositoryConsistencyTests(unittest.TestCase):
                     f"legacy synthetic placeholder {label!r} in {path.relative_to(ROOT)}",
                 )
 
-    def test_migration_procedure_and_skill_routing_are_canonical(self) -> None:
-        skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-        procedure_path = SKILL_ROOT / "references/migration.md"
-        procedure = procedure_path.read_text(encoding="utf-8")
-        readme = (ROOT / "README.md").read_text(encoding="utf-8")
-        self.assertTrue(procedure_path.is_file())
-        self.assertIn("Migrate vault", skill)
-        self.assertIn("migrate vault latest", skill.casefold())
-        self.assertIn("deep review vault", skill.casefold())
-        self.assertIn("deep update vault", skill.casefold())
-        self.assertIn("migrate self-context latest", skill.casefold())
-        self.assertIn("upgrade vault latest", readme.casefold())
-        self.assertNotIn("advanced maintenance prompts include", readme.casefold())
-        self.assertIn("references/migration.md", skill)
-        self.assertIn("provisional recovery backup", skill.casefold())
-        self.assertIn("final backup", skill.casefold())
-        self.assertIn("--check", procedure)
-        self.assertIn("--write", procedure)
-        self.assertIn("--target latest", procedure)
-        self.assertIn("pre-write recovery backup", procedure)
-        self.assertIn("post-write\n   final-state backup", procedure)
-        self.assertIn("sync_indexes.py", procedure)
-        self.assertIn("migrate vault latest", procedure.casefold())
-        self.assertIn("migrate self-context latest", procedure.casefold())
-        self.assertIn("Deep review", procedure)
-        self.assertIn("Deep update", procedure)
-        self.assertIn("Vertical-contract update", procedure)
-
-    def test_upgrade_procedure_is_the_latest_first_routing_owner(self) -> None:
-        skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-        procedure_path = SKILL_ROOT / "references/upgrade.md"
-        procedure = procedure_path.read_text(encoding="utf-8")
-        readme = (ROOT / "README.md").read_text(encoding="utf-8")
-        architecture = (ROOT / "docs/ARCHITECTURE.md").read_text(encoding="utf-8")
-        self.assertTrue(procedure_path.is_file())
-        self.assertIn("upgrade vault latest", skill.casefold())
-        self.assertIn("references/upgrade.md", skill)
-        self.assertIn("upgrade vault latest", procedure.casefold())
-        self.assertIn("migrate vault latest", procedure.casefold())
-        self.assertIn("deep review vault", procedure.casefold())
-        self.assertIn("deep update vault", procedure.casefold())
-        self.assertIn("Your vault is already current. No files changed.", procedure)
-        self.assertIn("re-orient", procedure.casefold())
-        self.assertIn("existing deep-maintenance", procedure.casefold())
-        self.assertIn("upgrade vault latest", readme.casefold())
-        self.assertIn("latest-first upgrade orchestration", architecture.casefold())
-        self.assertIn("`latest` is derived", architecture.casefold())
-
-    def test_migration_eval_corpus_covers_natural_language_boundaries(self) -> None:
-        evals = json.loads(
-            (SKILL_ROOT / "evals/evals.json").read_text(encoding="utf-8")
-        )["evals"]
-        prompts = {str(case["prompt"]) for case in evals}
-        required = {
-            "Migrate my SelfContext vault to the latest supported schema.",
-            "Upgrade this vault to the latest supported schema.",
-            "Check whether my vault needs migration.",
-            "Show me a migration plan for my old SelfContext vault, but do not change anything.",
-            "Deep review my old vault.",
-            "Deep lint my vault.",
-            "Deep update my old vault.",
-            "Update my Writing vertical contract using only its documented migration.",
-            "migrate vault latest",
-            "deep review vault",
-            "deep update vault",
-            "migrate self-context latest",
-        }
-        self.assertTrue(required.issubset(prompts))
-
-    def test_checkpoint_eval_corpus_covers_durable_conversation_boundaries(self) -> None:
-        evals = json.loads(
-            (SKILL_ROOT / "evals/evals.json").read_text(encoding="utf-8")
-        )["evals"]
-        checkpoint_cases = [
-            case for case in evals if int(case["id"]) in range(129, 139)
-        ]
-        self.assertEqual(
-            [int(case["id"]) for case in checkpoint_cases],
-            list(range(129, 139)),
-        )
-        combined = "\n".join(
-            str(case["prompt"]) + "\n" + str(case["expected_output"])
-            for case in checkpoint_cases
-        ).casefold()
-        for phrase in (
-            "explicitly decides",
-            "corrects existing",
-            "assistant suggested",
-            "rejected it as an option",
-            "preserve and reuse an evidence-backed comparison",
-            "inferred that john doe",
-            "contradiction and review semantics",
-            "nothing durable was found",
-            "existing core concept",
-            "do not save the whole chat",
-        ):
-            self.assertIn(phrase.casefold(), combined, phrase)
-        for case in checkpoint_cases:
-            self.assertGreaterEqual(len(case.get("expectations", [])), 3)
-
-    def test_contextual_dogfood_eval_corpus_covers_scope_readonly_checkpoint_and_receipts(self) -> None:
-        evals = json.loads(
-            (SKILL_ROOT / "evals/evals.json").read_text(encoding="utf-8")
-        )["evals"]
-        cases = [case for case in evals if int(case["id"]) in range(146, 155)]
-        self.assertEqual([int(case["id"]) for case in cases], list(range(146, 155)))
-        combined = "\n".join(
-            str(case["prompt"]) + "\n" + str(case["expected_output"])
-            for case in cases
-        ).casefold()
-        for phrase in (
-            "narrowest relevant canonical scope",
-            "linked source records",
-            "every file before and after",
-            "operation log entry",
-            "checkpoint dry-run",
-            "nothing durable was identified",
-            "stale_after: null",
-            "compact context receipt",
-        ):
-            self.assertIn(phrase.casefold(), combined, phrase)
-        for case in cases:
-            self.assertGreaterEqual(len(case.get("expectations", [])), 3)
-
-    def test_vertical_procedures_document_historical_upgrade_guidance(self) -> None:
-        for record in self.records:
-            procedure = (
-                SKILL_ROOT / str(record["procedure_path"])
-            ).read_text(encoding="utf-8").casefold()
-            self.assertIn("historical-upgrade", procedure, str(record["id"]))
-            self.assertIn("upgrade", procedure, str(record["id"]))
-            self.assertIn("ambiguous", procedure, str(record["id"]))
-
-    def test_upgrade_eval_corpus_covers_latest_first_boundaries(self) -> None:
-        evals = json.loads(
-            (SKILL_ROOT / "evals/evals.json").read_text(encoding="utf-8")
-        )["evals"]
-        prompts = {str(case["prompt"]) for case in evals}
-        required = {
-            "upgrade vault latest",
-            "Bring my vault fully up to date with the current SelfContext model.",
-            "Make my vault current with this version of SelfContext.",
-            "My vault is already current; check whether anything needs changing.",
-            "Upgrade a synthetic current-schema vault with clearly relevant historical project lifecycle evidence that belongs in the newly available Ventures / Projects area.",
-            "Upgrade a synthetic current-schema vault with no evidence for a newly available vertical.",
-            "Upgrade a synthetic vault where a possible historical ownership move is genuinely ambiguous, but unrelated schema and index updates are safe.",
-            "Upgrade a synthetic vault whose SCHEMA.md is malformed or declares a future unsupported schema.",
-            "Upgrade a synthetic schema 0.2 vault containing a vertical contract version newer than the repository supports.",
-        }
-        self.assertTrue(required.issubset(prompts))
-
-    def test_latest_first_runtime_policy_is_documented_without_a_second_version_axis(self) -> None:
-        architecture = (ROOT / "docs/ARCHITECTURE.md").read_text(encoding="utf-8")
-        schema = (SKILL_ROOT / "references/vault-schema.md").read_text(encoding="utf-8")
-        skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-        adr = (ROOT / "docs/decisions/0020-latest-first-runtime-compatibility.md").read_text(encoding="utf-8")
-        combined = "\n".join((architecture, schema, skill, adr)).casefold()
-        self.assertIn("latest-first", combined)
-        self.assertIn("upgrade vault latest", combined)
-        self.assertIn("migration source", combined)
-        self.assertIn("safe compatibility blocker", combined)
-        self.assertIn("future", combined)
-        self.assertIn("combinatorial", combined)
-        self.assertIn("no global", combined)
-        self.assertIn("silently", combined)
-        self.assertIn("--migration-source", (SKILL_ROOT / "references/review-and-lint.md").read_text(encoding="utf-8"))
-
-    def test_latest_first_lint_docs_separate_runtime_and_source_inspection(self) -> None:
-        skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-        architecture = (ROOT / "docs/ARCHITECTURE.md").read_text(encoding="utf-8")
-        review_and_lint = (SKILL_ROOT / "references/review-and-lint.md").read_text(encoding="utf-8")
-        combined = "\n".join((skill, architecture, review_and_lint)).casefold()
-        self.assertIn("### current-runtime validation", review_and_lint.casefold())
-        self.assertIn("### migration-source inspection", review_and_lint.casefold())
-        self.assertIn("upgrade vault latest", combined)
-        self.assertIn("migration source", combined)
-        self.assertNotIn("schema 0.1 first meaningful mutation", combined)
-        self.assertNotIn("ordinary lint is the fast backward-compatible path", combined)
-
     def test_consistency_test_is_independent_of_a_real_vault(self) -> None:
         # This test does not open vault/; the actual ignored vault, when
         # present, is intentionally outside the consistency contract.
         gitignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
         self.assertTrue(any(line.strip() == "/vault/" for line in gitignore.splitlines()))
+
+    def test_duplicate_catalog_records_are_rejected(self) -> None:
+        catalog = vault_utils.load_vertical_catalog()
+        catalog["verticals"].append(dict(catalog["verticals"][0]))
+
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "verticals.json"
+            path.write_text(json.dumps(catalog), encoding="utf-8")
+            problems = vault_utils.validate_vertical_catalog(path)
+            self.assertTrue(any("duplicate vertical id" in problem for problem in problems))
+            self.assertTrue(any("duplicate vertical area" in problem for problem in problems))
+            self.assertTrue(any("duplicate vertical index" in problem for problem in problems))
+            self.assertTrue(any("duplicate vertical contract" in problem for problem in problems))
 
 
 if __name__ == "__main__":

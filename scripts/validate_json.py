@@ -53,7 +53,6 @@ def validate_tracked_json(root: Path = ROOT) -> List[str]:
 
 def main() -> int:
     try:
-        paths = tracked_json_paths()
         problems = validate_tracked_json()
     except Exception as error:
         print(f"[FAIL] tracked JSON validation failed: {type(error).__name__}: {error}")
@@ -63,7 +62,7 @@ def main() -> int:
         for problem in problems:
             print(f"[FAIL] tracked JSON: {problem}")
         return 1
-    print(f"[PASS] tracked JSON: {len(paths)} files parsed")
+    print("[PASS] tracked JSON parsed")
     return 0
 
 

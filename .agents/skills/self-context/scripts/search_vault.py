@@ -9,13 +9,17 @@ import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import unquote
 from typing import Any, Dict, FrozenSet, Iterable, List, Optional, Sequence, Tuple
 
 try:
     from vault_utils import (
         durable_page_records,
         is_external,
-        link_target,
+        is_control_page,
+        is_deep_report,
+        is_noncanonical,
+        page_record,
         normalized_text,
         normalized_tokens,
         runtime_compatibility,
@@ -24,7 +28,10 @@ except ImportError:  # pragma: no cover
     from .vault_utils import (  # type: ignore
         durable_page_records,
         is_external,
-        link_target,
+        is_control_page,
+        is_deep_report,
+        is_noncanonical,
+        page_record,
         normalized_text,
         normalized_tokens,
         runtime_compatibility,
@@ -178,22 +185,12 @@ def _load_vertical_catalog() -> Optional[Dict[str, Any]]:
 def _record_is_search_candidate(
     record: Dict[str, Any],
     *,
-    catalog: Optional[Dict[str, Any]],
-    vertical: Optional[str],
-    scopes: Sequence[str],
     include_sources: bool,
     exclude_archived: bool,
     exclude_superseded: bool,
 ) -> bool:
-    path = str(record["path"])
-    if record.get("is_deep_report") or path.startswith("review/deep-reviews/"):
-        return False
     fields = record.get("frontmatter")
     if not isinstance(fields, dict):
-        return False
-    if vertical and _vertical_for_path(path, catalog) != vertical:
-        return False
-    if not _path_matches_scope(path, scopes):
         return False
     assertion = fields.get("assertion_kind")
     if assertion == "source_record" and not include_sources:
@@ -214,20 +211,31 @@ def _build_search_corpus(
     include_sources: bool = False,
     exclude_archived: bool = False,
     exclude_superseded: bool = False,
+    load_candidates: bool = True,
 ) -> _SearchCorpus:
-    records = tuple(durable_page_records(vault))
-    records_by_path = {
-        str(record.get("path")): record for record in records if record.get("path")
-    }
     catalog = _load_vertical_catalog()
+    selected_scopes = list(scopes) if scopes else None
+    if vertical:
+        areas = [
+            str(record["vault_area"])
+            for record in (catalog or {}).get("verticals", [])
+            if record.get("id") == vertical
+        ]
+        selected_scopes = [
+            scope if scope == area or scope.startswith(area + "/") else area
+            for area in areas
+            for scope in (scopes or [area])
+            if scope == area or scope.startswith(area + "/") or area.startswith(scope + "/")
+        ]
+    records = durable_page_records(vault, scopes=selected_scopes) if load_candidates else []
+    # This invocation-local map reuses selected pages and lazily loaded sources
+    # across anchors; it never inventories unrelated provenance pages.
+    records_by_path = {str(record["path"]): record for record in records}
     indexed_records = tuple(
         _index_record(record)
         for record in records
         if _record_is_search_candidate(
             record,
-            catalog=catalog,
-            vertical=vertical,
-            scopes=scopes,
             include_sources=include_sources,
             exclude_archived=exclude_archived,
             exclude_superseded=exclude_superseded,
@@ -251,7 +259,7 @@ def _vertical_for_path(path: str, catalog: Optional[Dict[str, Any]]) -> Optional
     return None
 
 
-def _normalize_scopes(scope: Optional[Sequence[str]]) -> Tuple[List[str], List[str]]:
+def normalize_scopes(scope: Optional[Sequence[str]]) -> Tuple[List[str], List[str]]:
     """Normalize explicit vault-relative retrieval scopes without guessing intent."""
 
     if not scope:
@@ -272,20 +280,10 @@ def _normalize_scopes(scope: Optional[Sequence[str]]) -> Tuple[List[str], List[s
     return values, findings
 
 
-def normalize_scopes(scope: Optional[Sequence[str]]) -> Tuple[List[str], List[str]]:
-    """Expose the search scope normalization for read-only composition helpers."""
-
-    return _normalize_scopes(scope)
-
-
-def _path_matches_scope(path: str, scopes: Sequence[str]) -> bool:
-    return not scopes or any(path == scope or path.startswith(scope + "/") for scope in scopes)
-
-
 def _linked_source_paths(
     record: Dict[str, Any], vault: Path, records_by_path: Dict[str, Dict[str, Any]]
-) -> List[str]:
-    """Return existing source-record links from a canonical page's frontmatter."""
+) -> Iterable[str]:
+    """Lazily resolve canonical source links, reusing this invocation's records."""
 
     fields = record.get("frontmatter")
     if not isinstance(fields, dict):
@@ -296,28 +294,48 @@ def _linked_source_paths(
     if not isinstance(raw_sources, list):
         return []
 
-    page = vault / str(record.get("path") or "")
-    linked: List[str] = []
+    root = vault.resolve()
+    page = root / str(record.get("path") or "")
+    linked: set[str] = set()
     for raw_source in raw_sources:
         destination = str(raw_source).strip()
         if not destination or is_external(destination):
             continue
-        target = link_target(page, destination, vault)
-        if target is None:
-            continue
+        target_text = unquote(destination.split("#", 1)[0].split("?", 1)[0])
+        target = page.parent / target_text if target_text else page
         try:
-            relative = target.resolve().relative_to(vault.resolve()).as_posix()
+            # Check the lexical route before resolving it: resolution alone
+            # would erase a symlinked target or ancestor (including link/..).
+            parts = target.relative_to(root).parts
+            current = root
+            for part in parts:
+                current = current.parent if part == ".." else current / part
+                if not current.is_relative_to(root) or current.is_symlink() or is_noncanonical(current, root):
+                    break
+            else:
+                target = current
+                if (
+                    target.suffix.lower() != ".md"
+                    or is_control_page(target, root)
+                    or is_deep_report(target, root)
+                    or not target.is_file()
+                ):
+                    continue
+                relative = target.relative_to(root).as_posix()
+                if relative in linked:
+                    continue
+                if relative not in records_by_path:
+                    records_by_path[relative] = page_record(target, root)
+                target_record = records_by_path[relative]
+                target_fields = target_record.get("frontmatter")
+                if not isinstance(target_fields, dict):
+                    continue
+                if target_fields.get("type") != "source" and target_fields.get("assertion_kind") != "source_record":
+                    continue
+                linked.add(relative)
+                yield relative
         except (OSError, RuntimeError, ValueError):
             continue
-        target_record = records_by_path.get(relative)
-        target_fields = target_record.get("frontmatter") if target_record else None
-        if not isinstance(target_fields, dict):
-            continue
-        if target_fields.get("type") != "source" and target_fields.get("assertion_kind") != "source_record":
-            continue
-        if relative not in linked:
-            linked.append(relative)
-    return linked
 
 
 def _render_result(
@@ -625,13 +643,12 @@ def _search_corpus(
     terms = [token for token in raw_terms if token not in STOPWORDS] or raw_terms
     phrase_tokens = normalized_tokens(query)
     normalized_query = normalized_text(query)
-    results: List[Dict[str, Any]] = []
-    for indexed in corpus.records:
+    ranked: List[Tuple[int, Dict[str, Any], List[str], Dict[str, Any]]] = []
+    for indexed in corpus.records if limit > 0 else ():
         record = indexed.record
         fields = record.get("frontmatter")
         if not isinstance(fields, dict):
             continue
-
         score, matched, summary = _score_record(
             indexed, normalized_query, terms, phrase_tokens
         )
@@ -639,19 +656,8 @@ def _search_corpus(
             continue
         if contextual and len(terms) > 1 and summary["query_term_coverage"] < 0.5:
             continue
-        score += _record_adjustment(fields)
-        results.append(
-            _render_result(
-                record,
-                corpus.catalog,
-                terms,
-                matched,
-                summary,
-                score,
-                include_identity=include_identity,
-            )
-        )
-    results.sort(key=lambda item: (-int(item["rank_score"]), str(item["path"])))
+        ranked.append((score + _record_adjustment(fields), record, matched, summary))
+    ranked.sort(key=lambda item: (-item[0], str(item[1]["path"])))
     result_limit = max(0, limit)
     primary_limit = result_limit
     if expand_linked_sources and result_limit:
@@ -659,24 +665,15 @@ def _search_corpus(
         # linked sources to expand an otherwise bounded retrieval.
         primary_limit = max(1, result_limit - min(3, result_limit))
     if contextual and not include_derived:
-        canonical_present = any(
-            (corpus.records_by_path.get(str(item.get("path")), {}).get("frontmatter") or {}).get(
-                "type"
-            )
-            != "synthesis"
-            for item in results
+        if any(item[1]["frontmatter"].get("type") != "synthesis" for item in ranked):
+            ranked = [item for item in ranked if item[1]["frontmatter"].get("type") != "synthesis"]
+    results = [
+        _render_result(
+            record, corpus.catalog, terms, matched, summary, score,
+            include_identity=include_identity,
         )
-        if canonical_present:
-            results = [
-                item
-                for item in results
-                if (
-                    corpus.records_by_path.get(str(item.get("path")), {}).get("frontmatter")
-                    or {}
-                ).get("type")
-                != "synthesis"
-            ]
-    results = results[:primary_limit]
+        for score, record, matched, summary in ranked[:primary_limit]
+    ]
 
     if expand_linked_sources:
         seen_paths = {str(item.get("path")) for item in results}
@@ -689,15 +686,15 @@ def _search_corpus(
             "query_term_count": len(terms),
             "phrase_fields": [],
         }
-        for item in list(results):
+        for item in results:
+            if len(linked_results) >= linked_budget:
+                break
             source_paths = _linked_source_paths(
                 corpus.records_by_path.get(str(item.get("path")), {}),
                 corpus.vault,
                 corpus.records_by_path,
             )
             for source_path in source_paths:
-                if len(linked_results) >= linked_budget:
-                    break
                 if source_path in seen_paths:
                     continue
                 source_record = corpus.records_by_path.get(source_path)
@@ -716,6 +713,8 @@ def _search_corpus(
                     )
                 )
                 seen_paths.add(source_path)
+                if len(linked_results) >= linked_budget:
+                    break
             if len(linked_results) >= linked_budget:
                 break
         results.extend(linked_results)
@@ -764,7 +763,7 @@ def search_vault(
     # Keep the deprecated parameters in the API for one compatibility cycle.
     del include_archived, include_superseded
     vault = vault.expanduser()
-    scopes, scope_findings = _normalize_scopes(scope)
+    scopes, scope_findings = normalize_scopes(scope)
     if scope_findings:
         return {"query": query, "scope": scopes, "results": [], "findings": scope_findings}
     if not vault.exists() or vault.is_symlink() or not vault.is_dir():
@@ -792,6 +791,7 @@ def search_vault(
         include_sources=include_sources,
         exclude_archived=exclude_archived,
         exclude_superseded=exclude_superseded,
+        load_candidates=limit > 0,
     )
     return _search_corpus(
         corpus,

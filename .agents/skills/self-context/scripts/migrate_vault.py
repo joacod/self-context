@@ -26,10 +26,10 @@ try:
         MigrationRegistryError,
     )
     from vault_controls import (
-        root_has_link as _shared_root_has_link,
-        root_with_links as _shared_root_with_links,
+        root_has_link,
+        root_with_links,
         schema_with_contracts as _shared_schema_with_contracts,
-        vertical_index_template as _shared_vertical_index_template,
+        vertical_index_template,
     )
     from vault_utils import (
         canonical_files,
@@ -53,10 +53,10 @@ except ImportError:  # pragma: no cover - useful when imported as a package
         MigrationRegistryError,
     )
     from .vault_controls import (  # type: ignore
-        root_has_link as _shared_root_has_link,
-        root_with_links as _shared_root_with_links,
+        root_has_link,
+        root_with_links,
         schema_with_contracts as _shared_schema_with_contracts,
-        vertical_index_template as _shared_vertical_index_template,
+        vertical_index_template,
     )
     from .vault_utils import (  # type: ignore
         canonical_files,
@@ -116,10 +116,6 @@ def _schema_with_contracts(text: str, contracts: Sequence[Mapping[str, Any]]) ->
     """Compatibility wrapper around the shared control renderer."""
 
     return _shared_schema_with_contracts(text, contracts, schema_version="0.2")
-
-
-def _root_has_link(vault: Path, index_path: str, text: Optional[str] = None) -> bool:
-    return _shared_root_has_link(vault, index_path, text)
 
 
 def _area_has_meaningful_content(vault: Path, area: str) -> bool:
@@ -203,7 +199,7 @@ def _vertical_analysis(
             "explicit_legacy_marker": identifier in explicit,
             "existing_area": area_path.is_dir(),
             "existing_index": index_path.is_file(),
-            "root_index_link": _root_has_link(vault, index),
+            "root_index_link": root_has_link(vault, index),
             "meaningful_existing_content": _area_has_meaningful_content(vault, area),
         }
         if any(signals.values()):
@@ -297,19 +293,6 @@ def _vertical_analysis(
         "custom": custom,
         "human_decisions": human_decisions,
     }
-
-
-def _index_template(record: Mapping[str, Any]) -> str:
-    return _shared_vertical_index_template(record)
-
-
-def _root_with_links(
-    vault: Path,
-    contracts: Sequence[Mapping[str, Any]],
-    catalog: Mapping[str, Any],
-    text: str,
-) -> Tuple[str, List[str]]:
-    return _shared_root_with_links(vault, contracts, catalog, text)
 
 
 def _append_log_entry(
@@ -474,7 +457,7 @@ def _schema_contract_validation(
             errors.append({"path": f"{area or identifier}/", "message": "enabled vertical is missing its area"})
         if not isinstance(index, str) or not (root / index).is_file():
             errors.append({"path": str(index or identifier), "message": "enabled vertical is missing its index"})
-        elif not _root_has_link(root, index, root_text):
+        elif not root_has_link(root, index, root_text):
             errors.append({"path": "index.md", "message": f"enabled vertical is missing its root index link: {index}"})
 
     for record in records.values():
@@ -828,12 +811,12 @@ def _plan_0_1_to_0_2(vault: Path) -> Dict[str, Any]:
                     continue
                 if not index_path.is_file():
                     area_path.mkdir(parents=True, exist_ok=True)
-                    _stage_write(stage, index, _index_template(record).encode("utf-8"))
+                    _stage_write(stage, index, vertical_index_template(record).encode("utf-8"))
                     missing_indexes.append(index)
             plan["missing_vertical_indexes"] = sorted(missing_indexes)
             plan["missing_indexes_to_create"] = list(plan["missing_vertical_indexes"])
 
-            root_candidate, root_additions = _root_with_links(
+            root_candidate, root_additions = root_with_links(
                 stage, contracts, catalog, str(root_text)
             )
             if root_candidate != root_text:

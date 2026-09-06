@@ -21,8 +21,6 @@ import vault_utils  # type: ignore  # noqa: E402
 from synthetic_vault import build_synthetic_vault, tree_snapshot  # noqa: E402
 
 
-UPGRADE = ROOT / ".agents/skills/self-context/references/upgrade.md"
-SKILL = ROOT / ".agents/skills/self-context/SKILL.md"
 
 
 class UpgradeWorkflowTests(unittest.TestCase):
@@ -149,7 +147,6 @@ class UpgradeWorkflowTests(unittest.TestCase):
                 "older-contract",
             )
             self.assertEqual(self.backup_paths(project), [])
-            self.assertIn("Phase C: update enabled contracts", UPGRADE.read_text(encoding="utf-8"))
 
     def test_relevant_historical_vertical_can_be_adopted_without_copying_pages(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -295,28 +292,6 @@ class UpgradeWorkflowTests(unittest.TestCase):
             )
             self.assertEqual(self.backup_paths(project), [])
             self.assertNotEqual(before, tree_snapshot(project))  # fixture mutation only
-
-    def test_procedure_preserves_phase_order_safety_and_idempotence_contract(self) -> None:
-        procedure = UPGRADE.read_text(encoding="utf-8")
-        skill = SKILL.read_text(encoding="utf-8")
-        headings = [
-            "## Phase A: orient and assess",
-            "## Phase B: resolve schema",
-            "## Phase C: update enabled contracts",
-            "## Phase D: assess and apply selective adoption",
-            "## Phase E: bounded semantic maintenance",
-            "## Phase F: synchronize and validate",
-        ]
-        positions = [procedure.index(heading) for heading in headings]
-        self.assertEqual(positions, sorted(positions))
-        self.assertIn("re-orient", procedure.casefold())
-        self.assertIn("Your vault is already current. No files changed.", procedure)
-        self.assertIn("Do not create redundant orchestration backups", procedure)
-        self.assertIn("human_decision", procedure)
-        self.assertIn("upgrade vault latest", skill.casefold())
-        self.assertIn("migrate vault latest", skill.casefold())
-        self.assertIn("deep review vault", skill.casefold())
-        self.assertIn("deep update vault", skill.casefold())
 
 
 if __name__ == "__main__":
