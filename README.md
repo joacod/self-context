@@ -2,13 +2,14 @@
 
 > Think with context you own.
 
-SelfContext is a local, portable context layer for AI tools. It helps you carry
-goals, decisions, projects, preferences, and evidence across conversations and
-tools, so you can continue thinking instead of starting over.
+SelfContext is a local, portable context layer for AI tools. It carries goals,
+decisions, projects, preferences, and evidence across conversations and tools,
+so you can continue thinking instead of starting over.
 
-Your durable context lives in a plain-Markdown `vault/` that you can inspect,
-edit, copy, and back up. SelfContext is not a standalone chatbot or hosted
-memory service; your existing AI tool remains the interface.
+<p align="center">
+  <img src="./docs/assets/architecture.webp" alt="SelfContext architecture diagram showing four layers." width="49%" />
+  <img src="./docs/assets/vault.webp" alt="Illustration of the SelfContext vault as a Markdown folder." width="49%" />
+</p>
 
 ## Quick start
 
