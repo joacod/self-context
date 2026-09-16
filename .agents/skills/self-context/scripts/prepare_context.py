@@ -26,6 +26,8 @@ except ImportError:  # pragma: no cover - package-style import fallback
 DEFAULT_RESULT_LIMIT = 10
 DEFAULT_NAVIGATION_LIMIT = 20
 DEFAULT_LINKED_SOURCE_LIMIT = 3
+DEFAULT_REPLACEMENT_DEPTH_LIMIT = vault_utils.REPLACEMENT_DEPTH_LIMIT
+DEFAULT_RELATED_REPLACEMENT_LIMIT = vault_utils.RELATED_REPLACEMENT_LIMIT
 DEFAULT_EVIDENCE_PAGE_LIMIT = 3
 DEFAULT_EVIDENCE_BYTE_LIMIT = 24 * 1024
 SNIPPET_LIMIT = 220
@@ -377,12 +379,54 @@ def _compact_match(item: Mapping[str, Any], anchors: Sequence[str]) -> Dict[str,
         ),
         "rank_score": item.get("rank_score"),
     }
+    if item.get("superseded_by"):
+        result["superseded_by"] = _bounded_text(item.get("superseded_by"), PATH_LIMIT)
     if anchors:
         result["matched_anchors"] = _compact_text_list(
             anchors, count=SOURCE_REFERENCE_LIMIT
         )
     if item.get("linked_from"):
         result["linked_from"] = _bounded_text(item.get("linked_from"), PATH_LIMIT)
+    return result
+
+
+def _compact_related_replacement(item: Mapping[str, Any]) -> Dict[str, Any]:
+    result: Dict[str, Any] = {
+        "path": _bounded_text(item.get("path"), PATH_LIMIT),
+        "title": _bounded_text(item.get("title"), METADATA_LIMIT),
+        "type": _bounded_optional(item.get("type"), DATE_LIMIT),
+        "status": _bounded_optional(item.get("status"), DATE_LIMIT),
+        "assertion_kind": _bounded_optional(item.get("assertion_kind"), DATE_LIMIT),
+        "generated": _bounded_optional(item.get("generated"), DATE_LIMIT),
+        "verified": _bounded_optional(item.get("verified"), DATE_LIMIT),
+        "stale_after": _bounded_optional(item.get("stale_after"), DATE_LIMIT),
+        "from": _bounded_text(item.get("from"), PATH_LIMIT),
+        "relationship": _bounded_text(item.get("relationship"), DATE_LIMIT),
+        "chain": _compact_text_list(
+            item.get("chain"), count=SOURCE_REFERENCE_LIMIT, limit=PATH_LIMIT
+        ),
+        "depth": item.get("depth"),
+    }
+    if item.get("id") not in (None, ""):
+        result["id"] = _bounded_text(item.get("id"), PATH_LIMIT)
+    if item.get("superseded_by"):
+        result["superseded_by"] = _bounded_text(item.get("superseded_by"), PATH_LIMIT)
+    return result
+
+
+def _compact_unresolved_replacement(item: Mapping[str, Any]) -> Dict[str, Any]:
+    result: Dict[str, Any] = {
+        "from": _bounded_text(item.get("from"), PATH_LIMIT),
+        "path": _bounded_text(item.get("path"), PATH_LIMIT),
+        "relationship": _bounded_text(item.get("relationship"), DATE_LIMIT),
+        "chain": _compact_text_list(
+            item.get("chain"), count=SOURCE_REFERENCE_LIMIT, limit=PATH_LIMIT
+        ),
+        "depth": item.get("depth"),
+        "reason": _bounded_text(item.get("reason"), METADATA_LIMIT),
+    }
+    if "superseded_by" in item:
+        result["superseded_by"] = _bounded_optional(item.get("superseded_by"), PATH_LIMIT)
     return result
 
 
@@ -479,6 +523,7 @@ def _select_complete_evidence(
     records_by_path: Optional[Mapping[str, Mapping[str, Any]]],
     page_limit: int,
     byte_limit: int,
+    related: Sequence[Mapping[str, Any]] = (),
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """Include complete original pages for selected candidates, without truncation.
 
@@ -486,32 +531,49 @@ def _select_complete_evidence(
     not cap the rest of the preparation packet or measure model tokens. The
     ranked ``matches`` list is left unchanged. An oversized higher-ranked
     candidate is omitted with a reason rather than replaced or covered by a
-    lower-ranked page.
+    lower-ranked page. Related replacement pages share the same remaining
+    aggregate budget after those ranked candidates are considered.
     """
 
     included: List[Dict[str, Any]] = []
     omitted: List[Dict[str, Any]] = []
     used_bytes = 0
-    for item in matches[:page_limit]:
-        path = str(item.get("path") or "")
-        if not path:
-            continue
+    considered: set[str] = set()
+
+    def consider(path: str) -> None:
+        nonlocal used_bytes
         record, error = _record_for_selected_path(path, root, records_by_path)
         evidence = (
             vault_utils.complete_page_evidence(record) if record is not None else None
         )
         if evidence is None:
             omitted.append({"path": path, "reason": error or OMIT_UNREADABLE})
-            continue
+            return
         size = _serialized_utf8_size(evidence)
         if size > byte_limit:
             omitted.append({"path": path, "reason": OMIT_PAGE_TOO_LARGE})
-            continue
+            return
         if used_bytes + size > byte_limit:
             omitted.append({"path": path, "reason": OMIT_BUDGET_EXHAUSTED})
-            continue
+            return
         included.append(evidence)
         used_bytes += size
+
+    for item in matches[:page_limit]:
+        path = str(item.get("path") or "")
+        if not path or path in considered:
+            continue
+        considered.add(path)
+        consider(path)
+    for item in related:
+        path = str(item.get("path") or "")
+        if not path or path in considered:
+            continue
+        considered.add(path)
+        if len(included) >= page_limit:
+            omitted.append({"path": path, "reason": OMIT_BUDGET_EXHAUSTED})
+            continue
+        consider(path)
     return included, omitted
 
 
@@ -537,6 +599,8 @@ def prepare_context(
     include_evidence: bool = False,
     evidence_page_limit: int = DEFAULT_EVIDENCE_PAGE_LIMIT,
     evidence_byte_limit: int = DEFAULT_EVIDENCE_BYTE_LIMIT,
+    replacement_depth_limit: int = DEFAULT_REPLACEMENT_DEPTH_LIMIT,
+    related_replacement_limit: int = DEFAULT_RELATED_REPLACEMENT_LIMIT,
 ) -> Dict[str, Any]:
     """Return a compact, bounded, read-only context-preparation packet.
 
@@ -548,9 +612,17 @@ def prepare_context(
     ``include_evidence`` is opt-in. When disabled, the packet remains
     metadata-only. When enabled, a separate evidence section may include
     complete original page bytes for a small number of ranked canonical
-    matches. ``evidence_page_limit`` and ``evidence_byte_limit`` bound that
-    section, including each included page's metadata; they do not bound the
-    rest of the packet or an exact number of model tokens.
+    matches and related replacement pages. ``evidence_page_limit`` and
+    ``evidence_byte_limit`` bound that section, including each included
+    page's metadata; they do not bound the rest of the packet or an exact
+    number of model tokens.
+
+    After ranked matches are selected, explicit ``superseded_by`` links from
+    selected superseded pages are followed into ``related_replacements``.
+    Those successors do not need to match the query, do not consume the
+    primary result limit, and are not mixed into ``linked_sources``.
+    Unresolved links and stopping reasons appear in
+    ``unresolved_replacements``.
     """
 
     if scope is not None:
@@ -568,6 +640,12 @@ def prepare_context(
     navigation_limit = _non_negative(navigation_limit, "navigation_limit")
     evidence_page_limit = _non_negative(evidence_page_limit, "evidence_page_limit")
     evidence_byte_limit = _non_negative(evidence_byte_limit, "evidence_byte_limit")
+    replacement_depth_limit = _non_negative(
+        replacement_depth_limit, "replacement_depth_limit"
+    )
+    related_replacement_limit = _non_negative(
+        related_replacement_limit, "related_replacement_limit"
+    )
     linked_source_limit = min(DEFAULT_LINKED_SOURCE_LIMIT, linked_source_limit)
 
     root = Path(vault).expanduser()
@@ -630,6 +708,8 @@ def prepare_context(
         "navigation_limit": navigation_limit,
         "search_scope_required": True,
         "search_performed": False,
+        "replacement_depth_limit": replacement_depth_limit,
+        "related_replacement_limit": related_replacement_limit,
     }
     if include_evidence:
         controls["include_evidence"] = True
@@ -644,6 +724,8 @@ def prepare_context(
         "navigation": [],
         "matches": [],
         "linked_sources": [],
+        "related_replacements": [],
+        "unresolved_replacements": [],
         "findings": findings,
     }
     if include_evidence:
@@ -752,8 +834,24 @@ def prepare_context(
         result_limit=result_limit,
         linked_source_limit=linked_source_limit if expand_linked_sources else 0,
     )
+    replacements, unresolved = vault_utils.follow_explicit_replacements(
+        matches,
+        root=root,
+        records_by_path=records_by_path,
+        scopes=scopes,
+        depth_limit=replacement_depth_limit,
+        related_limit=related_replacement_limit,
+    )
+    related_replacements = [
+        _compact_related_replacement(item) for item in replacements
+    ]
+    unresolved_replacements = [
+        _compact_unresolved_replacement(item) for item in unresolved
+    ]
     packet["matches"] = matches
     packet["linked_sources"] = linked_sources
+    packet["related_replacements"] = related_replacements
+    packet["unresolved_replacements"] = unresolved_replacements
     if include_evidence:
         packet["evidence"], packet["evidence_omitted"] = _select_complete_evidence(
             matches,
@@ -761,6 +859,7 @@ def prepare_context(
             records_by_path=records_by_path,
             page_limit=evidence_page_limit,
             byte_limit=evidence_byte_limit,
+            related=related_replacements,
         )
     return packet
 
@@ -815,6 +914,24 @@ def main(argv: Optional[List[str]] = None) -> int:
             f"(default: {DEFAULT_EVIDENCE_BYTE_LIMIT})"
         ),
     )
+    parser.add_argument(
+        "--replacement-depth-limit",
+        type=_non_negative_int,
+        default=DEFAULT_REPLACEMENT_DEPTH_LIMIT,
+        help=(
+            "maximum explicit superseded_by edges to follow from selected "
+            f"superseded matches (default: {DEFAULT_REPLACEMENT_DEPTH_LIMIT})"
+        ),
+    )
+    parser.add_argument(
+        "--related-replacement-limit",
+        type=_non_negative_int,
+        default=DEFAULT_RELATED_REPLACEMENT_LIMIT,
+        help=(
+            "maximum related replacement pages to include besides ranked "
+            f"matches (default: {DEFAULT_RELATED_REPLACEMENT_LIMIT})"
+        ),
+    )
     parser.add_argument("--format", choices=("json",), default="json")
     args = parser.parse_args(argv)
 
@@ -837,6 +954,8 @@ def main(argv: Optional[List[str]] = None) -> int:
         include_evidence=args.include_evidence,
         evidence_page_limit=args.evidence_page_limit,
         evidence_byte_limit=args.evidence_byte_limit,
+        replacement_depth_limit=args.replacement_depth_limit,
+        related_replacement_limit=args.related_replacement_limit,
     )
     print(json.dumps(packet, indent=2, sort_keys=True))
     return 0
