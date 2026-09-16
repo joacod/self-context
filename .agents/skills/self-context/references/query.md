@@ -25,14 +25,18 @@ separately:
 ```bash
 python3 .agents/skills/self-context/scripts/prepare_context.py \
   vault --scope core --scope ventures --anchor "task words" \
-  --recent-limit 10 --result-limit 10 --contextual
+  --recent-limit 10 --result-limit 10 --include-evidence
 ```
 
 The read-only helper composes the current runtime gate, selected navigation,
 `recent_log.py` continuity, and existing `search_vault.py` ranking. It does not
-infer an owner, load every enabled vertical, initialize a missing vault, run
-deep lint, or return full page bodies. The agent chooses scope and anchors,
-then reads only the returned pages that deserve full semantic inspection.
+infer an owner, load every enabled vertical, initialize a missing vault, or run
+deep lint. The default packet is metadata-only. Ordinary factual Query must
+pass `--include-evidence` so ranked canonical pages can be answered from this
+first response. See [Targeted Retrieval](#targeted-retrieval) for how complete
+evidence satisfies a page read, when a separate read is still required, and
+the evidence-section limits. Add `--contextual` when the question is
+contextual reasoning rather than a simple lookup.
 
 Do not read the complete `log.md` or run historical search automatically. When
 an older operation may matter, use the bounded historical helper explicitly:
@@ -167,9 +171,11 @@ change the answer. Potentially relevant material includes:
 
 Find previous decisions wherever the existing vault records them and follow
 relevant links; do not invent a decision-specific storage model or replay the
-whole conversation history. Start from the relevant indexes and expand only to
-linked pages needed for the problem. For every important item, inspect its
-owner, assertion kind, status, provenance, and freshness before using it.
+whole conversation history. Use the same `--include-evidence` preparation call
+as ordinary Query. Start from the relevant indexes and expand only to linked
+pages needed for the problem. Complete evidence already returned satisfies
+reading that page. For every important item, inspect its owner, assertion
+kind, status, provenance, and freshness before using it.
 Include multiple owning areas only when the problem requires them. Cross-area
 retrieval preserves each area's ownership; it does not copy facts between
 verticals. Never indiscriminately load the vault just because the request says
@@ -376,10 +382,26 @@ stored.
 
 For normal Query retrieval, first declare the smallest likely owner and any
 material cross-vertical expansion, then call the preparation boundary with
-those explicit scopes and anchors. The packet supplies current runtime state,
-selected root/manual indexes, bounded continuity, ranked candidate metadata,
-and optional linked-source candidates. It is a retrieval aid, not a semantic
-Query engine or a replacement for reading canonical pages.
+those explicit scopes, anchors, and `--include-evidence`. The packet supplies
+current runtime state, selected root/manual indexes, bounded continuity,
+ranked candidate metadata, optional linked-source candidates, and complete
+original contents for a bounded set of ranked canonical pages. It is a
+retrieval aid, not a semantic Query engine.
+
+Complete content in `evidence` includes frontmatter, epistemic metadata
+(`status`, `sources`, assertion kind, and freshness fields), a `content_hash`
+of the original page bytes, and `complete: true`. That content satisfies
+reading that page; do not reopen it unnecessarily. `--evidence-page-limit`
+(default 3) and `--evidence-byte-limit` (default 24576) bound only the
+evidence section, including its metadata; they do not cap the rest of the
+packet or measure model tokens. Pages are never silently truncated. Selected
+candidates that are not included remain in the ranked `matches` list and
+appear in `evidence_omitted` with a reason such as `page too large` or
+`aggregate budget exhausted`. An oversized top candidate is not covered by a
+lower-ranked page. Preserve targeted reads when required evidence is omitted,
+insufficient, or needs freshness confirmation. Keep facts, inferences,
+historical material, and sources distinct. A content hash identifies the
+returned version; it does not establish that a later write is safe.
 
 Start from the packet's selected navigation and inspect only the primary owner
 index and linked pages that the request makes relevant. Add another enabled

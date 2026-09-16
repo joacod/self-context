@@ -1088,6 +1088,82 @@ def durable_page_records(
     return records
 
 
+def resolve_canonical_markdown_page(
+    root: Path, label: str
+) -> Tuple[Optional[Path], Optional[str]]:
+    """Resolve one vault-relative canonical Markdown page without scanning."""
+
+    value = str(label or "").strip().replace("\\", "/")
+    while value.startswith("./"):
+        value = value[2:]
+    raw = Path(value)
+    if not value or raw.is_absolute() or ".." in raw.parts:
+        return None, "invalid path"
+    current = Path(root)
+    for part in raw.parts:
+        current = current / part
+        try:
+            current.relative_to(root)
+        except ValueError:
+            return None, "invalid path"
+        if current.is_symlink() or is_noncanonical(current, root):
+            return None, "invalid path"
+    if (
+        current.suffix.lower() != ".md"
+        or not current.is_file()
+        or current.is_symlink()
+        or is_control_page(current, root)
+        or is_deep_report(current, root)
+    ):
+        return None, "unavailable"
+    return current, None
+
+
+def page_record_for_label(
+    root: Path, label: str
+) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+    """Read one vault-relative canonical Markdown page without scanning the vault."""
+
+    path, error = resolve_canonical_markdown_page(root, label)
+    if path is None:
+        return None, error
+    record = page_record(path, root)
+    if record.get("read_error") or not isinstance(record.get("text"), str):
+        return record, "unreadable"
+    return record, None
+
+
+def complete_page_evidence(record: Mapping[str, Any]) -> Optional[Dict[str, Any]]:
+    """Return complete original-page evidence, or None when original text is absent."""
+
+    text = record.get("text")
+    digest = record.get("content_hash")
+    path = record.get("path")
+    if not isinstance(text, str) or not isinstance(digest, str) or not path:
+        return None
+    fields = record.get("frontmatter")
+    if not isinstance(fields, Mapping):
+        fields = {}
+    sources = fields.get("sources")
+    if isinstance(sources, str):
+        sources = [sources]
+    elif not isinstance(sources, list):
+        sources = []
+    return {
+        "path": path,
+        "content": text,
+        "content_hash": digest,
+        "complete": True,
+        "status": fields.get("status"),
+        "assertion_kind": fields.get("assertion_kind"),
+        "generated": fields.get("generated"),
+        "verified": fields.get("verified"),
+        "stale_after": fields.get("stale_after"),
+        "sources": sources,
+        "type": fields.get("type"),
+    }
+
+
 def nearest_index(path: Path, root: Path) -> Optional[Path]:
     current = path.parent
     resolved_root = root.resolve()

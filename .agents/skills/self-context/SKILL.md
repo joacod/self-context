@@ -191,8 +191,9 @@ See [Ingest](references/ingest.md), [Query](references/query.md), and
    The packet includes runtime compatibility, selected navigation, bounded
    `recent_log.py` continuity, and ranked candidate metadata. It does not
    initialize, write, deep-lint, infer ownership, or load unrelated enabled
-   verticals. Read only the returned full pages and linked evidence needed for
-   the question. Use `search_log.py` only for an explicit historical lookup.
+   verticals. Ordinary Query adds `--include-evidence` and treats complete
+   returned content as already read; see [Query](references/query.md). Use
+   `search_log.py` only for an explicit historical lookup.
 3. If `vault/` is missing or incomplete, follow
    [Initialization](references/initialization.md). A read-only preparation
    reports a missing or empty vault without changing it; do not ask the user to
