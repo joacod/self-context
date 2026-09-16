@@ -57,18 +57,29 @@ title match should not outrank a page covering nearly all task terms merely
 because the token is in a prominent field.
 
 JSON results include matched fields, bounded snippets, a match type, query-term
-coverage, phrase fields, and a deterministic `rank_score`. The score explains
-ordering only; it is not confidence, truth, or verification. Archived and
-superseded pages are included by default with lower ranking. Use
-`--exclude-archived` or `--exclude-superseded` to omit them. The accepted
-`--include-archived` and `--include-superseded` options are deprecated
-compatibility aliases for one cycle and will be removed in a future release;
-they do not change the default inclusion behavior. Sources remain opt-in via
-`--include-sources`.
+coverage, phrase fields, a deterministic `rank_score`, and `superseded_by` when
+that explicit successor field is present. The score explains ordering only; it
+is not confidence, truth, or verification. Archived and superseded pages are
+included by default with lower ranking. Use `--exclude-archived` or
+`--exclude-superseded` to omit them. The accepted `--include-archived` and
+`--include-superseded` options are deprecated compatibility aliases for one
+cycle and will be removed in a future release; they do not change the default
+inclusion behavior. Sources remain opt-in via `--include-sources`.
+
+After ranked matches are selected, `prepare_context.py` follows explicit
+`superseded_by` links from selected superseded pages. The successor does not
+need to match the query. Historical matches stay in `matches`; replacements
+appear in `related_replacements` with the originating page, relationship, and
+chain. Follow at most three replacement edges and six related pages by default.
+Unresolved links and stopping reasons such as a missing target, invalid
+reference, cycle, out-of-scope path, or exhausted limit appear in
+`unresolved_replacements`. Do not treat a newer timestamp as a replacement, do
+not infer successors from similar titles, and do not mix successor
+relationships into `linked_sources`.
 
 Search is only a retrieval aid: inspect provenance, freshness, assertion kind,
-review state, contradictions, and source links before answering. Deep-review
-reports and noncanonical state remain excluded.
+review state, contradictions, source links, and available replacement evidence
+before answering. Deep-review reports and noncanonical state remain excluded.
 
 ### Contextual retrieval scope rules
 
@@ -175,7 +186,8 @@ whole conversation history. Use the same `--include-evidence` preparation call
 as ordinary Query. Start from the relevant indexes and expand only to linked
 pages needed for the problem. Complete evidence already returned satisfies
 reading that page. For every important item, inspect its owner, assertion
-kind, status, provenance, and freshness before using it.
+kind, status, provenance, freshness, and any explicit replacement before using
+it.
 Include multiple owning areas only when the problem requires them. Cross-area
 retrieval preserves each area's ownership; it does not copy facts between
 verticals. Never indiscriminately load the vault just because the request says
@@ -384,9 +396,11 @@ For normal Query retrieval, first declare the smallest likely owner and any
 material cross-vertical expansion, then call the preparation boundary with
 those explicit scopes, anchors, and `--include-evidence`. The packet supplies
 current runtime state, selected root/manual indexes, bounded continuity,
-ranked candidate metadata, optional linked-source candidates, and complete
-original contents for a bounded set of ranked canonical pages. It is a
-retrieval aid, not a semantic Query engine.
+ranked candidate metadata, optional linked-source candidates, related
+replacement pages from explicit `superseded_by` links, unresolved replacement
+reasons, and complete original contents for a bounded set of ranked canonical
+pages and remaining related replacements. It is a retrieval aid, not a
+semantic Query engine.
 
 Complete content in `evidence` includes frontmatter, epistemic metadata
 (`status`, `sources`, assertion kind, and freshness fields), a `content_hash`
@@ -394,14 +408,17 @@ of the original page bytes, and `complete: true`. That content satisfies
 reading that page; do not reopen it unnecessarily. `--evidence-page-limit`
 (default 3) and `--evidence-byte-limit` (default 24576) bound only the
 evidence section, including its metadata; they do not cap the rest of the
-packet or measure model tokens. Pages are never silently truncated. Selected
-candidates that are not included remain in the ranked `matches` list and
-appear in `evidence_omitted` with a reason such as `page too large` or
+packet or measure model tokens. Ranked matches are considered first; related
+replacement pages share the same remaining page and byte budget. Pages are
+never silently truncated. Selected candidates that are not included remain in
+the ranked `matches` or `related_replacements` lists and appear in
+`evidence_omitted` with a reason such as `page too large` or
 `aggregate budget exhausted`. An oversized top candidate is not covered by a
-lower-ranked page. Preserve targeted reads when required evidence is omitted,
-insufficient, or needs freshness confirmation. Keep facts, inferences,
-historical material, and sources distinct. A content hash identifies the
-returned version; it does not establish that a later write is safe.
+lower-ranked page. Metadata-only related replacements have not been fully
+read. Preserve targeted reads when required evidence is omitted, insufficient,
+or needs freshness confirmation. Keep facts, inferences, historical material,
+and sources distinct. A content hash identifies the returned version; it does
+not establish that a later write is safe.
 
 Start from the packet's selected navigation and inspect only the primary owner
 index and linked pages that the request makes relevant. Add another enabled
@@ -451,14 +468,25 @@ owners rather than copying facts.
 | Ventures / Projects | Retrieve lifecycle, current state, decisions, commitments, milestones, outcomes, adoption evidence, evolution, and unknowns; keep initiative claims distinct from Career, Learning, Relationships, Writing, and `core/`. See [Ventures / Projects](ventures.md). |
 
 For any vertical, inspect the returned page's assertion kind, status,
-provenance, freshness, and review state before treating it as current evidence.
-If the vertical procedure says the evidence is insufficient or a no-op is
-appropriate, preserve that result rather than manufacturing a claim.
+provenance, freshness, review state, and available replacement evidence before
+treating it as current evidence. If the vertical procedure says the evidence is
+insufficient or a no-op is appropriate, preserve that result rather than
+manufacturing a claim.
 
 ## Verification and Freshness at Query Time
 
 Treat verification and freshness as separate dimensions:
 
+- A current-state answer must inspect available `related_replacements` before
+  relying on a `status: superseded` claim. Keep the historical match visible
+  and use the explicit successor when the question is about the current
+  decision or preference. A historical question may use the superseded page;
+  make its temporal status clear rather than presenting it as current.
+- An explicit successor is recorded replacement context, not automatically
+  verified truth. If `unresolved_replacements` shows a missing target, cycle,
+  invalid reference, scope restriction, or exhausted limit, keep the current
+  state visibly uncertain instead of implying that the latest retrieved page
+  is the replacement.
 - An active page with `verified: null` is usable as source-derived or user-stated
   evidence when its status and provenance are appropriate, but describe it as
   unconfirmed rather than presenting it as explicitly verified.

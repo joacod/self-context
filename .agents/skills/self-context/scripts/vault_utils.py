@@ -59,6 +59,18 @@ REQUIRED_NON_NULL_FIELDS = {
 }
 ALLOWED_TYPES = {"concept", "observation", "source", "synthesis"}
 ALLOWED_STATUSES = {"active", "draft", "review", "archived", "superseded"}
+REPLACEMENT_DEPTH_LIMIT = 3
+RELATED_REPLACEMENT_LIMIT = 6
+REPLACEMENT_RELATIONSHIP = "superseded_by"
+UNRESOLVED_CYCLE = "cycle"
+UNRESOLVED_MISSING_TARGET = "missing-target"
+UNRESOLVED_INVALID_REFERENCE = "invalid-reference"
+UNRESOLVED_OUT_OF_SCOPE = "out-of-scope"
+UNRESOLVED_DEPTH_LIMIT = "depth-limit"
+UNRESOLVED_RELATED_LIMIT = "related-limit"
+UNRESOLVED_UNREADABLE = "unreadable"
+UNRESOLVED_UNAVAILABLE = "unavailable"
+UNRESOLVED_MISSING_SUCCESSOR = "missing-successor"
 ALLOWED_ASSERTIONS = {
     "user_stated_fact",
     "source_derived_fact",
@@ -1131,6 +1143,299 @@ def page_record_for_label(
     if record.get("read_error") or not isinstance(record.get("text"), str):
         return record, "unreadable"
     return record, None
+
+
+def label_in_scopes(label: str, scopes: Sequence[str]) -> bool:
+    """Return whether a vault-relative path sits inside explicit retrieval scopes."""
+
+    return any(label == scope or label.startswith(scope + "/") for scope in scopes)
+
+
+def _superseded_by_value(record: Mapping[str, Any]) -> Any:
+    fields = record.get("frontmatter")
+    if isinstance(fields, Mapping) and "superseded_by" in fields:
+        return fields.get("superseded_by")
+    return record.get("superseded_by")
+
+
+def _page_status(record: Mapping[str, Any]) -> Any:
+    fields = record.get("frontmatter")
+    if isinstance(fields, Mapping) and "status" in fields:
+        return fields.get("status")
+    return record.get("status")
+
+
+def vault_relative_link_label(
+    source_label: str, destination: str
+) -> Tuple[Optional[str], Optional[str]]:
+    """Resolve a relative Markdown destination to a vault-relative label."""
+
+    dest = str(destination or "").strip()
+    if not dest or is_external(dest):
+        return None, UNRESOLVED_INVALID_REFERENCE
+    target_text = unquote(dest.split("#", 1)[0].split("?", 1)[0].strip())
+    source = Path(str(source_label or "").strip().replace("\\", "/"))
+    if not str(source_label or "").strip() or source.is_absolute() or ".." in source.parts:
+        return None, UNRESOLVED_INVALID_REFERENCE
+    relative = (source.parent / target_text) if target_text else source
+    parts: List[str] = []
+    for part in Path(relative.as_posix()).parts:
+        if part in {"", "."}:
+            continue
+        if part == "..":
+            if not parts:
+                return None, UNRESOLVED_INVALID_REFERENCE
+            parts.pop()
+            continue
+        parts.append(part)
+    if not parts:
+        return None, UNRESOLVED_INVALID_REFERENCE
+    return "/".join(parts), None
+
+
+def resolve_superseded_by_target(
+    source_label: str,
+    destination: Any,
+    root: Path,
+    *,
+    scopes: Sequence[str],
+) -> Tuple[Optional[str], Optional[str]]:
+    """Resolve one explicit ``superseded_by`` destination without scanning."""
+
+    if destination in (None, "", "null"):
+        return None, UNRESOLVED_MISSING_SUCCESSOR
+    if not isinstance(destination, str):
+        return None, UNRESOLVED_INVALID_REFERENCE
+    label, error = vault_relative_link_label(source_label, destination)
+    if label is None:
+        return None, error
+    if scopes and not label_in_scopes(label, scopes):
+        return None, UNRESOLVED_OUT_OF_SCOPE
+    path, resolve_error = resolve_canonical_markdown_page(root, label)
+    if path is None:
+        if resolve_error == "invalid path":
+            return None, UNRESOLVED_INVALID_REFERENCE
+        current = Path(root)
+        raw = Path(label)
+        missing = False
+        for part in raw.parts:
+            current = current / part
+            try:
+                if not current.exists():
+                    missing = True
+                    break
+            except (OSError, RuntimeError, ValueError):
+                return None, UNRESOLVED_INVALID_REFERENCE
+        return None, UNRESOLVED_MISSING_TARGET if missing else UNRESOLVED_UNAVAILABLE
+    return label, None
+
+
+def _replacement_page_metadata(record: Mapping[str, Any]) -> Dict[str, Any]:
+    fields = record.get("frontmatter")
+    if not isinstance(fields, Mapping):
+        fields = record
+    item: Dict[str, Any] = {
+        "path": record.get("path"),
+        "title": fields.get("title"),
+        "status": fields.get("status"),
+        "type": fields.get("type"),
+        "assertion_kind": fields.get("assertion_kind"),
+        "generated": fields.get("generated"),
+        "verified": fields.get("verified"),
+        "stale_after": fields.get("stale_after"),
+    }
+    identifier = fields.get("id")
+    if identifier not in (None, ""):
+        item["id"] = identifier
+    successor = fields.get("superseded_by")
+    if isinstance(successor, str) and successor.strip():
+        item["superseded_by"] = successor.strip()
+    return item
+
+
+def _unresolved_replacement(
+    *,
+    origin: str,
+    current: str,
+    destination: Any,
+    chain: Sequence[str],
+    depth: int,
+    reason: str,
+) -> Dict[str, Any]:
+    item: Dict[str, Any] = {
+        "from": origin,
+        "path": current,
+        "relationship": REPLACEMENT_RELATIONSHIP,
+        "chain": list(chain),
+        "depth": depth,
+        "reason": reason,
+    }
+    if isinstance(destination, str) and destination.strip():
+        item["superseded_by"] = destination.strip()
+    elif destination not in (None, "", "null"):
+        item["superseded_by"] = destination
+    return item
+
+
+def follow_explicit_replacements(
+    selected: Sequence[Mapping[str, Any]],
+    *,
+    root: Path,
+    records_by_path: Optional[Mapping[str, Mapping[str, Any]]] = None,
+    scopes: Sequence[str] = (),
+    depth_limit: int = REPLACEMENT_DEPTH_LIMIT,
+    related_limit: int = RELATED_REPLACEMENT_LIMIT,
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """Follow explicit ``superseded_by`` links from selected superseded pages.
+
+    Traversal is read-only, forward-only, and cycle-safe. Replacements are
+    resolved directly from known references; they do not need to match a query.
+    """
+
+    depth_limit = max(0, int(depth_limit))
+    related_limit = max(0, int(related_limit))
+    known: Dict[str, Mapping[str, Any]] = dict(records_by_path or {})
+    replacements: List[Dict[str, Any]] = []
+    unresolved: List[Dict[str, Any]] = []
+    primary_paths = {
+        str(item.get("path") or "")
+        for item in selected
+        if str(item.get("path") or "")
+    }
+    seen_related: set[str] = set()
+
+    def load_record(label: str) -> Tuple[Optional[Mapping[str, Any]], Optional[str]]:
+        record = known.get(label)
+        if record is not None:
+            if record.get("read_error") or (
+                "text" in record and not isinstance(record.get("text"), str)
+            ):
+                return record, UNRESOLVED_UNREADABLE
+            return record, None
+        loaded, error = page_record_for_label(root, label)
+        if loaded is not None:
+            known[label] = loaded
+        if error == "unreadable":
+            return loaded, UNRESOLVED_UNREADABLE
+        if error == "invalid path":
+            return loaded, UNRESOLVED_INVALID_REFERENCE
+        if error == "unavailable":
+            return loaded, UNRESOLVED_UNAVAILABLE
+        return loaded, error
+
+    for item in selected:
+        origin = str(item.get("path") or "")
+        if not origin:
+            continue
+        origin_record = known.get(origin, item)
+        if _page_status(origin_record) != "superseded":
+            continue
+        chain = [origin]
+        visited = {origin}
+        current_label = origin
+        current_record: Mapping[str, Any] = origin_record
+        for depth in range(1, depth_limit + 1):
+            destination = _superseded_by_value(current_record)
+            if destination in (None, "", "null"):
+                if current_label == origin:
+                    unresolved.append(
+                        _unresolved_replacement(
+                            origin=origin,
+                            current=current_label,
+                            destination=destination,
+                            chain=chain,
+                            depth=depth,
+                            reason=UNRESOLVED_MISSING_SUCCESSOR,
+                        )
+                    )
+                break
+            target, error = resolve_superseded_by_target(
+                current_label, destination, root, scopes=scopes
+            )
+            if target is None:
+                unresolved.append(
+                    _unresolved_replacement(
+                        origin=origin,
+                        current=current_label,
+                        destination=destination,
+                        chain=chain,
+                        depth=depth,
+                        reason=error or UNRESOLVED_INVALID_REFERENCE,
+                    )
+                )
+                break
+            if target in visited:
+                unresolved.append(
+                    _unresolved_replacement(
+                        origin=origin,
+                        current=current_label,
+                        destination=destination,
+                        chain=chain,
+                        depth=depth,
+                        reason=UNRESOLVED_CYCLE,
+                    )
+                )
+                break
+            visited.add(target)
+            next_chain = chain + [target]
+            already_visible = target in primary_paths or target in seen_related
+            target_record, load_error = load_record(target)
+            if load_error or target_record is None:
+                unresolved.append(
+                    _unresolved_replacement(
+                        origin=origin,
+                        current=current_label,
+                        destination=destination,
+                        chain=chain,
+                        depth=depth,
+                        reason=load_error or UNRESOLVED_UNAVAILABLE,
+                    )
+                )
+                break
+            if not already_visible:
+                if len(replacements) >= related_limit:
+                    unresolved.append(
+                        _unresolved_replacement(
+                            origin=origin,
+                            current=current_label,
+                            destination=destination,
+                            chain=chain,
+                            depth=depth,
+                            reason=UNRESOLVED_RELATED_LIMIT,
+                        )
+                    )
+                    break
+                related = _replacement_page_metadata(target_record)
+                related.update(
+                    {
+                        "from": origin,
+                        "relationship": REPLACEMENT_RELATIONSHIP,
+                        "chain": next_chain,
+                        "depth": depth,
+                    }
+                )
+                replacements.append(related)
+                seen_related.add(target)
+            chain = next_chain
+            current_label = target
+            current_record = target_record
+            if depth == depth_limit and _superseded_by_value(current_record) not in (
+                None,
+                "",
+                "null",
+            ):
+                unresolved.append(
+                    _unresolved_replacement(
+                        origin=origin,
+                        current=current_label,
+                        destination=_superseded_by_value(current_record),
+                        chain=chain,
+                        depth=depth,
+                        reason=UNRESOLVED_DEPTH_LIMIT,
+                    )
+                )
+                break
+    return replacements, unresolved
 
 
 def complete_page_evidence(record: Mapping[str, Any]) -> Optional[Dict[str, Any]]:

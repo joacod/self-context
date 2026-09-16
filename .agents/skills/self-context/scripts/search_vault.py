@@ -376,6 +376,9 @@ def _render_result(
         "rank_score": score,
         "linked_from": linked_from,
     }
+    successor = fields.get("superseded_by")
+    if isinstance(successor, str) and successor.strip():
+        result["superseded_by"] = successor.strip()
     if include_identity:
         aliases = fields.get("aliases")
         result["id"] = fields.get("id")
