@@ -261,6 +261,9 @@ class PrepareContextTests(unittest.TestCase):
                 reports,
                 result_limit=4,
                 linked_source_limit=2,
+                corpus=search_vault._build_search_corpus(
+                    vault, scopes=["career"], load_candidates=True
+                ),
             )
 
             with mock.patch.object(

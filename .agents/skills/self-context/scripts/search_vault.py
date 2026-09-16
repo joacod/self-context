@@ -10,7 +10,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import unquote
-from typing import Any, Dict, FrozenSet, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, FrozenSet, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 try:
     from vault_utils import (
@@ -405,6 +405,86 @@ def _snippet(body: str, terms: Sequence[str], limit: int = 220) -> str:
     return snippet
 
 
+def _query_terms(query: str) -> List[str]:
+    raw_terms = _unique_tokens(normalized_tokens(query))
+    return [token for token in raw_terms if token not in STOPWORDS] or raw_terms
+
+
+def _expand_linked_sources(
+    corpus: _SearchCorpus,
+    primaries: Sequence[Mapping[str, Any]],
+    *,
+    budget: int,
+    terms: Sequence[str],
+    include_identity: bool = False,
+) -> List[Dict[str, Any]]:
+    """Select provenance sources for already-chosen primary pages.
+
+    Surviving parents are walked in the given order. Duplicate source paths
+    share one budget slot and keep every selected parent they support.
+    """
+
+    if budget <= 0 or not primaries:
+        return []
+
+    primary_paths = {
+        str(item.get("path") or "")
+        for item in primaries
+        if item.get("path")
+    }
+    parents_by_source: Dict[str, List[str]] = {}
+    ordered_sources: List[str] = []
+    for item in primaries:
+        if len(ordered_sources) >= budget:
+            break
+        parent_path = str(item.get("path") or "")
+        if not parent_path:
+            continue
+        parent_record = corpus.records_by_path.get(parent_path, {})
+        for source_path in _linked_source_paths(
+            parent_record, corpus.vault, corpus.records_by_path
+        ):
+            if source_path in primary_paths:
+                continue
+            parents = parents_by_source.get(source_path)
+            if parents is None:
+                parents_by_source[source_path] = [parent_path]
+                ordered_sources.append(source_path)
+                if len(ordered_sources) >= budget:
+                    break
+                continue
+            if parent_path not in parents:
+                parents.append(parent_path)
+
+    linked_summary = {
+        "match_type": "linked_source",
+        "query_term_coverage": 0.0,
+        "matched_term_count": 0,
+        "query_term_count": len(terms),
+        "phrase_fields": [],
+    }
+    linked_results: List[Dict[str, Any]] = []
+    for source_path in ordered_sources:
+        source_record = corpus.records_by_path.get(source_path)
+        if source_record is None:
+            continue
+        parents = parents_by_source[source_path]
+        result = _render_result(
+            source_record,
+            corpus.catalog,
+            terms,
+            [],
+            linked_summary,
+            -1,
+            linked_from=parents[0],
+            include_identity=include_identity,
+        )
+        if len(parents) > 1:
+            result["linked_from_pages"] = list(parents)
+        linked_results.append(result)
+    return linked_results
+
+
 def _unique_tokens(tokens: Iterable[str]) -> List[str]:
     unique: List[str] = []
     seen = set()
@@ -642,8 +722,7 @@ def _search_corpus(
     include_identity: bool,
     compatibility: Dict[str, Any],
 ) -> Dict[str, Any]:
-    raw_terms = _unique_tokens(normalized_tokens(query))
-    terms = [token for token in raw_terms if token not in STOPWORDS] or raw_terms
+    terms = _query_terms(query)
     phrase_tokens = normalized_tokens(query)
     normalized_query = normalized_text(query)
     ranked: List[Tuple[int, Dict[str, Any], List[str], Dict[str, Any]]] = []
@@ -679,48 +758,15 @@ def _search_corpus(
     ]
 
     if expand_linked_sources:
-        seen_paths = {str(item.get("path")) for item in results}
-        linked_budget = min(3, max(0, result_limit - len(results)))
-        linked_results: List[Dict[str, Any]] = []
-        linked_summary = {
-            "match_type": "linked_source",
-            "query_term_coverage": 0.0,
-            "matched_term_count": 0,
-            "query_term_count": len(terms),
-            "phrase_fields": [],
-        }
-        for item in results:
-            if len(linked_results) >= linked_budget:
-                break
-            source_paths = _linked_source_paths(
-                corpus.records_by_path.get(str(item.get("path")), {}),
-                corpus.vault,
-                corpus.records_by_path,
+        results.extend(
+            _expand_linked_sources(
+                corpus,
+                results,
+                budget=min(3, max(0, result_limit - len(results))),
+                terms=terms,
+                include_identity=include_identity,
             )
-            for source_path in source_paths:
-                if source_path in seen_paths:
-                    continue
-                source_record = corpus.records_by_path.get(source_path)
-                if source_record is None:
-                    continue
-                linked_results.append(
-                    _render_result(
-                        source_record,
-                        corpus.catalog,
-                        terms,
-                        [],
-                        linked_summary,
-                        -1,
-                        linked_from=str(item.get("path")),
-                        include_identity=include_identity,
-                    )
-                )
-                seen_paths.add(source_path)
-                if len(linked_results) >= linked_budget:
-                    break
-            if len(linked_results) >= linked_budget:
-                break
-        results.extend(linked_results)
+        )
 
     return {
         "query": query,

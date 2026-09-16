@@ -387,6 +387,11 @@ def _compact_match(item: Mapping[str, Any], anchors: Sequence[str]) -> Dict[str,
         )
     if item.get("linked_from"):
         result["linked_from"] = _bounded_text(item.get("linked_from"), PATH_LIMIT)
+    pages = item.get("linked_from_pages")
+    if isinstance(pages, list) and len(pages) > 1:
+        result["linked_from_pages"] = _compact_text_list(
+            pages, count=SOURCE_REFERENCE_LIMIT, limit=PATH_LIMIT
+        )
     return result
 
 
@@ -430,34 +435,50 @@ def _compact_unresolved_replacement(item: Mapping[str, Any]) -> Dict[str, Any]:
     return result
 
 
+def _terms_for_matches(matches: Sequence[Mapping[str, Any]]) -> List[str]:
+    for item in matches:
+        for anchor in item.get("matched_anchors") or []:
+            return search_vault._query_terms(str(anchor))
+    return []
+
+
+def _anchors_for_parents(
+    parent_paths: Sequence[str],
+    anchors_by_path: Mapping[str, Sequence[str]],
+) -> List[str]:
+    anchors: List[str] = []
+    seen: set[str] = set()
+    for parent_path in parent_paths:
+        for anchor in anchors_by_path.get(parent_path, ()):
+            if anchor in seen:
+                continue
+            seen.add(anchor)
+            anchors.append(anchor)
+    return anchors
+
+
 def _merge_search_results(
     reports: Sequence[Tuple[int, str, Mapping[str, Any]]],
     result_limit: int,
     linked_source_limit: int,
+    *,
+    corpus: Optional[search_vault._SearchCorpus] = None,
+    include_identity: bool = True,
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-    """Union same-path retrieval hits without semantic deduplication."""
+    """Union same-path retrieval hits without semantic deduplication.
+
+    Primary matches are merged, ranked, and truncated first. Linked sources are
+    then selected from those surviving pages rather than from independently
+    truncated per-anchor provenance lists.
+    """
 
     matches: Dict[str, Dict[str, Any]] = {}
-    linked: Dict[Tuple[str, str], Dict[str, Any]] = {}
     for anchor_number, anchor, report in reports:
         for raw_item in report.get("results", []) or []:
             if not isinstance(raw_item, Mapping):
                 continue
             path = str(raw_item.get("path") or "")
-            if not path:
-                continue
-            if raw_item.get("linked_from"):
-                key = (path, str(raw_item.get("linked_from")))
-                candidate = _compact_match(raw_item, [anchor])
-                previous = linked.get(key)
-                if previous is None:
-                    candidate["_anchor_number"] = anchor_number
-                    linked[key] = candidate
-                else:
-                    anchors = list(previous.get("matched_anchors", []))
-                    if anchor not in anchors:
-                        anchors.append(anchor)
-                    previous["matched_anchors"] = anchors
+            if not path or raw_item.get("linked_from"):
                 continue
 
             candidate = _compact_match(raw_item, [anchor])
@@ -486,16 +507,36 @@ def _merge_search_results(
             str(item.get("path") or ""),
         ),
     )[:result_limit]
-    ordered_linked = sorted(
-        linked.values(),
-        key=lambda item: (
-            int(item.get("_anchor_number", 0)),
-            str(item.get("linked_from") or ""),
-            str(item.get("path") or ""),
-        ),
-    )[:linked_source_limit]
-    for item in ordered_matches + ordered_linked:
+    for item in ordered_matches:
         item.pop("_anchor_number", None)
+    if (
+        linked_source_limit <= 0
+        or not ordered_matches
+        or corpus is None
+    ):
+        return ordered_matches, []
+
+    raw_linked = search_vault._expand_linked_sources(
+        corpus,
+        ordered_matches,
+        budget=linked_source_limit,
+        terms=_terms_for_matches(ordered_matches),
+        include_identity=include_identity,
+    )
+    anchors_by_path = {
+        str(item.get("path") or ""): list(item.get("matched_anchors") or [])
+        for item in ordered_matches
+        if item.get("path")
+    }
+    ordered_linked: List[Dict[str, Any]] = []
+    for raw_item in raw_linked:
+        parents = raw_item.get("linked_from_pages")
+        if not isinstance(parents, list) or not parents:
+            parent = raw_item.get("linked_from")
+            parents = [parent] if parent else []
+        ordered_linked.append(
+            _compact_match(raw_item, _anchors_for_parents(parents, anchors_by_path))
+        )
     return ordered_matches, ordered_linked
 
 
@@ -787,12 +828,6 @@ def prepare_context(
 
     controls["search_performed"] = True
     reports: List[Tuple[int, str, Mapping[str, Any]]] = []
-    search_limit = result_limit
-    if expand_linked_sources and result_limit:
-        # search_vault reserves three slots for its existing linked-source
-        # expansion.  The preparation packet applies the caller's smaller
-        # linked-source cap after composition.
-        search_limit += DEFAULT_LINKED_SOURCE_LIMIT
     records_by_path: Optional[Mapping[str, Mapping[str, Any]]] = None
     corpus = search_vault._build_search_corpus(
         root,
@@ -807,12 +842,12 @@ def prepare_context(
         report = search_vault._search_corpus(
             corpus,
             anchor,
-            limit=search_limit,
+            limit=result_limit,
             vertical=None,
             scopes=scopes,
             contextual=contextual,
             include_derived=include_derived,
-            expand_linked_sources=expand_linked_sources,
+            expand_linked_sources=False,
             include_identity=True,
             compatibility=runtime,
         )
@@ -833,6 +868,7 @@ def prepare_context(
         reports,
         result_limit=result_limit,
         linked_source_limit=linked_source_limit if expand_linked_sources else 0,
+        corpus=corpus,
     )
     replacements, unresolved = vault_utils.follow_explicit_replacements(
         matches,
