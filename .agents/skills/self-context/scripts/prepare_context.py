@@ -26,12 +26,17 @@ except ImportError:  # pragma: no cover - package-style import fallback
 DEFAULT_RESULT_LIMIT = 10
 DEFAULT_NAVIGATION_LIMIT = 20
 DEFAULT_LINKED_SOURCE_LIMIT = 3
+DEFAULT_EVIDENCE_PAGE_LIMIT = 3
+DEFAULT_EVIDENCE_BYTE_LIMIT = 24 * 1024
 SNIPPET_LIMIT = 220
 LOG_SNIPPET_LIMIT = 240
 SOURCE_REFERENCE_LIMIT = 12
 METADATA_LIMIT = 240
 PATH_LIMIT = 400
 DATE_LIMIT = 64
+OMIT_PAGE_TOO_LARGE = "page too large"
+OMIT_BUDGET_EXHAUSTED = "aggregate budget exhausted"
+OMIT_UNREADABLE = "unreadable"
 
 
 def _non_negative(value: int, name: str) -> int:
@@ -450,6 +455,66 @@ def _merge_search_results(
     return ordered_matches, ordered_linked
 
 
+def _serialized_utf8_size(value: Any) -> int:
+    return len(json.dumps(value, ensure_ascii=False, sort_keys=True).encode("utf-8"))
+
+
+def _record_for_selected_path(
+    path: str,
+    root: Path,
+    records_by_path: Optional[Mapping[str, Mapping[str, Any]]],
+) -> Tuple[Optional[Mapping[str, Any]], Optional[str]]:
+    if records_by_path is not None and path in records_by_path:
+        record = records_by_path[path]
+        if isinstance(record.get("text"), str) and isinstance(record.get("content_hash"), str):
+            return record, None
+        return record, OMIT_UNREADABLE
+    return vault_utils.page_record_for_label(root, path)
+
+
+def _select_complete_evidence(
+    matches: Sequence[Mapping[str, Any]],
+    *,
+    root: Path,
+    records_by_path: Optional[Mapping[str, Mapping[str, Any]]],
+    page_limit: int,
+    byte_limit: int,
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """Include complete original pages for selected candidates, without truncation.
+
+    ``page_limit`` and ``byte_limit`` bound this evidence section only. They do
+    not cap the rest of the preparation packet or measure model tokens. The
+    ranked ``matches`` list is left unchanged. An oversized higher-ranked
+    candidate is omitted with a reason rather than replaced or covered by a
+    lower-ranked page.
+    """
+
+    included: List[Dict[str, Any]] = []
+    omitted: List[Dict[str, Any]] = []
+    used_bytes = 0
+    for item in matches[:page_limit]:
+        path = str(item.get("path") or "")
+        if not path:
+            continue
+        record, error = _record_for_selected_path(path, root, records_by_path)
+        evidence = (
+            vault_utils.complete_page_evidence(record) if record is not None else None
+        )
+        if evidence is None:
+            omitted.append({"path": path, "reason": error or OMIT_UNREADABLE})
+            continue
+        size = _serialized_utf8_size(evidence)
+        if size > byte_limit:
+            omitted.append({"path": path, "reason": OMIT_PAGE_TOO_LARGE})
+            continue
+        if used_bytes + size > byte_limit:
+            omitted.append({"path": path, "reason": OMIT_BUDGET_EXHAUSTED})
+            continue
+        included.append(evidence)
+        used_bytes += size
+    return included, omitted
+
+
 def prepare_context(
     vault: Path,
     explicit_scope: Optional[Sequence[str]] = None,
@@ -469,6 +534,9 @@ def prepare_context(
     include_derived: bool = False,
     exclude_archived: bool = False,
     exclude_superseded: bool = False,
+    include_evidence: bool = False,
+    evidence_page_limit: int = DEFAULT_EVIDENCE_PAGE_LIMIT,
+    evidence_byte_limit: int = DEFAULT_EVIDENCE_BYTE_LIMIT,
 ) -> Dict[str, Any]:
     """Return a compact, bounded, read-only context-preparation packet.
 
@@ -476,6 +544,13 @@ def prepare_context(
     empty scope never means "search every vertical"; the caller must make the
     scope decision before this helper runs.  ``index_paths`` is accepted as a
     compatibility alias for manually selected navigation paths.
+
+    ``include_evidence`` is opt-in. When disabled, the packet remains
+    metadata-only. When enabled, a separate evidence section may include
+    complete original page bytes for a small number of ranked canonical
+    matches. ``evidence_page_limit`` and ``evidence_byte_limit`` bound that
+    section, including each included page's metadata; they do not bound the
+    rest of the packet or an exact number of model tokens.
     """
 
     if scope is not None:
@@ -491,6 +566,8 @@ def prepare_context(
     result_limit = _non_negative(result_limit, "result_limit")
     linked_source_limit = _non_negative(linked_source_limit, "linked_source_limit")
     navigation_limit = _non_negative(navigation_limit, "navigation_limit")
+    evidence_page_limit = _non_negative(evidence_page_limit, "evidence_page_limit")
+    evidence_byte_limit = _non_negative(evidence_byte_limit, "evidence_byte_limit")
     linked_source_limit = min(DEFAULT_LINKED_SOURCE_LIMIT, linked_source_limit)
 
     root = Path(vault).expanduser()
@@ -554,6 +631,10 @@ def prepare_context(
         "search_scope_required": True,
         "search_performed": False,
     }
+    if include_evidence:
+        controls["include_evidence"] = True
+        controls["evidence_page_limit"] = evidence_page_limit
+        controls["evidence_byte_limit"] = evidence_byte_limit
 
     packet: Dict[str, Any] = {
         "runtime": runtime,
@@ -565,6 +646,9 @@ def prepare_context(
         "linked_sources": [],
         "findings": findings,
     }
+    if include_evidence:
+        packet["evidence"] = []
+        packet["evidence_omitted"] = []
 
     if not presence["present"]:
         return packet
@@ -627,6 +711,7 @@ def prepare_context(
         # expansion.  The preparation packet applies the caller's smaller
         # linked-source cap after composition.
         search_limit += DEFAULT_LINKED_SOURCE_LIMIT
+    records_by_path: Optional[Mapping[str, Mapping[str, Any]]] = None
     corpus = search_vault._build_search_corpus(
         root,
         scopes=scopes,
@@ -635,6 +720,7 @@ def prepare_context(
         exclude_superseded=exclude_superseded,
         load_candidates=result_limit > 0,
     )
+    records_by_path = corpus.records_by_path
     for anchor_number, anchor in enumerate(search_anchors):
         report = search_vault._search_corpus(
             corpus,
@@ -668,6 +754,14 @@ def prepare_context(
     )
     packet["matches"] = matches
     packet["linked_sources"] = linked_sources
+    if include_evidence:
+        packet["evidence"], packet["evidence_omitted"] = _select_complete_evidence(
+            matches,
+            root=root,
+            records_by_path=records_by_path,
+            page_limit=evidence_page_limit,
+            byte_limit=evidence_byte_limit,
+        )
     return packet
 
 
@@ -700,6 +794,27 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--include-derived", action="store_true")
     parser.add_argument("--exclude-archived", action="store_true")
     parser.add_argument("--exclude-superseded", action="store_true")
+    parser.add_argument(
+        "--include-evidence",
+        action="store_true",
+        help="include complete original contents for a bounded set of ranked canonical pages",
+    )
+    parser.add_argument(
+        "--evidence-page-limit",
+        type=_non_negative_int,
+        default=DEFAULT_EVIDENCE_PAGE_LIMIT,
+        help="maximum complete pages in the evidence section (default: 3)",
+    )
+    parser.add_argument(
+        "--evidence-byte-limit",
+        type=_non_negative_int,
+        default=DEFAULT_EVIDENCE_BYTE_LIMIT,
+        help=(
+            "maximum UTF-8 bytes for the serialized evidence section, including "
+            "metadata; not a token limit or a cap on the rest of the packet "
+            f"(default: {DEFAULT_EVIDENCE_BYTE_LIMIT})"
+        ),
+    )
     parser.add_argument("--format", choices=("json",), default="json")
     args = parser.parse_args(argv)
 
@@ -719,6 +834,9 @@ def main(argv: Optional[List[str]] = None) -> int:
         include_derived=args.include_derived,
         exclude_archived=args.exclude_archived,
         exclude_superseded=args.exclude_superseded,
+        include_evidence=args.include_evidence,
+        evidence_page_limit=args.evidence_page_limit,
+        evidence_byte_limit=args.evidence_byte_limit,
     )
     print(json.dumps(packet, indent=2, sort_keys=True))
     return 0
