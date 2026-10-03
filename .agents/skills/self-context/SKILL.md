@@ -210,8 +210,15 @@ See [Ingest](references/ingest.md), [Query](references/query.md), and
    [Deep maintenance](references/deep-maintenance.md). Vertical procedures are
    linked in the Context Layers table above; [Backups](references/backups.md)
    owns the backup details.
-5. For an existing current vault mutation, prepare semantic bytes, explicit
-   vertical activation when required, and log metadata, then invoke the owning
+5. Before planning an existing current vault mutation, use preparation with
+   `--for-update` and require `controls.mutation_ready: true`. Carry its
+   `controls.expected_snapshot` unchanged into the ordinary proposal; a packet
+   obtained for read-only Query is not a mutation precondition. On snapshot
+   drift, reread and reconsider the proposal instead of refreshing only the
+   token. This opt-in scans the canonical vault before and after preparation;
+   ordinary read-only queries do not pay that cost. Prepare semantic bytes,
+   explicit vertical activation when required, and log metadata, then invoke
+   the owning
    ordinary commit boundary. It stages indexes and controls, validates, and
    owns backups, rollback, and the receipt. Do not write active indexes or
    create a separate backup around it. Schema migration and deep maintenance
@@ -235,6 +242,6 @@ files, provenance and links, unresolved review items or missing evidence, the
 epistemic result (fact, observation, source record, or derived synthesis), and
 any confirmation needed. For a mutation, report the structured receipt,
 including validation, rollback, activations, provisional recovery backup, and
-final backup paths when applicable. For advice, distinguish retrieved evidence,
+   final backup paths when applicable. For advice, distinguish retrieved evidence,
 interpretation, unknowns, and recommendation; a recommendation must not
 bootstrap itself into a goal or other personal fact.

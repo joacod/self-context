@@ -54,7 +54,7 @@ preparation helper with the explicit scope and anchors:
 ```bash
 python3 .agents/skills/self-context/scripts/prepare_context.py \
   vault --scope career --anchor "organization" --anchor "project" \
-  --recent-limit 10 --result-limit 10 --expand-linked-sources
+  --recent-limit 10 --result-limit 10 --expand-linked-sources --for-update
 ```
 
 The packet composes the latest-first runtime state, selected navigation,
@@ -67,6 +67,15 @@ materially change the ingest. Follow links only as far as needed to understand
 relationships; do not load unrelated verticals or the complete log by default.
 
 Do not search `.obsidian/` or treat viewer configuration as supplied context.
+
+Require `controls.mutation_ready: true` and retain the packet's
+`controls.expected_snapshot` before reading further pages or constructing the
+proposal. Preparation checks that the canonical vault is unchanged across its
+reads; commit checks the same snapshot again. Pass it unchanged as
+`expected_snapshot`. If either boundary reports drift, reread the affected
+context and rebuild the proposal. Never obtain a newer token merely to submit
+bytes based on an earlier read. The whole-vault precondition can reject an
+unrelated concurrent edit; it does not provide writer locking or crash recovery.
 
 Prefer an existing concept when the identity and subject match. A new page is
 appropriate when it represents a distinct durable concept, not merely a new
@@ -243,7 +252,7 @@ not silently erase a conflicting source.
 
 ### Ordinary commit boundary
 
-The helper accepts only a thin filesystem proposal: optional
+The helper accepts only a thin filesystem proposal: required read-time
 `expected_snapshot`, `writes` mapping canonical relative labels to prepared text
 or bytes, explicit `activations` catalog IDs, and, when the staged state changes, `log` metadata containing `operation`,
 `summary`, and `paths` (a byte-equivalent proposal may omit it). It supports

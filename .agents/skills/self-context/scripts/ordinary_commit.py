@@ -102,7 +102,7 @@ def _base_receipt(vault: Path) -> Dict[str, Any]:
 
 def _safe_snapshot(vault: Path) -> Tuple[Optional[str], Optional[str]]:
     try:
-        return vault_utils.snapshot_id(vault), None
+        return vault_utils.snapshot_id(vault, require_readable=True), None
     except (OSError, RuntimeError, ValueError) as error:
         return None, str(error)
 
@@ -336,14 +336,12 @@ def _validate_proposal(
         )
 
     expected_snapshot = proposal.get("expected_snapshot")
-    if expected_snapshot is not None and (
-        not isinstance(expected_snapshot, str) or not expected_snapshot
-    ):
+    if not isinstance(expected_snapshot, str) or not expected_snapshot:
         findings.append(
             _finding(
                 "error",
                 "expected_snapshot",
-                "expected_snapshot must be a non-empty snapshot identifier when supplied",
+                "expected_snapshot is required; use the snapshot captured before reading mutation context",
                 "input-contract",
             )
         )

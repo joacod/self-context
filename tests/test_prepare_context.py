@@ -52,6 +52,7 @@ class PrepareContextTests(unittest.TestCase):
                     "Harbor Launch",
                     "--recent-limit",
                     "1",
+                    "--for-update",
                     "--result-limit",
                     "1",
                 ],
@@ -64,6 +65,8 @@ class PrepareContextTests(unittest.TestCase):
             self.assertEqual(packet["runtime"]["state"], "current")
             self.assertEqual(packet["controls"]["scope"], ["career"])
             self.assertLessEqual(len(packet["matches"]), 1)
+            self.assertTrue(packet["controls"]["mutation_ready"])
+            self.assertIsInstance(packet["controls"]["expected_snapshot"], str)
 
     def test_current_packet_is_bounded_scoped_and_compact(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

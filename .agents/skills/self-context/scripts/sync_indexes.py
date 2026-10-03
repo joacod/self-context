@@ -207,12 +207,14 @@ def _parse_entry_line(line: str) -> Optional[Dict[str, str]]:
     }
 
 
-def managed_entries(text: str) -> List[Dict[str, str]]:
+def managed_entries(text: str, *, limit: Optional[int] = None) -> List[Dict[str, str]]:
     block = managed_block(text)
     if block is None:
         return []
     entries: List[Dict[str, str]] = []
     for line in block.splitlines():
+        if limit is not None and len(entries) >= max(0, limit):
+            break
         if line.strip() in {CATALOG_START, CATALOG_END}:
             continue
         entry = _parse_entry_line(line)

@@ -453,9 +453,14 @@ def _safe_is_file(path: Path) -> bool:
         return False
 
 
-def markdown_link_records(path: Path, root: Path, text: str) -> List[Dict[str, Any]]:
+def markdown_link_records(
+    path: Path, root: Path, text: str, *, limit: Optional[int] = None
+) -> List[Dict[str, Any]]:
+    """Resolve links exhaustively unless a caller supplies a navigation budget."""
     records: List[Dict[str, Any]] = []
     for destination in iter_markdown_links(text):
+        if limit is not None and len(records) >= max(0, limit):
+            break
         target = link_target(path, destination, root)
         external = is_external(destination)
         target_label: Optional[str] = None
@@ -1039,8 +1044,10 @@ def canonical_inventory(root: Path) -> List[Dict[str, str]]:
     return inventory
 
 
-def snapshot_id(root: Path) -> str:
+def snapshot_id(root: Path, *, require_readable: bool = False) -> str:
     entries = canonical_inventory(root)
+    if require_readable and any(entry.get("read_error") for entry in entries):
+        raise OSError("unable to read every canonical file for a mutation snapshot")
     payload = "".join(
         f"{entry['path']}\0{entry['content_hash']}\n" for entry in entries
     ).encode("utf-8")

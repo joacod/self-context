@@ -1,6 +1,6 @@
 # SelfContext performance and semantic improvement handoff
 
-Status: proposed; no implementation steps completed.
+Status: Pass 1 implemented and validated; Pass 2 not started.
 
 Prepared on 2026-10-03 against commit
 `e5991fdbe5aba0ef4d0e4264f988bf99477c8c73`.
@@ -18,6 +18,10 @@ Follow the user's current authorization and [repository guidance](AGENTS.md).
 Before a non-trivial implementation slice, explain its scope and obtain the
 required confirmation. Implement the approved slice, report it, and do not
 automatically start the next one without authorization.
+
+The user subsequently authorized splitting this plan into two passes and
+implementing Pass 1 immediately. That authorization covers the project changes
+listed below; Pass 2 and production-vault migration remain unstarted.
 
 Reinspect the current code and worktree before acting: this document records a
 specific baseline, and later work may have resolved or changed these findings.
@@ -135,9 +139,87 @@ measured improvements or completed failure investigations.
 
 ## Implementation sequence
 
-All steps are pending. Steps 01–10 initially target schema 0.2. Step 11 is a
-decision experiment, not a commitment to migrate. Keep independently reviewable
-changes small; split a step further if its scope warrants it.
+### Two-pass scope and status
+
+The original step numbers below remain stable for traceability. Their detailed
+checklists describe the full opportunities, including optional extensions.
+
+| Pass | Included work | Status |
+| --- | --- | --- |
+| 1 | Step 01 regression/benchmark foundation; Step 02 required read-time snapshots; Step 03 bounded navigation; Step 05 consistent coverage-first ordering; Step 06 successor evidence allocation | Complete within the bounded scope below |
+| 2 | Step 04 staged ingestion performance; Steps 07–10 vocabulary, instruction/payload efficiency, semantic workflows, and behavioral evaluation; Step 11 schema decision | Not started |
+
+Pass 1 deliberately uses the existing whole-vault snapshot rather than adding a
+per-page precondition API. It does not add writer locking, change backup
+lifecycles, implement new multi-anchor fusion, include complete linked sources,
+or migrate any vault. Those optional extensions require evidence and a scoped
+decision in Pass 2. Step 01's larger heterogeneous/long-source and bilingual
+evaluation workloads can grow with their owning Pass 2 changes.
+
+Steps 01–10 initially target schema 0.2. Step 11 is a decision experiment, not a
+commitment to migrate. Keep independently reviewable changes small.
+
+### Pass 1 implementation receipt
+
+- `prepare_context.py --for-update` captures a canonical snapshot before reading
+  context and checks it afterward. Only an unchanged, current vault receives
+  `controls.mutation_ready: true` and `controls.expected_snapshot`. Ordinary
+  query preparation performs neither whole-vault snapshot scan.
+- `ordinary_commit` now requires `expected_snapshot`, including for no-op
+  proposals. Existing direct callers must supply the read-time token; omission
+  is intentionally rejected before staging. Ingest, checkpoint, initialization,
+  query persistence, and the shared skill describe the updated contract.
+- Navigation resolves no more than the requested link budget per index and
+  reports link/catalog truncation. Maintenance helpers remain exhaustive by
+  default. Managed entry parsing uses one bounded lookahead for truncation.
+- Direct search and multi-anchor merging share an explicit exact-tier,
+  rational coverage, matched-count, secondary-score, and path ordering key.
+  `rank_score` remains explanatory but is no longer a standalone sort key.
+- Complete evidence prioritizes the furthest visible successor and its
+  historical origin over unrelated candidates within the selected set.
+  Existing primary successor matches are eligible too. Omitted pages distinguish
+  page limits from byte limits; cycle, scope, and depth findings remain visible.
+- [Context regression tests](tests/test_context_regressions.py) exercise these
+  guarantees with fictional data. Existing ordinary-commit callers/tests now
+  supply snapshots. The preparation CLI test covers `--for-update`.
+- [Synthetic benchmark](scripts/benchmark_context.py) builds temporary fixtures
+  and reports query, mutation-preparation, no-op, and commit timings separately:
+
+  ```bash
+  PYTHONDONTWRITEBYTECODE=1 python3 scripts/benchmark_context.py --pages 100 500 --repetitions 3
+  ```
+
+Validation on 2026-10-03:
+
+- `PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_repo.py`: **241 tests
+  passed**, zero skipped, failures, or errors; all seven skill metadata files
+  and tracked JSON passed. This includes 17 new context regression tests.
+- `git diff --check`: passed. Changed Markdown references and fences were
+  checked separately, excluding fictional links inside code examples.
+- The optional Skill Creator `quick_validate.py` could not run in the host
+  Python because PyYAML is absent; no dependency was installed. The repository's
+  own skill-metadata validation passed.
+- No production-vault writes, migration, branch creation, commit, push, or
+  external API calls were performed. Runtime schema and vertical versions,
+  backup lifecycles, the public README, and CI configuration remain unchanged.
+
+Pass 1 benchmark medians on the same local Python 3.13 environment, three runs
+per size, without profiling:
+
+| Measurement | Fixture + 100 pages | Fixture + 500 pages |
+| --- | ---: | ---: |
+| Read-only query preparation | 0.043 s | 0.185 s |
+| Mutation preparation including snapshot scans | 0.064 s | 0.273 s |
+| No-op commit, preparation excluded | 0.288 s | 1.328 s |
+| One-page commit, preparation excluded | 0.707 s | 2.829 s |
+
+Query timings improved relative to the earlier observational baseline; this is
+not a controlled end-to-end model latency claim. The stronger deterministic
+result is that requesting three navigation links from a 200-link index resolves
+exactly three targets, while full maintenance still enumerates all 200. Commit
+performance is broadly unchanged and remains Pass 2 work. Mutation preparation
+now pays an explicit safety cost that ordinary queries avoid. Packet size was
+about 26.9 KB, including new truncation metadata; payload reduction is deferred.
 
 ### Step 01 — Establish repeatable regression and measurement fixtures
 
@@ -451,6 +533,6 @@ Every implementation handoff should report:
 5. Any compatibility, contract, or migration implications.
 6. The next incomplete step, without silently starting it.
 
-Start with Step 01 and the Step 02 precondition design. Navigation is the next
-small, low-risk performance slice. Preserve the separation between improving
-the project and modifying the user's durable personal context throughout.
+The next implementation work is Pass 2, beginning with Step 04 after the user
+authorizes that pass. Preserve the separation between improving the project and
+modifying the user's durable personal context throughout.
