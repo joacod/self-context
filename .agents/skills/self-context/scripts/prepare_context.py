@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from itertools import islice
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
@@ -38,6 +39,7 @@ PATH_LIMIT = 400
 DATE_LIMIT = 64
 OMIT_PAGE_TOO_LARGE = "page too large"
 OMIT_BUDGET_EXHAUSTED = "aggregate budget exhausted"
+OMIT_PAGE_LIMIT = "page limit exhausted"
 OMIT_UNREADABLE = "unreadable"
 
 
@@ -292,16 +294,19 @@ def _navigation_record(
         return None
 
     try:
+        managed_candidates = sync_indexes.managed_entries(text, limit=limit + 1)
         managed = [
             _compact_navigation_entry(entry)
-            for entry in sync_indexes.managed_entries(text)[:limit]
+            for entry in managed_candidates[:limit]
             if isinstance(entry, Mapping)
         ]
         links = [
             _compact_link(link)
-            for link in vault_utils.markdown_link_records(path, root, text)[:limit]
+            for link in vault_utils.markdown_link_records(path, root, text, limit=limit)
             if isinstance(link, Mapping)
         ]
+        managed_truncated = len(managed_candidates) > limit
+        links_truncated = any(islice(vault_utils.iter_markdown_links(text), limit, limit + 1))
     except (OSError, RuntimeError, ValueError) as error:
         _append_finding(
             findings,
@@ -315,6 +320,8 @@ def _navigation_record(
         )
         managed = []
         links = []
+        managed_truncated = False
+        links_truncated = False
 
     return {
         "path": _bounded_text(label, PATH_LIMIT),
@@ -323,6 +330,8 @@ def _navigation_record(
         "description": _bounded_text(vault_utils.index_description(text), SNIPPET_LIMIT),
         "managed_entries": managed,
         "links": links,
+        "managed_entries_truncated": managed_truncated,
+        "links_truncated": links_truncated,
     }
 
 
@@ -491,9 +500,7 @@ def _merge_search_results(
             if anchor not in anchors:
                 anchors.append(anchor)
             previous["matched_anchors"] = anchors
-            previous_score = int(previous.get("rank_score") or 0)
-            candidate_score = int(candidate.get("rank_score") or 0)
-            if candidate_score > previous_score:
+            if search_vault.ranking_key(candidate) < search_vault.ranking_key(previous):
                 candidate["matched_anchors"] = anchors
                 candidate["_anchor_number"] = min(
                     int(previous.get("_anchor_number", anchor_number)), anchor_number
@@ -502,10 +509,7 @@ def _merge_search_results(
 
     ordered_matches = sorted(
         matches.values(),
-        key=lambda item: (
-            -int(item.get("rank_score") or 0),
-            str(item.get("path") or ""),
-        ),
+        key=search_vault.ranking_key,
     )[:result_limit]
     for item in ordered_matches:
         item.pop("_anchor_number", None)
@@ -565,24 +569,27 @@ def _select_complete_evidence(
     page_limit: int,
     byte_limit: int,
     related: Sequence[Mapping[str, Any]] = (),
+    replacement_depth_limit: int = DEFAULT_REPLACEMENT_DEPTH_LIMIT,
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """Include complete original pages for selected candidates, without truncation.
 
-    ``page_limit`` and ``byte_limit`` bound this evidence section only. They do
-    not cap the rest of the preparation packet or measure model tokens. The
-    ranked ``matches`` list is left unchanged. An oversized higher-ranked
-    candidate is omitted with a reason rather than replaced or covered by a
-    lower-ranked page. Related replacement pages share the same remaining
-    aggregate budget after those ranked candidates are considered.
+    ``page_limit`` and ``byte_limit`` bound this evidence section only. The
+    ranked ``matches`` list stays unchanged. Within its first ``page_limit``
+    candidates, successor/predecessor evidence is allocated before unrelated
+    matches. The furthest discovered successor comes first for tight budgets;
+    it is not necessarily current when traversal reports an unresolved edge.
     """
 
     included: List[Dict[str, Any]] = []
     omitted: List[Dict[str, Any]] = []
-    used_bytes = 0
+    used_bytes = 2  # JSON list brackets; each following entry adds a separator.
     considered: set[str] = set()
 
     def consider(path: str) -> None:
         nonlocal used_bytes
+        if len(included) >= page_limit:
+            omitted.append({"path": path, "reason": OMIT_PAGE_LIMIT})
+            return
         record, error = _record_for_selected_path(path, root, records_by_path)
         evidence = (
             vault_utils.complete_page_evidence(record) if record is not None else None
@@ -591,29 +598,42 @@ def _select_complete_evidence(
             omitted.append({"path": path, "reason": error or OMIT_UNREADABLE})
             return
         size = _serialized_utf8_size(evidence)
-        if size > byte_limit:
+        if size + 2 > byte_limit:
             omitted.append({"path": path, "reason": OMIT_PAGE_TOO_LARGE})
             return
+        size += 2 if included else 0
         if used_bytes + size > byte_limit:
             omitted.append({"path": path, "reason": OMIT_BUDGET_EXHAUSTED})
             return
         included.append(evidence)
         used_bytes += size
 
-    for item in matches[:page_limit]:
+    selected = matches[:page_limit]
+    visible = {str(item.get("path")): item for item in [*matches, *related]}
+    priority: List[Mapping[str, Any]] = []
+    for item in selected:
+        successors: List[Mapping[str, Any]] = []
+        current = item
+        visited = {str(item.get("path"))}
+        if item.get("status") != "superseded":
+            continue
+        for _ in range(replacement_depth_limit):
+            target, error = vault_utils.resolve_superseded_by_target(
+                str(current.get("path")), current.get("superseded_by"), root, scopes=()
+            )
+            if error or target not in visible or target in visited:
+                break
+            visited.add(target)
+            current = visible[target]
+            successors.append(current)
+        if successors:
+            priority.extend([successors[-1], item, *successors[:-1]])
+
+    for item in [*priority, *selected, *related]:
         path = str(item.get("path") or "")
         if not path or path in considered:
             continue
         considered.add(path)
-        consider(path)
-    for item in related:
-        path = str(item.get("path") or "")
-        if not path or path in considered:
-            continue
-        considered.add(path)
-        if len(included) >= page_limit:
-            omitted.append({"path": path, "reason": OMIT_BUDGET_EXHAUSTED})
-            continue
         consider(path)
     return included, omitted
 
@@ -642,6 +662,7 @@ def prepare_context(
     evidence_byte_limit: int = DEFAULT_EVIDENCE_BYTE_LIMIT,
     replacement_depth_limit: int = DEFAULT_REPLACEMENT_DEPTH_LIMIT,
     related_replacement_limit: int = DEFAULT_RELATED_REPLACEMENT_LIMIT,
+    for_update: bool = False,
 ) -> Dict[str, Any]:
     """Return a compact, bounded, read-only context-preparation packet.
 
@@ -649,6 +670,10 @@ def prepare_context(
     empty scope never means "search every vertical"; the caller must make the
     scope decision before this helper runs.  ``index_paths`` is accepted as a
     compatibility alias for manually selected navigation paths.
+
+    ``for_update`` captures a canonical snapshot before reading and checks it
+    afterward. Only a current, unchanged vault receives a mutation-ready
+    ``expected_snapshot``. Normal queries avoid those whole-vault reads.
 
     ``include_evidence`` is opt-in. When disabled, the packet remains
     metadata-only. When enabled, a separate evidence section may include
@@ -690,6 +715,40 @@ def prepare_context(
     linked_source_limit = min(DEFAULT_LINKED_SOURCE_LIMIT, linked_source_limit)
 
     root = Path(vault).expanduser()
+    planning_snapshot: Optional[str] = None
+    snapshot_error = False
+    if for_update and root.is_dir() and not root.is_symlink():
+        try:
+            planning_snapshot = vault_utils.snapshot_id(root, require_readable=True)
+        except (OSError, RuntimeError, ValueError):
+            snapshot_error = True
+
+    def finish(packet: Dict[str, Any]) -> Dict[str, Any]:
+        if not for_update:
+            return packet
+        controls = packet["controls"]
+        controls.update({"mutation_ready": False, "expected_snapshot": None})
+        if not packet["runtime"].get("ok"):
+            return packet
+        try:
+            unchanged = (
+                not snapshot_error
+                and planning_snapshot is not None
+                and vault_utils.snapshot_id(root, require_readable=True) == planning_snapshot
+            )
+        except (OSError, RuntimeError, ValueError):
+            unchanged = False
+        if unchanged:
+            controls.update({"mutation_ready": True, "expected_snapshot": planning_snapshot})
+        else:
+            packet["findings"].append({
+                "severity": "error",
+                "classification": "mutation-precondition",
+                "state": "snapshot-unavailable-or-changed",
+                "message": "mutation context changed or could not be snapshotted; reread before planning a write",
+            })
+        return packet
+
     findings: List[Dict[str, Any]] = []
     scope_values = _as_sequence(explicit_scope)
     requested_scope = _as_strings(scope_values)
@@ -774,7 +833,7 @@ def prepare_context(
         packet["evidence_omitted"] = []
 
     if not presence["present"]:
-        return packet
+        return finish(packet)
 
     selected_indexes = _selected_index_paths(root, scopes, manual_navigation, findings)
     for index_path, reason in selected_indexes:
@@ -802,7 +861,7 @@ def prepare_context(
             )
 
     if not search_anchors:
-        return packet
+        return finish(packet)
     if not runtime.get("ok"):
         _append_finding(
             findings,
@@ -813,7 +872,7 @@ def prepare_context(
                 "message": "candidate search skipped because the vault is not current",
             },
         )
-        return packet
+        return finish(packet)
     if not scopes:
         _append_finding(
             findings,
@@ -824,7 +883,7 @@ def prepare_context(
                 "message": "candidate search skipped; provide an explicit scope instead of searching every vertical",
             },
         )
-        return packet
+        return finish(packet)
 
     controls["search_performed"] = True
     reports: List[Tuple[int, str, Mapping[str, Any]]] = []
@@ -896,8 +955,9 @@ def prepare_context(
             page_limit=evidence_page_limit,
             byte_limit=evidence_byte_limit,
             related=related_replacements,
+            replacement_depth_limit=replacement_depth_limit,
         )
-    return packet
+    return finish(packet)
 
 
 def _non_negative_int(value: str) -> int:
@@ -925,6 +985,10 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--index", action="append", default=[], dest="navigation_paths", metavar="PATH")
     parser.add_argument("--navigation-limit", type=_non_negative_int, default=DEFAULT_NAVIGATION_LIMIT)
     parser.add_argument("--contextual", action="store_true")
+    parser.add_argument(
+        "--for-update", action="store_true",
+        help="capture and check a read-time snapshot for an ordinary mutation proposal",
+    )
     parser.add_argument("--include-sources", action="store_true")
     parser.add_argument("--include-derived", action="store_true")
     parser.add_argument("--exclude-archived", action="store_true")
@@ -992,6 +1056,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         evidence_byte_limit=args.evidence_byte_limit,
         replacement_depth_limit=args.replacement_depth_limit,
         related_replacement_limit=args.related_replacement_limit,
+        for_update=args.for_update,
     )
     print(json.dumps(packet, indent=2, sort_keys=True))
     return 0

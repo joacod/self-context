@@ -63,8 +63,10 @@ First determine the schema state from `SCHEMA.md`:
   selective. An available vertical is not enabled merely because it exists in
   the repository catalog. For an existing current-compatible vault, the agent
   explicitly decides whether first use requires a vertical and includes that
-  activation in the ordinary commit proposal. `ordinary_commit` stages only
-  the requested area's index, exact `vertical@version` marker, root link,
+  activation in the ordinary commit proposal. Include the required read-time
+  `expected_snapshot` from `prepare_context.py --for-update` (see Ingest).
+  `ordinary_commit` stages the requested area's index, exact `vertical@version`
+  marker, root link,
   semantic writes, managed indexes, log, validation, backups, and transaction.
   It does not enable unrelated available verticals. Missing area/index/root-link
   companions for an already applied contract are lint/maintenance errors.

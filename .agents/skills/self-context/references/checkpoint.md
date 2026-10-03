@@ -188,7 +188,10 @@ procedures:
 
 When a routed result mutates an existing current vault, let the owning ingest
 or persistence procedure prepare the semantic proposal and invoke the ordinary
-commit boundary. The helper stages the page/source/control candidates, managed
+commit boundary. Use `prepare_context.py --for-update` before planning those
+bytes and carry its ready snapshot into the proposal as described in Ingest.
+A dry-run or initial candidate assessment does not need a mutation snapshot.
+The helper stages the page/source/control candidates, managed
 indexes, and operation log; validates them together; owns the provisional/final
 backup lifecycle, rollback, and guarded cleanup; and returns one receipt. A
 checkpoint must not create a second backup or bypass provenance,

@@ -48,8 +48,8 @@ python3 .agents/skills/self-context/scripts/search_log.py \
 
 `search_vault.py` is read-only, dependency-free, builds no permanent index, and
 never replaces the Markdown vault. Its deterministic priorities are exact stable
-ID, exact normalized title, exact normalized alias, title/alias phrase, and
-then lexical matches. For non-exact queries, unique query-term coverage is the
+ID, exact normalized title, exact normalized alias, and then non-exact matches.
+For non-exact queries, unique query-term coverage is the
 primary signal; matched-term count, field importance (title/alias, description/
 tags, headings, body), phrase matches, term proximity, status, page type, and
 assertion kind refine the ordering. Path is the final tie-breaker. A one-token
@@ -58,8 +58,11 @@ because the token is in a prominent field.
 
 JSON results include matched fields, bounded snippets, a match type, query-term
 coverage, phrase fields, a deterministic `rank_score`, and `superseded_by` when
-that explicit successor field is present. The score explains ordering only; it
-is not confidence, truth, or verification. Archived and superseded pages are
+that explicit successor field is present. Exact-match tier, exact term-coverage
+ratio, and matched-term count precede the scalar score in both direct search
+and multi-anchor merging. `rank_score` refines that ordering; it is not a
+standalone sort key, confidence, truth, or verification. Archived and superseded
+pages are
 included by default with lower ranking. Use `--exclude-archived` or
 `--exclude-superseded` to omit them. The accepted `--include-archived` and
 `--include-superseded` options are deprecated compatibility aliases for one
@@ -399,7 +402,7 @@ current runtime state, selected root/manual indexes, bounded continuity,
 ranked candidate metadata, optional linked-source candidates, related
 replacement pages from explicit `superseded_by` links, unresolved replacement
 reasons, and complete original contents for a bounded set of ranked canonical
-pages and remaining related replacements. It is a retrieval aid, not a
+pages and related replacements. It is a retrieval aid, not a
 semantic Query engine.
 
 Complete content in `evidence` includes frontmatter, epistemic metadata
@@ -407,13 +410,20 @@ Complete content in `evidence` includes frontmatter, epistemic metadata
 of the original page bytes, and `complete: true`. That content satisfies
 reading that page; do not reopen it unnecessarily. `--evidence-page-limit`
 (default 3) and `--evidence-byte-limit` (default 24576) bound only the
-evidence section, including its metadata; they do not cap the rest of the
-packet or measure model tokens. Ranked matches are considered first; related
-replacement pages share the same remaining page and byte budget. Pages are
+evidence section, including its metadata, using compact UTF-8 JSON accounting.
+Pretty-printed CLI whitespace and escaping can add output bytes; this budget
+does not cap the whole packet or measure model tokens. Among the first `--evidence-page-limit` ranked
+matches, explicit successor/predecessor evidence receives slots before unrelated
+matches. The furthest visible successor is considered first, then its historical
+origin and intervening pages. This also applies when a successor is already a
+primary match. Match ranking itself is unchanged. Remaining related replacements
+share the budget. A furthest discovered successor is not necessarily current:
+inspect unresolved traversal limits or edges before answering. Pages are
 never silently truncated. Selected candidates that are not included remain in
 the ranked `matches` or `related_replacements` lists and appear in
-`evidence_omitted` with a reason such as `page too large` or
-`aggregate budget exhausted`. An oversized top candidate is not covered by a
+`evidence_omitted` when considered, with a reason such as `page too large`,
+`page limit exhausted`, or `aggregate budget exhausted`. An oversized top
+candidate is not covered by a
 lower-ranked page. Metadata-only related replacements have not been fully
 read. Preserve targeted reads when required evidence is omitted, insufficient,
 or needs freshness confirmation. Keep facts, inferences, historical material,
@@ -421,7 +431,10 @@ and sources distinct. A content hash identifies the returned version; it does
 not establish that a later write is safe.
 
 Start from the packet's selected navigation and inspect only the primary owner
-index and linked pages that the request makes relevant. Add another enabled
+index and linked pages that the request makes relevant. Navigation resolves at
+most the requested link limit per index; `links_truncated` and
+`managed_entries_truncated` identify incomplete navigation. Maintenance checks
+remain exhaustive. Add another enabled
 vertical only when it can materially change the answer; cross-vertical
 questions may pass multiple relevant scopes, while unrelated enabled verticals
 stay out of context. The root index and targeted search remain current
@@ -612,7 +625,13 @@ advice, label recommendations as recommendations. Never phrase a recommendation
 as a newly confirmed goal.
 
 For a persisted query result in an existing current vault, prepare the
-smallest derived-page bytes and invoke the ordinary commit boundary with the
+mutation context with `--for-update` before preparing the smallest derived-page
+bytes. Require `controls.mutation_ready: true` and pass
+`controls.expected_snapshot` unchanged as the required proposal
+`expected_snapshot`. If previous read-only evidence informed the result,
+revalidate that evidence under this snapshot before planning the write. On drift,
+reread and reconsider the proposal, not just the token. Invoke the ordinary
+commit boundary with the
 semantic log metadata. The helper stages the page, managed index, and log,
 validates them together, owns the provisional/final backup lifecycle and
 rollback, and returns one receipt. A true persistence no-op creates no backup

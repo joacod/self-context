@@ -8,6 +8,7 @@ import json
 import re
 import sys
 from dataclasses import dataclass
+from fractions import Fraction
 from pathlib import Path
 from urllib.parse import unquote
 from typing import Any, Dict, FrozenSet, Iterable, List, Mapping, Optional, Sequence, Tuple
@@ -69,10 +70,8 @@ STOPWORDS = {
     "with",
 }
 
-# The lexical score is deliberately a transparent ordering heuristic. Coverage
-# is the largest component so one incidental title token cannot beat a page
-# that matches most of a task query. Field, phrase, and proximity components
-# then make similarly covered pages inspectably different.
+# The scalar is a transparent secondary heuristic. ranking_key enforces exact
+# tiers and coverage before this score, so field bonuses cannot overturn them.
 FIELD_WEIGHTS = {
     "title_or_alias": 100,
     "description_or_tags": 55,
@@ -709,6 +708,16 @@ def _score_record(
     return score, matched_fields, summary
 
 
+def ranking_key(item: Mapping[str, Any]) -> Tuple[Any, ...]:
+    """Shared ascending sort key; score only refines exact tier and coverage."""
+
+    tier = {"exact_id": 3, "exact_title": 2, "exact_alias": 1}.get(item.get("match_type"), 0)
+    count = int(item.get("matched_term_count") or 0)
+    total = int(item.get("query_term_count") or 0)
+    coverage = Fraction(count, total) if total else Fraction(1 if tier else 0)
+    return (-tier, -coverage, -count, -int(item.get("rank_score") or 0), str(item.get("path") or ""))
+
+
 def _search_corpus(
     corpus: _SearchCorpus,
     query: str,
@@ -739,7 +748,7 @@ def _search_corpus(
         if contextual and len(terms) > 1 and summary["query_term_coverage"] < 0.5:
             continue
         ranked.append((score + _record_adjustment(fields), record, matched, summary))
-    ranked.sort(key=lambda item: (-item[0], str(item[1]["path"])))
+    ranked.sort(key=lambda item: ranking_key({**item[3], "rank_score": item[0], "path": item[1]["path"]}))
     result_limit = max(0, limit)
     primary_limit = result_limit
     if expand_linked_sources and result_limit:

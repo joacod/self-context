@@ -65,6 +65,7 @@ Synthetic venture body.
 class OrdinaryCommitTests(unittest.TestCase):
     def proposal(
         self,
+        vault: Path,
         *,
         writes: dict[str, str | bytes] | None = None,
         activations: list[str] | None = None,
@@ -74,7 +75,7 @@ class OrdinaryCommitTests(unittest.TestCase):
         expected_snapshot: str | None = None,
     ) -> dict:
         return {
-            "expected_snapshot": expected_snapshot,
+            "expected_snapshot": expected_snapshot or vault_utils.snapshot_id(vault),
             "writes": writes or {},
             "activations": activations or [],
             "log": {
@@ -115,7 +116,7 @@ class OrdinaryCommitTests(unittest.TestCase):
             vault = build_synthetic_vault(project)
             result = ordinary_commit.commit_mutation(
                 vault,
-                self.proposal(writes={"career/ordinary-page.md": PAGE}),
+                self.proposal(vault, writes={"career/ordinary-page.md": PAGE}),
             )
 
             self.assertEqual(result["status"], "success")
@@ -136,6 +137,7 @@ class OrdinaryCommitTests(unittest.TestCase):
             result = ordinary_commit.commit_mutation(
                 vault,
                 self.proposal(
+                    vault,
                     writes={"career/harbor-launch.md": updated},
                     paths=["career/harbor-launch.md"],
                     summary="Updated one synthetic page",
@@ -156,7 +158,8 @@ class OrdinaryCommitTests(unittest.TestCase):
             before_log = (vault / "log.md").read_bytes()
             result = ordinary_commit.commit_mutation(
                 vault,
-                {"writes": {"career/harbor-launch.md": page.read_bytes()}},
+                {"expected_snapshot": vault_utils.snapshot_id(vault),
+                 "writes": {"career/harbor-launch.md": page.read_bytes()}},
             )
 
             self.assertEqual(result["status"], "noop")
@@ -184,7 +187,7 @@ class OrdinaryCommitTests(unittest.TestCase):
             ):
                 result = ordinary_commit.commit_mutation(
                     vault,
-                    self.proposal(writes={"career/ordinary-page.md": PAGE}),
+                    self.proposal(vault, writes={"career/ordinary-page.md": PAGE}),
                 )
 
             self.assertEqual(result["status"], "success")
@@ -216,7 +219,7 @@ class OrdinaryCommitTests(unittest.TestCase):
             custom_binary_before = custom_binary.read_bytes()
             result = ordinary_commit.commit_mutation(
                 vault,
-                self.proposal(writes={"career/ordinary-page.md": PAGE}),
+                self.proposal(vault, writes={"career/ordinary-page.md": PAGE}),
             )
 
             self.assertEqual(result["status"], "success")
@@ -234,6 +237,7 @@ class OrdinaryCommitTests(unittest.TestCase):
             result = ordinary_commit.commit_mutation(
                 vault,
                 self.proposal(
+                    vault,
                     writes={label: PAGE},
                     paths=[label],
                     summary="Stored a path with Markdown punctuation",
@@ -254,6 +258,7 @@ class OrdinaryCommitTests(unittest.TestCase):
             result = ordinary_commit.commit_mutation(
                 vault,
                 self.proposal(
+                    vault,
                     writes={"ventures/example.md": VENTURE_PAGE},
                     activations=["ventures"],
                     paths=["ventures/example.md"],
@@ -284,6 +289,7 @@ class OrdinaryCommitTests(unittest.TestCase):
             result = ordinary_commit.commit_mutation(
                 vault,
                 self.proposal(
+                    vault,
                     writes={"media/inferred.md": PAGE},
                     paths=["media/inferred.md"],
                 ),
@@ -313,7 +319,7 @@ class OrdinaryCommitTests(unittest.TestCase):
                     before = tree_snapshot(vault)
                     result = ordinary_commit.commit_mutation(
                         vault,
-                        self.proposal(writes={"career/ordinary-page.md": PAGE}),
+                        self.proposal(vault, writes={"career/ordinary-page.md": PAGE}),
                     )
 
                     self.assertEqual(result["status"], "blocked")
@@ -327,7 +333,7 @@ class OrdinaryCommitTests(unittest.TestCase):
             missing = root / "missing-vault"
             result = ordinary_commit.commit_mutation(
                 missing,
-                self.proposal(writes={"core/new.md": PAGE}),
+                self.proposal(missing, writes={"core/new.md": PAGE}),
             )
             self.assertEqual(result["status"], "blocked")
             self.assertEqual(result["state"], "initialization-required")
@@ -338,7 +344,7 @@ class OrdinaryCommitTests(unittest.TestCase):
             empty.mkdir()
             result = ordinary_commit.commit_mutation(
                 empty,
-                self.proposal(writes={"core/new.md": PAGE}),
+                self.proposal(empty, writes={"core/new.md": PAGE}),
             )
             self.assertEqual(result["state"], "initialization-required")
             self.assertEqual(list(empty.iterdir()), [])
@@ -352,7 +358,7 @@ class OrdinaryCommitTests(unittest.TestCase):
                 with self.subTest(label=label):
                     result = ordinary_commit.commit_mutation(
                         vault,
-                        self.proposal(writes={label: PAGE}, paths=[label]),
+                        self.proposal(vault, writes={label: PAGE}, paths=[label]),
                     )
                     self.assertEqual(result["status"], "blocked")
                     self.assertEqual(result["state"], "input-invalid")
@@ -368,7 +374,7 @@ class OrdinaryCommitTests(unittest.TestCase):
             (vault / "linked").symlink_to(outside, target_is_directory=True)
             result = ordinary_commit.commit_mutation(
                 vault,
-                self.proposal(writes={"linked/new.md": PAGE}, paths=["linked/new.md"]),
+                self.proposal(vault, writes={"linked/new.md": PAGE}, paths=["linked/new.md"]),
             )
             self.assertEqual(result["status"], "blocked")
             self.assertEqual(backup_paths(project), [])
@@ -377,7 +383,7 @@ class OrdinaryCommitTests(unittest.TestCase):
             target.mkdir()
             result = ordinary_commit.commit_mutation(
                 vault,
-                self.proposal(writes={"core/directory-target.md": PAGE}),
+                self.proposal(vault, writes={"core/directory-target.md": PAGE}),
             )
             self.assertEqual(result["status"], "blocked")
             self.assertEqual(result["state"], "input-invalid")
@@ -401,7 +407,7 @@ class OrdinaryCommitTests(unittest.TestCase):
                     with self.subTest(label=label):
                         result = ordinary_commit.commit_mutation(
                             vault,
-                            self.proposal(writes={label: b"not a Markdown page"}, paths=[label]),
+                            self.proposal(vault, writes={label: b"not a Markdown page"}, paths=[label]),
                         )
                         self.assertEqual(result["status"], "blocked")
                         self.assertEqual(result["state"], "input-invalid")
@@ -447,6 +453,7 @@ class OrdinaryCommitTests(unittest.TestCase):
             result = ordinary_commit.commit_mutation(
                 vault,
                 self.proposal(
+                    vault,
                     writes={"career/ordinary-page.md": PAGE},
                     expected_snapshot="not-the-current-snapshot",
                 ),
@@ -477,7 +484,7 @@ class OrdinaryCommitTests(unittest.TestCase):
             ):
                 result = ordinary_commit.commit_mutation(
                     vault,
-                    self.proposal(writes={"career/ordinary-page.md": PAGE}),
+                    self.proposal(vault, writes={"career/ordinary-page.md": PAGE}),
                 )
 
             self.assertEqual(result["status"], "blocked")
@@ -500,7 +507,7 @@ class OrdinaryCommitTests(unittest.TestCase):
             with mock.patch.object(ordinary_commit, "_validate_state", side_effect=fail_stage):
                 result = ordinary_commit.commit_mutation(
                     vault,
-                    self.proposal(writes={"career/ordinary-page.md": PAGE}),
+                    self.proposal(vault, writes={"career/ordinary-page.md": PAGE}),
                 )
 
             self.assertEqual(result["status"], "blocked")
@@ -539,7 +546,7 @@ class OrdinaryCommitTests(unittest.TestCase):
             ):
                 result = ordinary_commit.commit_mutation(
                     vault,
-                    self.proposal(writes={"career/ordinary-page.md": PAGE}),
+                    self.proposal(vault, writes={"career/ordinary-page.md": PAGE}),
                 )
 
             self.assertEqual(result["status"], "failed")
@@ -564,7 +571,7 @@ class OrdinaryCommitTests(unittest.TestCase):
             with mock.patch.object(ordinary_commit, "_validate_state", side_effect=fail_active):
                 result = ordinary_commit.commit_mutation(
                     vault,
-                    self.proposal(writes={"career/ordinary-page.md": PAGE}),
+                    self.proposal(vault, writes={"career/ordinary-page.md": PAGE}),
                 )
 
             self.assertEqual(result["status"], "failed")
@@ -594,7 +601,7 @@ class OrdinaryCommitTests(unittest.TestCase):
             ):
                 result = ordinary_commit.commit_mutation(
                     vault,
-                    self.proposal(writes={"career/ordinary-page.md": PAGE}),
+                    self.proposal(vault, writes={"career/ordinary-page.md": PAGE}),
                 )
 
             self.assertEqual(result["status"], "failed")
@@ -627,7 +634,7 @@ class OrdinaryCommitTests(unittest.TestCase):
                 ):
                     result = ordinary_commit.commit_mutation(
                         vault,
-                        self.proposal(writes={"career/ordinary-page.md": PAGE}),
+                        self.proposal(vault, writes={"career/ordinary-page.md": PAGE}),
                     )
 
             self.assertEqual(result["status"], "failed")
@@ -646,7 +653,7 @@ class OrdinaryCommitTests(unittest.TestCase):
             ):
                 result = ordinary_commit.commit_mutation(
                     vault,
-                    self.proposal(writes={"career/ordinary-page.md": PAGE}),
+                    self.proposal(vault, writes={"career/ordinary-page.md": PAGE}),
                 )
 
             self.assertEqual(result["status"], "success")
@@ -661,7 +668,7 @@ class OrdinaryCommitTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             vault = build_synthetic_vault(project)
-            proposal = json.dumps(self.proposal(writes={"career/ordinary-page.md": PAGE}))
+            proposal = json.dumps(self.proposal(vault, writes={"career/ordinary-page.md": PAGE}))
             result = __import__("subprocess").run(
                 [sys.executable, str(SCRIPTS / "ordinary_commit.py"), str(vault), "--proposal", proposal],
                 capture_output=True,
