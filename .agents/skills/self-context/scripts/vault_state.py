@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 from typing import Dict, List, Mapping, Tuple
 
@@ -22,6 +23,14 @@ def canonical_bytes(root: Path) -> Dict[str, bytes]:
             raise OSError(error or f"unable to read {path}")
         result[relative_label(path, root)] = content
     return result
+
+
+def snapshot_from_bytes(files: Mapping[str, bytes]) -> str:
+    """Hash already captured canonical bytes using the vault snapshot format."""
+    payload = "".join(
+        f"{label}\0{hashlib.sha256(files[label]).hexdigest()}\n" for label in sorted(files)
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
 
 
 def diff_bytes(

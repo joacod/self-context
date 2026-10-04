@@ -31,6 +31,7 @@ DEFAULT_REPLACEMENT_DEPTH_LIMIT = vault_utils.REPLACEMENT_DEPTH_LIMIT
 DEFAULT_RELATED_REPLACEMENT_LIMIT = vault_utils.RELATED_REPLACEMENT_LIMIT
 DEFAULT_EVIDENCE_PAGE_LIMIT = 3
 DEFAULT_EVIDENCE_BYTE_LIMIT = 24 * 1024
+DEFAULT_PACKET_BYTE_LIMIT = 32 * 1024
 SNIPPET_LIMIT = 220
 LOG_SNIPPET_LIMIT = 240
 SOURCE_REFERENCE_LIMIT = 12
@@ -387,6 +388,7 @@ def _compact_match(item: Mapping[str, Any], anchors: Sequence[str]) -> Dict[str,
             item.get("phrase_fields"), count=SOURCE_REFERENCE_LIMIT, limit=DATE_LIMIT
         ),
         "rank_score": item.get("rank_score"),
+        "accent_folded": bool(item.get("accent_folded")),
     }
     if item.get("superseded_by"):
         result["superseded_by"] = _bounded_text(item.get("superseded_by"), PATH_LIMIT)
@@ -638,6 +640,48 @@ def _select_complete_evidence(
     return included, omitted
 
 
+def _bound_packet(packet: Dict[str, Any], byte_limit: int) -> Dict[str, Any]:
+    """Bound compact JSON output without ever truncating page contents."""
+    controls = packet["controls"]
+    controls["packet_byte_limit"] = byte_limit
+    controls["packet_omissions"] = {}
+    omissions = controls["packet_omissions"]
+    if _serialized_utf8_size(packet) <= byte_limit:
+        return packet
+
+    def trim(items: List[Any], label: str) -> None:
+        while items and _serialized_utf8_size(packet) > byte_limit:
+            item = items.pop()
+            omissions[label] = omissions.get(label, 0) + 1
+            if label == "evidence":
+                packet["evidence_omitted"].append({
+                    "path": item["path"], "reason": "packet budget exhausted",
+                })
+
+    for entry in reversed(packet["navigation"]):
+        for key, flag in (("links", "links_truncated"), ("managed_entries", "managed_entries_truncated")):
+            before = len(entry[key])
+            trim(entry[key], f"navigation.{key}")
+            entry[flag] = entry[flag] or len(entry[key]) < before
+    for section in ("recent", "navigation", "evidence", "linked_sources", "matches",
+                    "related_replacements", "evidence_omitted"):
+        trim(packet.get(section, []), section)
+    # Never discard runtime findings or unresolved replacement qualifications
+    # while returning usable evidence. If required safety metadata cannot fit,
+    # block the entire packet instead of issuing an apparently complete result.
+    if _serialized_utf8_size(packet) > byte_limit:
+        return {
+            "runtime": {"state": "packet-budget-exceeded", "ok": False, "blocked": True,
+                        "original_state": _bounded_text(packet["runtime"].get("state"), 80)},
+            "controls": {"read_only": True, "mutation_ready": False, "expected_snapshot": None,
+                         "packet_byte_limit": byte_limit},
+            "findings": [{"severity": "error", "state": "packet-budget-exceeded",
+                          "message": "Required safety metadata exceeds the packet budget; retry with a larger budget or narrower scope."}],
+            "matches": [], "evidence": [],
+        }
+    return packet
+
+
 def prepare_context(
     vault: Path,
     explicit_scope: Optional[Sequence[str]] = None,
@@ -663,6 +707,7 @@ def prepare_context(
     replacement_depth_limit: int = DEFAULT_REPLACEMENT_DEPTH_LIMIT,
     related_replacement_limit: int = DEFAULT_RELATED_REPLACEMENT_LIMIT,
     for_update: bool = False,
+    packet_byte_limit: int = DEFAULT_PACKET_BYTE_LIMIT,
 ) -> Dict[str, Any]:
     """Return a compact, bounded, read-only context-preparation packet.
 
@@ -713,6 +758,8 @@ def prepare_context(
         related_replacement_limit, "related_replacement_limit"
     )
     linked_source_limit = min(DEFAULT_LINKED_SOURCE_LIMIT, linked_source_limit)
+    if packet_byte_limit < 1024:
+        raise ValueError("packet_byte_limit must be at least 1024 bytes")
 
     root = Path(vault).expanduser()
     planning_snapshot: Optional[str] = None
@@ -725,11 +772,11 @@ def prepare_context(
 
     def finish(packet: Dict[str, Any]) -> Dict[str, Any]:
         if not for_update:
-            return packet
+            return _bound_packet(packet, packet_byte_limit)
         controls = packet["controls"]
         controls.update({"mutation_ready": False, "expected_snapshot": None})
         if not packet["runtime"].get("ok"):
-            return packet
+            return _bound_packet(packet, packet_byte_limit)
         try:
             unchanged = (
                 not snapshot_error
@@ -747,7 +794,7 @@ def prepare_context(
                 "state": "snapshot-unavailable-or-changed",
                 "message": "mutation context changed or could not be snapshotted; reread before planning a write",
             })
-        return packet
+        return _bound_packet(packet, packet_byte_limit)
 
     findings: List[Dict[str, Any]] = []
     scope_values = _as_sequence(explicit_scope)
@@ -985,6 +1032,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--index", action="append", default=[], dest="navigation_paths", metavar="PATH")
     parser.add_argument("--navigation-limit", type=_non_negative_int, default=DEFAULT_NAVIGATION_LIMIT)
     parser.add_argument("--contextual", action="store_true")
+    parser.add_argument("--packet-byte-limit", type=_non_negative_int, default=DEFAULT_PACKET_BYTE_LIMIT,
+                        help="maximum compact UTF-8 JSON packet bytes (minimum 1024; default 32768)")
     parser.add_argument(
         "--for-update", action="store_true",
         help="capture and check a read-time snapshot for an ordinary mutation proposal",
@@ -1034,6 +1083,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
     parser.add_argument("--format", choices=("json",), default="json")
     args = parser.parse_args(argv)
+    if args.packet_byte_limit < 1024:
+        parser.error("--packet-byte-limit must be at least 1024")
 
     packet = prepare_context(
         Path(args.vault),
@@ -1057,8 +1108,9 @@ def main(argv: Optional[List[str]] = None) -> int:
         replacement_depth_limit=args.replacement_depth_limit,
         related_replacement_limit=args.related_replacement_limit,
         for_update=args.for_update,
+        packet_byte_limit=args.packet_byte_limit,
     )
-    print(json.dumps(packet, indent=2, sort_keys=True))
+    print(json.dumps(packet, ensure_ascii=False, sort_keys=True))
     return 0
 
 

@@ -83,6 +83,21 @@ sentence about an existing one.
 
 ## 3. Normalize Conservatively
 
+Before preparing bytes, compare the supplied update with the existing owner:
+what is new, repeated, corrected, narrowed, or superseded; which source passage
+supports that change; and which previously confirmed scope remains valid. Keep
+this comparison transient, not a saved change ledger. Equivalent wording is not
+new evidence: reuse an existing source and concept when identity and coverage
+match, preserving verification, freshness, and pending review.
+
+Keep distinct claims in readable sections with precise source links when that
+preserves coherence. Split a page only when its subjects, confirmation, or
+freshness genuinely need independent treatment. If the user confirms only one
+claim, leave unrelated claims unverified rather than extending page-level
+confirmation. Record effective/event dates in prose when known, separately from
+ingestion or confirmation dates; never infer an effective date from `generated`.
+Preserve the unaffected part of a partially corrected claim and its provenance.
+
 Create or update the smallest coherent set of pages:
 
 - Put context that can materially inform more than one domain in `core/`, such

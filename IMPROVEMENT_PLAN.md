@@ -1,6 +1,6 @@
 # SelfContext performance and semantic improvement handoff
 
-Status: Pass 1 implemented and validated; Pass 2 not started.
+Status: both implementation passes complete and validated. Schema 0.2 retained; no production migration.
 
 Prepared on 2026-10-03 against commit
 `e5991fdbe5aba0ef4d0e4264f988bf99477c8c73`.
@@ -21,7 +21,9 @@ automatically start the next one without authorization.
 
 The user subsequently authorized splitting this plan into two passes and
 implementing Pass 1 immediately. That authorization covers the project changes
-listed below; Pass 2 and production-vault migration remain unstarted.
+listed below. After merging Pass 1, the user authorized completing Pass 2.
+That implementation is now complete; production-vault migration was not needed
+or performed.
 
 Reinspect the current code and worktree before acting: this document records a
 specific baseline, and later work may have resolved or changed these findings.
@@ -147,14 +149,14 @@ checklists describe the full opportunities, including optional extensions.
 | Pass | Included work | Status |
 | --- | --- | --- |
 | 1 | Step 01 regression/benchmark foundation; Step 02 required read-time snapshots; Step 03 bounded navigation; Step 05 consistent coverage-first ordering; Step 06 successor evidence allocation | Complete within the bounded scope below |
-| 2 | Step 04 staged ingestion performance; Steps 07–10 vocabulary, instruction/payload efficiency, semantic workflows, and behavioral evaluation; Step 11 schema decision | Not started |
+| 2 | Step 04 staged ingestion performance; Steps 07–10 vocabulary, instruction/payload efficiency, semantic workflows, and behavioral evaluation; Step 11 schema decision | Complete; measured and bounded as recorded below |
 
 Pass 1 deliberately uses the existing whole-vault snapshot rather than adding a
 per-page precondition API. It does not add writer locking, change backup
 lifecycles, implement new multi-anchor fusion, include complete linked sources,
-or migrate any vault. Those optional extensions require evidence and a scoped
-decision in Pass 2. Step 01's larger heterogeneous/long-source and bilingual
-evaluation workloads can grow with their owning Pass 2 changes.
+or migrate any vault. Those optional extensions were evaluated and excluded in the Pass 2 decisions
+below. Step 01 now includes mixed-length, accented, large-source and bilingual
+workloads alongside the existing scoped-growth regressions.
 
 Steps 01–10 initially target schema 0.2. Step 11 is a decision experiment, not a
 commitment to migrate. Keep independently reviewable changes small.
@@ -220,6 +222,91 @@ exactly three targets, while full maintenance still enumerates all 200. Commit
 performance is broadly unchanged and remains Pass 2 work. Mutation preparation
 now pays an explicit safety cost that ordinary queries avoid. Packet size was
 about 26.9 KB, including new truncation metadata; payload reduction is deferred.
+
+### Pass 2 completion evidence — 2026-10-03
+
+Implemented against merged Pass 1, commit `bc2fd94`:
+
+| Step | Delivered result | Evidence |
+| --- | --- | --- |
+| 01 / 04 | Reuse one parsed record list for staged catalog write/check; reuse its checked result only for stage validation; hash captured proposal bytes | Successful commit now makes three catalog synchronizations instead of four; stage records are shared; active validation still reads fresh state |
+| 07 | Accent-folded lexical fallback with explicit `accent_folded`; exact identity and global normalization unchanged; one bounded semantic reformulation pass | Strict/accent collision and bilingual tests; guided Spanish recovery case |
+| 08 | Split optional modes and persistence out of mandatory Query; routine recipe uses 5 results, 5 navigation entries and 3 recent items; cap total packet JSON at 32768 bytes | Whole-page omissions are counted; oversized safety metadata blocks the packet and clears mutation readiness; byte-cap regression tests |
+| 09 | Transient ingestion comparison, scoped confirmation, dated partial changes, and bounded counterevidence retrieval | Three ordinary commits and nine unchanged-vault cases in the fictional trial |
+| 10 | Disposable 12-case evaluation runner, expected paths/write allowlists, byte checks, trace/review workflow and recorded guided observations | [Evaluation guide](docs/CONTEXT_EVALUATION.md), [results](docs/evaluations/context-pass2-2026-10-03.json), `tests/test_context_improvements.py` |
+| 11 | Retain schema 0.2; no new migration | [Decision and representation tradeoffs](docs/decisions/0021-retain-schema-02-after-context-evaluation.md) |
+
+Validation: `PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_repo.py` passed
+247 tests, with zero skips, failures or errors. This includes rollback,
+backup-finalization failures, preconditions, activation, migration, retrieval
+scope and repository consistency. New tests cover staged reuse/fresh active
+validation, snapshot equivalence, accent identity priority, bilingual recovery,
+packet caps/safety blockers, and evaluation write detection. `git diff --check`
+passed. The canonical gate also validated skill metadata; no dependencies were
+added.
+
+The guided evaluation is one scenario-aware self-review in Codex desktop,
+with expectations visible, not an independent or blinded model benchmark.
+All 12 mechanical checks passed; all expected evidence was returned in the
+11 evidence-bearing cases. The stored results include answers, observed path
+sets, read counts, changes, metadata, and the review limitation. Nine extra page
+occurrences show that perfect expected-path recall does not imply perfect
+precision. No generalized semantic success rate or model latency gain is claimed.
+
+#### Pass 2 measurements
+
+Unprofiled local Python 3.13.4 on macOS, warm process, three repetitions per
+size, fictional temporary vaults only. The pre-change measurements were taken
+against merged Pass 1. The benchmark now also measures the lean recipe in a
+separate preparation outside the timed intervals; filesystem warmth and timing
+variance limit causal precision.
+
+| Repeated-body workload | 100 pages before → after | 500 pages before → after |
+| --- | ---: | ---: |
+| Median query preparation | 0.0426 → 0.0420 s | 0.1806 → 0.1846 s |
+| Median mutation preparation | 0.0638 → 0.0634 s | 0.2673 → 0.2671 s |
+| Median no-op proposal | 0.2961 → 0.3070 s | 1.2971 → 1.2882 s |
+| Median one-page commit | 0.6838 → 0.6012 s | 2.6942 → 2.0428 s |
+| Default query packet | 26936 → 27228 bytes | 26951 → 27243 bytes |
+| New routine recipe packet | 17103 bytes | 17103 bytes |
+
+The observed commit reduction is about 12% at 100 pages and 24% at 500 pages;
+query and no-op latency are broadly unchanged. Default packets grow slightly
+for explicit accent/budget metadata. The smaller routine recipe reduces bytes
+by about 37% against the new default; this is a count-budget choice, not lossless
+compression. Mandatory Query text fell from 4995 to 2736 whitespace-delimited
+words (45%); advanced modes remain available on demand. Word counts are not
+measured model tokens or proof of answer quality.
+
+The added mixed workload varies body lengths from 1–40 paragraphs, includes
+Spanish accents, and adds a roughly 120 KB source excluded from ordinary
+search. At 100/500 pages its median query times were 0.0553/0.2594 s and commit
+times 0.6243/2.4530 s. Routine packets were 12114 bytes. There is no comparable
+pre-change mixed baseline, so these are observations, not a speedup claim.
+
+Reproduce:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python3 scripts/benchmark_context.py --pages 100 500 --repetitions 3
+PYTHONDONTWRITEBYTECODE=1 python3 scripts/benchmark_context.py --pages 100 500 --repetitions 3 --mixed
+```
+
+#### Closed scope decisions
+
+- Retain whole-vault preconditions: they may reject unrelated concurrent edits,
+  but prevent stale proposals. There is no demonstrated need for a new per-page
+  API. Snapshot checks do not make multiple simultaneous writers atomic; locking
+  remains a separate architectural task if concurrent writers become a use case.
+- Keep staging, backup validation, copy policy, and fresh active validation.
+  An early byte-only no-op bypass could miss catalog repair or activation work;
+  removing proven redundant stage work gives a narrower performance win.
+- Keep complete source reads targeted and explicit. Source expansion continues
+  to provide candidates, not silently dump long sources into the packet.
+- Keep existing multi-anchor merging without anchor-count bonuses: aliases are
+  not independent evidence. Bounded reformulation addresses the observed miss.
+- Keep schema, contract versions, migration machinery, production vault/backups,
+  README, dependencies, and CI unchanged. All mutation experiments used temporary
+  fictional projects. No persistent cache or background infrastructure was added.
 
 ### Step 01 — Establish repeatable regression and measurement fixtures
 
@@ -533,6 +620,8 @@ Every implementation handoff should report:
 5. Any compatibility, contract, or migration implications.
 6. The next incomplete step, without silently starting it.
 
-The next implementation work is Pass 2, beginning with Step 04 after the user
-authorizes that pass. Preserve the separation between improving the project and
-modifying the user's durable personal context throughout.
+No required implementation step remains in this two-pass plan. Independent
+behavioral trials are available through the evaluation workflow; they are not
+claimed as completed by the guided implementation-session observations. Any
+future schema change or simultaneous-writer protocol requires a separate,
+evidence-backed scope and authorization.

@@ -7,7 +7,8 @@ import argparse
 import json
 import re
 import sys
-from dataclasses import dataclass
+import unicodedata
+from dataclasses import dataclass, replace
 from fractions import Fraction
 from pathlib import Path
 from urllib.parse import unquote
@@ -115,6 +116,7 @@ class _IndexedRecord:
     normalized_aliases: Tuple[str, ...]
     field_token_lists: Dict[str, Tuple[Tuple[str, ...], ...]]
     field_token_sets: Dict[str, FrozenSet[str]]
+    accent_fields: Optional[Dict[str, Tuple[Tuple[str, ...], ...]]] = None
 
 
 @dataclass(frozen=True)
@@ -160,6 +162,14 @@ def _index_record(record: Dict[str, Any]) -> _IndexedRecord:
         field: frozenset(token for tokens in values for token in tokens)
         for field, values in field_token_lists.items()
     }
+    folded_fields = None
+    if any(not value.isascii() for values in field_values.values() for value in values):
+        candidate = {
+            field: tuple(tuple(_fold_token(token) for token in tokens) for tokens in values)
+            for field, values in field_token_lists.items()
+        }
+        if candidate != field_token_lists:
+            folded_fields = candidate
     return _IndexedRecord(
         record=record,
         normalized_identifier=normalized_text(identifier),
@@ -167,7 +177,14 @@ def _index_record(record: Dict[str, Any]) -> _IndexedRecord:
         normalized_aliases=tuple(normalized_text(alias) for alias in aliases),
         field_token_lists=field_token_lists,
         field_token_sets=field_token_sets,
+        accent_fields=folded_fields,
     )
+
+
+def _fold_token(token: str) -> str:
+    if token.isascii():
+        return token
+    return "".join(c for c in unicodedata.normalize("NFD", token) if not unicodedata.combining(c))
 
 
 def _load_vertical_catalog() -> Optional[Dict[str, Any]]:
@@ -373,6 +390,7 @@ def _render_result(
         "query_term_count": summary["query_term_count"],
         "phrase_fields": summary["phrase_fields"],
         "rank_score": score,
+        "accent_folded": bool(summary.get("accent_folded")),
         "linked_from": linked_from,
     }
     successor = fields.get("superseded_by")
@@ -551,6 +569,7 @@ def _score_record(
     query_normalized: str,
     query_tokens: Sequence[str],
     phrase_tokens: Sequence[str],
+    *, allow_exact: bool = True,
 ) -> Tuple[int, List[str], Dict[str, Any]]:
     fields = indexed.record.get("frontmatter")
     if not isinstance(fields, dict):
@@ -562,9 +581,9 @@ def _score_record(
             "phrase_fields": [],
         }
 
-    exact_id = indexed.normalized_identifier == query_normalized
-    exact_title = indexed.normalized_title == query_normalized
-    exact_alias = query_normalized in indexed.normalized_aliases
+    exact_id = allow_exact and indexed.normalized_identifier == query_normalized
+    exact_title = allow_exact and indexed.normalized_title == query_normalized
+    exact_alias = allow_exact and query_normalized in indexed.normalized_aliases
     field_token_lists = indexed.field_token_lists
     field_token_sets = indexed.field_token_sets
     field_matches = {
@@ -715,7 +734,8 @@ def ranking_key(item: Mapping[str, Any]) -> Tuple[Any, ...]:
     count = int(item.get("matched_term_count") or 0)
     total = int(item.get("query_term_count") or 0)
     coverage = Fraction(count, total) if total else Fraction(1 if tier else 0)
-    return (-tier, -coverage, -count, -int(item.get("rank_score") or 0), str(item.get("path") or ""))
+    return (-tier, -coverage, -count, bool(item.get("accent_folded")),
+            -int(item.get("rank_score") or 0), str(item.get("path") or ""))
 
 
 def _search_corpus(
@@ -734,6 +754,8 @@ def _search_corpus(
     terms = _query_terms(query)
     phrase_tokens = normalized_tokens(query)
     normalized_query = normalized_text(query)
+    folded_terms = _unique_tokens(_fold_token(term) for term in terms)
+    folded_phrase = [_fold_token(term) for term in phrase_tokens]
     ranked: List[Tuple[int, Dict[str, Any], List[str], Dict[str, Any]]] = []
     for indexed in corpus.records if limit > 0 else ():
         record = indexed.record
@@ -743,6 +765,20 @@ def _search_corpus(
         score, matched, summary = _score_record(
             indexed, normalized_query, terms, phrase_tokens
         )
+        if not summary["match_type"].startswith("exact_") and (
+            indexed.accent_fields is not None or folded_terms != terms
+        ):
+            lists = indexed.accent_fields or indexed.field_token_lists
+            folded = replace(indexed, field_token_lists=lists, field_token_sets={
+                field: frozenset(token for tokens in values for token in tokens)
+                for field, values in lists.items()
+            })
+            fallback_score, fallback_matched, fallback_summary = _score_record(
+                folded, normalized_query, folded_terms, folded_phrase, allow_exact=False
+            )
+            fallback_summary["accent_folded"] = True
+            if ranking_key({**fallback_summary, "rank_score": fallback_score}) < ranking_key({**summary, "rank_score": score}):
+                score, matched, summary = fallback_score, fallback_matched, fallback_summary
         if score <= 0:
             continue
         if contextual and len(terms) > 1 and summary["query_term_coverage"] < 0.5:

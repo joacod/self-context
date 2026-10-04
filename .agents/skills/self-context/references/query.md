@@ -8,14 +8,13 @@
 - [Targeted Retrieval](#targeted-retrieval)
 - [Verification and Freshness at Query Time](#verification-and-freshness-at-query-time)
 - [Persistence Decision](#persistence-decision)
-- [Derived Page Shape](#derived-page-shape)
+- [Derived Page Shape](query-persistence.md#derived-page-shape)
 - [Task context packets](#task-context-packets)
 - [Log and Response](#log-and-response)
 
-This is the canonical procedure for Query, contextual thinking, task context
-packets, persistence decisions, and context receipts. Keep those semantics in
-this reference; other procedures should link here rather than create parallel
-conversation or reasoning workflows.
+This is the mandatory retrieval and evidence contract for Query. Load the linked
+optional modes or persistence procedure only when the request needs them; do not
+read every Query reference for a factual lookup.
 
 Keep index-first retrieval as the primary workflow. After choosing the
 smallest explicit scope and useful search anchors, use the bounded preparation
@@ -25,7 +24,7 @@ separately:
 ```bash
 python3 .agents/skills/self-context/scripts/prepare_context.py \
   vault --scope core --scope ventures --anchor "task words" \
-  --recent-limit 10 --result-limit 10 --include-evidence
+  --recent-limit 3 --result-limit 5 --navigation-limit 5 --include-evidence
 ```
 
 The read-only helper composes the current runtime gate, selected navigation,
@@ -143,257 +142,45 @@ Use this procedure for retrieval, comparison, synthesis, or evidence gathering.
 
 ## Contextual thinking as a Query mode
 
-Contextual thinking is a subtype of Query—not a separate operation—for problems
-that ask the model to reason with the user's existing context: brainstorming,
-decision support, comparisons, tradeoffs, challenges, alternatives, or
-overlooked considerations.
-It uses the same latest-first runtime gate, index-first retrieval, provenance,
-freshness, contradiction, ownership, and persistence rules as every other
-Query. It is not a new vertical, advisor, data model, runtime, CLI, or chat
-subsystem.
-
-Use this mode for prompts such as:
-
-- help me think through whether I should continue this project
-- challenge this idea using what you know about the project
-- compare these two options against my priorities
-- brainstorm approaches based on my existing goals and constraints
-- what am I overlooking here?
-- help me decide, explore alternatives based on my context, or argue against
-  this based on what you know
-
-Do not force this full flow onto a simple lookup. When the user is asking for
-contextual reasoning, move through the following sequence and keep the labels
-visible in the answer.
-
-### Retrieve
-
-Define the problem or decision narrowly, then declare the smallest likely
-scope before retrieving context. Use the scope rules above: begin with `core/`
-or the primary vertical, add only materially relevant owners, and expand linked
-source records only when their provenance, freshness, or verification can
-change the answer. Potentially relevant material includes:
-
-- known facts and evidence;
-- goals, values, constraints, and preferences;
-- previous decisions, commitments, and their recorded rationale;
-- related projects, initiatives, or current-state records;
-- previous reusable derived conclusions, marked as derived rather than source
-  evidence;
-- contradictions, unresolved observations, and review items; and
-- stale or otherwise provisional information that could affect the answer.
-
-Find previous decisions wherever the existing vault records them and follow
-relevant links; do not invent a decision-specific storage model or replay the
-whole conversation history. Use the same `--include-evidence` preparation call
-as ordinary Query. Start from the relevant indexes and expand only to linked
-pages needed for the problem. Complete evidence already returned satisfies
-reading that page. For every important item, inspect its owner, assertion
-kind, status, provenance, freshness, and any explicit replacement before using
-it.
-Include multiple owning areas only when the problem requires them. Cross-area
-retrieval preserves each area's ownership; it does not copy facts between
-verticals. Never indiscriminately load the vault just because the request says
-"based on my context."
-
-### Frame
-
-Before proposing options, establish what the problem looks like from the
-retrieved evidence. Separate:
-
-- **Supported context:** user-stated or source-derived material, with its
-  evidence path and scope;
-- **Assumptions:** premises needed to proceed that the vault does not establish;
-- **Unknowns:** missing information that could change the result;
-- **Contradictions:** active or reviewable context that points in different
-  directions; and
-- **Stale or provisional context:** expired, dynamically untracked, or
-  `status: review` material that cannot be treated as settled current evidence.
-
-The frame is an explanation of the evidence, not a new durable fact. If a
-contradiction or stale item is decisive, keep the conclusion conditional and
-ask at most a bounded question when that is enough to resolve it.
-
-### Explore
-
-Generate meaningfully different possibilities rather than several phrasings
-of one recommendation. Options may differ in scope, mechanism, sequence,
-commitment, or reversibility, but each should connect to the retrieved goals,
-constraints, preferences, decisions, and evidence. Include a status-quo or
-pause option when it is a real alternative, not as a mandatory formality. Label
-brainstormed alternatives as generated possibilities, not as facts about the
-user or the project.
-
-### Challenge
-
-Evaluate serious options against the user's known goals, constraints, previous
-decisions, evidence, preferences, and relevant project or cross-vertical
-context. Surface conflicts, opportunity costs, reversibility, the strongest
-argument against each option, and the evidence gap that would most change the
-choice. Do not let a stale, provisional, or contradictory item silently decide
-between options. A model-generated recommendation remains derived and does
-not become a goal, decision, preference, or user fact automatically.
-
-### Conclude
-
-Separate the useful ending into whichever of these are relevant:
-
-- supported observations;
-- tradeoffs;
-- unknowns and freshness limits;
-- recommendations, clearly labeled as derived and conditional;
-- assumptions; and
-- questions worth resolving.
-
-A conclusion may recommend a next step, but it must not rewrite the user's
-goals, confirm a fact, or erase a contradiction. If the retrieved context is
-insufficient, say what is missing and provide a bounded question or conditional
-path instead of filling the gap with generic advice.
-
-### Persistence for contextual thinking
-
-A contextual thinking session is ephemeral and read-only by default. Do not
-mutate canonical pages, operational logs, indexes, backups, vertical markers,
-frontmatter metadata, or generated persistent artifacts while retrieving or
-reasoning. Do not persist generated ideas, brainstorm alternatives, discarded
-options, temporary reasoning, or speculative assistant conclusions merely
-because they appeared in the conversation.
-
-The existing [Persistence Decision](#persistence-decision) rules still apply
-when the user explicitly asks to retain a durable fact, decision, or reusable
-synthesis: evaluate explicit retention or durable reuse, check for a matching
-home, preserve ownership and provenance, compare conflicts and freshness, and
-store only the smallest justified result. A retained synthesis remains
-`derived_synthesis`; it is not evidence for a new fact or goal, and its
-alternatives are not silently copied into `core/` or a vertical. An operation
-log entry is also a mutation and requires a separate explicit request; it is
-never an automatic side effect of read-only Query. If the user later supplies a
-durable fact or decision, handle that separately through normal ingest and
-confirmation semantics.
+For brainstorming, comparisons, advice, or challenges, load
+[contextual thinking](query-modes.md#contextual-thinking-as-a-query-mode).
+Retrieve evidence, frame supported context and unknowns, explore options,
+challenge them against relevant counterevidence, and conclude conditionally.
+Generated ideas and recommendations remain ephemeral unless retention is
+explicitly requested. Simple lookups do not need this extended flow.
 
 ## Optional Context Receipts
 
-A context receipt is a compact, on-demand explanation of the evidence and
-epistemic status behind a Query answer. It is not an audit report, a transcript,
-or a private reasoning dump, and it never exposes chain-of-thought. Offer one
-when the user explicitly asks questions such as:
-
-- Why did you reach that conclusion?
-- What context or sources did you use?
-- Show me the context behind that recommendation.
-- What did you base that on?
-- Was any of this stale or contradictory?
-- Did you save anything from that?
-
-Treat these requests as a presentation mode for the existing Query result, not
-as a new operation or persistence signal. A receipt request must not create a
-receipt file, a logging database, a provenance system, or a vault mutation. If
-the user separately and explicitly authorized a query-log or persistence
-operation, report that outcome accurately rather than attributing it to the
-receipt request.
-
-### Receipt contents
-
-Match the surrounding response's communication style instead of forcing a rigid
-template. For an explicit receipt request, include the non-empty items that
-answer the request, using bounded labels such as:
-
-- **Context used:** only the relevant durable concepts or source paths, with
-  their owner and role/provenance. Identify only context that affected the
-  answer; do not dump the vault or reproduce page bodies.
-- **Scope used:** include this only when cross-vertical scope materially shaped
-  the result, for example `core, ventures`; optionally say which clearly
-  unrelated areas were not expanded.
-- **Coverage/as-of:** when relevant, name the source or evidence coverage date,
-  generated date, or other as-of boundary.
-- **Freshness:** distinguish an automatic `stale_after` horizon from dated
-  source coverage. Say “no automatic stale horizon; currentness unknown” when
-  `stale_after: null` governs dynamic evidence; never describe null as fresh
-  forever.
-- **Assertion:** identify important `user_stated_fact`, `source_derived_fact`,
-  `source_record`, `agent_inference`, or `derived_synthesis` status when it
-  affects the answer.
-- **Tradeoffs:** important competing goals, constraints, costs, or alternatives
-  that materially shaped a recommendation. Summarize the decision-relevant
-  comparison, not private token-by-token reasoning.
-- **Uncertain / contradictory:** unsupported gaps, provisional material, or
-  relevant claims that point in different directions, keeping status and
-  provenance visible.
-- **Result:** classify the answer as a **direct answer**, **synthesis**,
-  **derived recommendation**, or **contextual reasoning**. A recommendation
-  built from evidence is derived output, not a direct fact from any source.
-- **Persistence:** say what durable update was made through the existing
-  lifecycle, or say that no durable or operational-log change was made. Name
-  the canonical page or area when something was stored. A receipt request never
-  creates a receipt file.
-
-When the user asks specifically about stale or conflicting input, answer that
-category even when the answer is “none identified.” When the user asks why,
-include the relevant tradeoffs and uncertainty, but do not expose hidden
-chain-of-thought, internal prompts, token-by-token deliberation, or unrelated
-private context. The receipt identifies evidence and epistemic status; it does
-not claim that evidence is verified merely because it was retrieved.
-
-### Automatic behavior and persistence boundaries
-
-Do not append a full receipt to a routine lookup, ordinary advice answer, or
-normal contextual-thinking response. Continue to surface materially important
-contradictions, stale decisive context, uncertainty, and confirmation needs in
-ordinary responses even when no receipt was requested. If a checkpoint or
-mutation leaves persistence ambiguous, explicitly report what was and was not
-stored using its existing lifecycle report; do not create a second receipt
-artifact.
-
-Use “nothing persisted” only when the operation made no durable context or
-operational-log change. Read-only Query makes neither change by default. For an
-ephemeral brainstorm, the accurate statement is: “Persistence: nothing
-persisted; no page, transcript, derived synthesis, or log entry was stored.” If
-the user explicitly authorized a separate query-log mutation, name that log
-entry without calling it a durable context update. A receipt request itself
-never changes that state.
-
-### Compact examples
-
-**Inspecting the sources behind a recommendation**
-
-John Doe asks whether to keep the Harbor CLI in maintenance mode at MyContext
-Systems. A useful receipt can say:
-
-```text
-Context used: the Ventures project page, the recorded repeat-adoption decision,
-and the core six-hour weekly constraint.
-Scope used: core, ventures. Not expanded: relationships, media.
-Freshness: no automatic stale horizon on the dynamic project state; currentness
-would need confirmation if decisive. Assertion: the decision is recorded
-project context; the recommendation is derived.
-Tradeoffs: expanding scope conflicts with the time constraint and the recorded
-adoption threshold; maintenance preserves reversibility but delays new scope.
-Result: derived recommendation — keep maintenance mode for now, not a recorded
-fact or new decision.
-Persistence: nothing persisted; no page, log entry, or receipt file was created.
-```
-
-**Separating direct evidence from a derived recommendation**
-
-```text
-Context used: the existing Ventures decision records that expansion waits for
-repeat adoption. That is direct recorded context.
-Result: the suggestion to run a smaller reliability experiment is a derived
-recommendation from that decision and the time constraint; it is not itself a
-recorded decision.
-Persistence: nothing persisted.
-```
-
-**Confirming that brainstorming persisted nothing**
-
-```text
-Context used: John Doe's documented goal and time constraint.
-Result: contextual reasoning; the alternatives were generated for this session.
-Persistence: nothing persisted; no page, transcript, or derived synthesis was
-stored.
-```
+When the user asks for the basis, sources, freshness, or persistence behind an
+answer, load [context receipts](query-modes.md#optional-context-receipts). Do not
+load that presentation guide or produce a full receipt for every lookup.
 
 ## Targeted Retrieval
+
+### Bounded vocabulary recovery
+
+Search remains lexical. Accent folding is a fallback (`accent_folded: true`),
+not an exact identity match; equal-coverage strict matches rank ahead of folded
+ones. Original text, IDs, aliases, and collision checks remain unchanged.
+If evidence is insufficient, make at most one reformulation pass with up to two
+useful alternate names, paraphrases, or translations. Preserve the original
+scope unless another owner can materially change the answer. Do not persist
+generated aliases or expand every vertical to compensate for a miss. A missing
+match is a retrieval gap, not evidence that a personal fact is false.
+
+### Packet budget
+
+`--packet-byte-limit` defaults to 32768 bytes (minimum 1024) of compact UTF-8 JSON;
+the CLI emits that representation. `controls.packet_omissions` counts removed
+items by section. Navigation and recent continuity are reduced before evidence;
+pages are omitted whole with an omission reason, never silently sliced. If
+omission details themselves cannot fit, their removal is also counted in
+`packet_omissions`.
+Treat any omissions as incomplete coverage and fetch only what the answer needs.
+If required runtime findings or unresolved replacement qualifications cannot
+fit, the packet blocks entirely with `packet-budget-exceeded`; retry with a
+narrower scope or an explicit larger budget. A blocked packet never supplies a
+usable mutation token. The existing evidence budget is a separate inner limit.
 
 For normal Query retrieval, first declare the smallest likely owner and any
 material cross-vertical expansion, then call the preparation boundary with
@@ -411,8 +198,8 @@ of the original page bytes, and `complete: true`. That content satisfies
 reading that page; do not reopen it unnecessarily. `--evidence-page-limit`
 (default 3) and `--evidence-byte-limit` (default 24576) bound only the
 evidence section, including its metadata, using compact UTF-8 JSON accounting.
-Pretty-printed CLI whitespace and escaping can add output bytes; this budget
-does not cap the whole packet or measure model tokens. Among the first `--evidence-page-limit` ranked
+This inner budget does not cap the whole packet or measure model tokens;
+the separate packet budget above caps total serialized output. Among the first `--evidence-page-limit` ranked
 matches, explicit successor/predecessor evidence receives slots before unrelated
 matches. The furthest visible successor is considered first, then its historical
 origin and intervening pages. This also applies when a successor is already a
@@ -527,128 +314,17 @@ decisive to the requested answer.
 
 ## Persistence Decision
 
-Use the smallest durable result that serves the request:
-
-- A simple lookup, such as a previous employer or project name, returns an
-  answer without mutating the vault by default.
-- A read-only Query or contextual-thinking answer does not append an
-  operational-log entry by default. If the user explicitly asks to retain a
-  query log entry, treat that separate log write as an ordinary mutation and
-  follow the normal backup/validation lifecycle.
-- A substantial, reusable comparison or synthesis may become a page under
-  `derived/`, with `type: synthesis`, `assertion_kind: derived_synthesis`, and
-  links to the evidence it combines, but only after explicit retention or a
-  separate authorized persistence operation.
-
-### Continuity signals
-
-Persistence is based on durable value, not only on importance or length. Treat
-one or more of these as a reason to evaluate a small derived page:
-
-- the user explicitly asks to remember, retain, save, or reuse the result;
-- the user says the result would help with a similar future question;
-- the answer captures a non-obvious decision, recommendation, or tradeoff that
-  will be expensive to reconstruct;
-- the answer combines several existing pages into a reusable synthesis; or
-- the query exposes a meaningful review item, unresolved conflict, or missing
-  evidence that should remain visible.
-
-An explicit retention request is a continuity signal, not permission to promote
-an interpretation into a fact. A positive reaction without a future-use signal
-does not require persistence.
-
-### Persistence checks
-
-Before creating or updating a derived page, perform a lightweight semantic
-check:
-
-1. **Classify the result.** Separate retrieved facts, source material,
-   observations, recommendations, and unknowns. Persist advice as
-   `derived_synthesis`; route newly supplied factual context through ingest
-   instead of hiding it in advice.
-2. **Check for an existing home.** Search the relevant indexes and linked pages
-   for an existing concept or synthesis. Update the smallest matching page
-   rather than creating a duplicate.
-3. **Check ownership.** Keep domain facts and goals in their owning vertical,
-   cross-domain facts in `core/`, and reusable conclusions in `derived/`. A
-   synthesis may link several areas without copying their facts into another
-   owner.
-4. **Check conflicts.** Compare the conclusion with active goals, facts,
-   review items, and relevant derived pages. Preserve factual contradictions and
-   surface them as uncertainty or review. A recommendation can remain
-   conditional when it explores an option that differs from a current goal; do
-   not rewrite the goal merely because the advice is useful.
-5. **Check freshness.** If current metrics, role state, goals, or other dynamic
-   context materially affects reuse, record a review horizon or explain the
-   freshness limitation. Do not silently rely on stale decisive evidence.
-
-If the result has no stable reuse value, no explicit future-use signal, and no
-meaningful review value, keep it ephemeral. Do not create a page merely because
-several queries were asked or because the answer sounds helpful.
-
-Do not save every answer. A derived page should earn its maintenance cost by
-being likely to be reused, difficult to reconstruct, explicitly requested for
-future continuity, or important for later review. It must not modify `core/` or
-vertical facts merely because the synthesis recommends something.
-
-The number of queries is not the persistence threshold. Several simple lookups
-may leave `derived/` unchanged, while one substantial reusable analysis may
-justify a page. Do not create a synthesis only to make the folder appear
-current.
-
-## Derived Page Shape
-
-When persistence is justified, use a stable descriptive filename and frontmatter
-like this:
-
-```yaml
----
-type: synthesis
-title: Evidence for technical leadership scope
-description: Reusable synthesis of leadership evidence across several roles.
-tags:
-  - leadership
-status: active
-generated: 2026-08-07
-verified: null
-sources:
-  - ../career/roles/example-role.md
-  - ../career/projects/example-project.md
-assertion_kind: derived_synthesis
-stale_after: 2027-02-07
----
-```
-
-The body should state the question, summarize evidence with links, identify
-uncertainty and freshness, and label conclusions as derived. If the result is
-advice, label recommendations as recommendations. Never phrase a recommendation
-as a newly confirmed goal.
-
-For a persisted query result in an existing current vault, prepare the
-mutation context with `--for-update` before preparing the smallest derived-page
-bytes. Require `controls.mutation_ready: true` and pass
-`controls.expected_snapshot` unchanged as the required proposal
-`expected_snapshot`. If previous read-only evidence informed the result,
-revalidate that evidence under this snapshot before planning the write. On drift,
-reread and reconsider the proposal, not just the token. Invoke the ordinary
-commit boundary with the
-semantic log metadata. The helper stages the page, managed index, and log,
-validates them together, owns the provisional/final backup lifecycle and
-rollback, and returns one receipt. A true persistence no-op creates no backup
-or log entry. If the vault is missing or uninitialized, use the existing
-initialization procedure; ordinary commit does not bootstrap it. Schema
-migration and deep maintenance remain separate high-level workflows.
+Only when the user explicitly asks to retain a result, load
+[Query persistence](query-persistence.md). Check ownership, existing homes,
+provenance, conflicts, and freshness; retain recommendations as derived
+syntheses. Revalidate earlier evidence under a mutation snapshot before writing.
+Read-only Query never appends logs or creates durable artifacts.
 
 ## Task context packets
 
-When the user asks for a task context packet, return only the smallest relevant
-material: the task objective, directly supported personal context, relevant
-examples, constraints and explicit preferences, stale/provisional/contradictory
-context, unknowns, evidence paths, and important exclusions. Keep relationship
-and other sensitive context out unless directly relevant. The packet is derived
-output, not evidence, and remains ephemeral unless the user explicitly asks to
-retain a reusable packet under `derived/` through the normal persistence and
-backup rules.
+For a requested task packet, load [task context packets](query-modes.md#task-context-packets).
+Return the smallest relevant evidence, constraints, unknowns, and exclusions.
+A packet is ephemeral derived output unless explicitly retained.
 
 ## Log and Response
 

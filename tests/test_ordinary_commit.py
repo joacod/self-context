@@ -470,8 +470,8 @@ class OrdinaryCommitTests(unittest.TestCase):
             real_sync = ordinary_commit.sync_indexes.synchronize
             changed = {"value": False}
 
-            def mutate_active_after_stage(path: Path, write: bool = False) -> dict:
-                result = real_sync(path, write=write)
+            def mutate_active_after_stage(path: Path, write: bool = False, **kwargs) -> dict:
+                result = real_sync(path, write=write, **kwargs)
                 if write and path.resolve() != vault.resolve() and not changed["value"]:
                     (vault / "log.md").write_text("# changed outside staging\n", encoding="utf-8")
                     changed["value"] = True
@@ -499,10 +499,10 @@ class OrdinaryCommitTests(unittest.TestCase):
             before = tree_snapshot(vault)
             real_validate = ordinary_commit._validate_state
 
-            def fail_stage(path: Path) -> dict:
+            def fail_stage(path: Path, **kwargs) -> dict:
                 if path.resolve() != vault.resolve():
                     return {"ok": False, "ordinary": {"errors": [{"path": "career/ordinary-page.md", "message": "synthetic proposed failure"}]}}
-                return real_validate(path)
+                return real_validate(path, **kwargs)
 
             with mock.patch.object(ordinary_commit, "_validate_state", side_effect=fail_stage):
                 result = ordinary_commit.commit_mutation(
@@ -563,10 +563,10 @@ class OrdinaryCommitTests(unittest.TestCase):
             before = tree_snapshot(vault)
             real_validate = ordinary_commit._validate_state
 
-            def fail_active(path: Path) -> dict:
+            def fail_active(path: Path, **kwargs) -> dict:
                 if path.resolve() == vault.resolve():
                     return {"ok": False, "ordinary": {"errors": [{"path": "", "message": "synthetic active failure"}]}}
-                return real_validate(path)
+                return real_validate(path, **kwargs)
 
             with mock.patch.object(ordinary_commit, "_validate_state", side_effect=fail_active):
                 result = ordinary_commit.commit_mutation(

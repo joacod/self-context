@@ -29,7 +29,7 @@ def positive(value: str) -> int:
     return number
 
 
-def benchmark(pages: int, repetitions: int) -> dict:
+def benchmark(pages: int, repetitions: int, mixed: bool = False) -> dict:
     with tempfile.TemporaryDirectory(prefix="selfcontext-benchmark-") as temporary:
         vault = build_synthetic_vault(Path(temporary))
         for number in range(pages):
@@ -37,13 +37,19 @@ def benchmark(pages: int, repetitions: int) -> dict:
                 vault, f"career/scale-{number:04}.md",
                 title=f"John Doe delivery example {number}",
                 body=("John Doe delivered release planning for MyContext Systems. "
-                      "Evidence includes careful technical decisions and team coordination.\n") * 15,
+                      "Evidence includes careful technical decisions and team coordination.\n") * (1 + number % 40 if mixed else 15)
+                     + ("Gestión técnica: decisiones y coordinación.\n" if mixed and number % 3 == 0 else ""),
             )
+        if mixed:
+            write_page(vault, "sources/large-interview.md", page_type="source",
+                       title="John Doe interview", assertion_kind="source_record",
+                       body="John Doe described technical decisions at MyContext Systems.\n" * 2000)
         sync_indexes.synchronize(vault, write=True)
         timings: dict[str, list[float]] = {
             name: [] for name in ("query", "mutation_preparation", "noop", "commit")
         }
         packet_bytes = 0
+        lean_packet_bytes = 0
         for revision in range(repetitions):
             options = dict(
                 scope=["career"],
@@ -54,6 +60,9 @@ def benchmark(pages: int, repetitions: int) -> dict:
             packet = prepare_context.prepare_context(vault, **options)
             timings["query"].append(time.perf_counter() - start)
             packet_bytes = len(json.dumps(packet).encode("utf-8"))
+            lean = prepare_context.prepare_context(vault, **options, result_limit=5,
+                                                   navigation_limit=5, recent_limit=3)
+            lean_packet_bytes = len(json.dumps(lean, ensure_ascii=False).encode("utf-8"))
             start = time.perf_counter()
             mutation = prepare_context.prepare_context(vault, for_update=True, **options)
             timings["mutation_preparation"].append(time.perf_counter() - start)
@@ -81,7 +90,9 @@ def benchmark(pages: int, repetitions: int) -> dict:
                 raise RuntimeError(f"synthetic commit failed: {result['state']}")
         return {
             "extra_pages": pages, "repetitions": repetitions,
+            "workload": "mixed" if mixed else "repeated",
             "query_packet_bytes": packet_bytes,
+            "routine_query_packet_bytes": lean_packet_bytes,
             "median_seconds": {name: statistics.median(values) for name, values in timings.items()},
             "runs_seconds": timings,
         }
@@ -91,10 +102,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--pages", type=positive, nargs="+", default=[100, 500])
     parser.add_argument("--repetitions", type=positive, default=3)
+    parser.add_argument("--mixed", action="store_true", help="Vary body length, add Spanish text and a large excluded source")
     args = parser.parse_args()
     print(json.dumps({"python": sys.version, "platform": sys.platform, "profiled": False}))
     for pages in args.pages:
-        print(json.dumps(benchmark(pages, args.repetitions)), flush=True)
+        print(json.dumps(benchmark(pages, args.repetitions, args.mixed)), flush=True)
     return 0
 
 
