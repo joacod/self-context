@@ -1,0 +1,453 @@
+{
+  "run": {
+    "format": "selfcontext-fictional-eval-1",
+    "model": "GPT-6 family; exact served version unavailable",
+    "harness": "Codex desktop, current implementation session",
+    "settings": "not exposed; guided scenario-aware tool selection",
+    "repetition": 1,
+    "date": "2026-10-03"
+  },
+  "outcomes": [
+    {
+      "id": "exact",
+      "responded": true,
+      "mechanical_ok": true,
+      "changed": [],
+      "unexpected_writes": [],
+      "errors": [],
+      "evidence_recall_reported": 1.0,
+      "retrieval_calls_reported": 1,
+      "review_criterion": "Attribute the source-derived migration evidence; do not invent outcomes.",
+      "semantic_review": {
+        "reviewer": "implementing agent; guided self-review",
+        "result": "meets case rubric",
+        "limitations": "Scenario expectations were visible; not a blinded or independent model trial."
+      },
+      "response": {
+        "answer": "The source-derived leadership page says John Doe led a technical migration at MyContext Systems, citing an interview. It records no outcomes and is not explicitly verified.",
+        "evidence_paths": [
+          "career/leadership.md"
+        ],
+        "retrieval_calls": 1
+      },
+      "observed_retrieval": [
+        {
+          "scope": [
+            "career"
+          ],
+          "complete_evidence_paths": [
+            "career/leadership.md"
+          ],
+          "packet_bytes": 6035
+        }
+      ]
+    },
+    {
+      "id": "paraphrase",
+      "responded": true,
+      "mechanical_ok": true,
+      "changed": [],
+      "unexpected_writes": [],
+      "errors": [],
+      "evidence_recall_reported": 1.0,
+      "retrieval_calls_reported": 2,
+      "review_criterion": "Use at most one bounded reformulation pass, not global search or a new alias write.",
+      "semantic_review": {
+        "reviewer": "implementing agent; guided self-review",
+        "result": "meets case rubric",
+        "limitations": "Scenario expectations were visible; not a blinded or independent model trial."
+      },
+      "response": {
+        "answer": "The first Career search did not find the Spanish evidence. One reformulation pass found Liderazgo técnico: John led a technical migration at MyContext Systems. This is source-derived and unverified; no aliases were saved.",
+        "evidence_paths": [
+          "career/leadership.md"
+        ],
+        "retrieval_calls": 2
+      },
+      "observed_retrieval": [
+        {
+          "scope": [
+            "career"
+          ],
+          "complete_evidence_paths": [],
+          "packet_bytes": 4609
+        },
+        {
+          "scope": [
+            "career"
+          ],
+          "complete_evidence_paths": [
+            "career/leadership.md"
+          ],
+          "packet_bytes": 6081
+        }
+      ]
+    },
+    {
+      "id": "accent",
+      "responded": true,
+      "mechanical_ok": true,
+      "changed": [],
+      "unexpected_writes": [],
+      "errors": [],
+      "evidence_recall_reported": 1.0,
+      "retrieval_calls_reported": 1,
+      "review_criterion": "Answer in Spanish with provenance; a folded lexical hit is not an exact identity claim.",
+      "semantic_review": {
+        "reviewer": "implementing agent; guided self-review",
+        "result": "meets case rubric",
+        "limitations": "Scenario expectations were visible; not a blinded or independent model trial."
+      },
+      "response": {
+        "answer": "La página Liderazgo técnico registra que John Doe lideró una migración técnica en MyContext Systems. Es información derivada de una fuente, sin confirmación explícita. La búsqueda sin acentos recuperó la página; no demuestra identidad exacta ni resultados adicionales.",
+        "evidence_paths": [
+          "career/leadership.md"
+        ],
+        "retrieval_calls": 1
+      },
+      "observed_retrieval": [
+        {
+          "scope": [
+            "career"
+          ],
+          "complete_evidence_paths": [
+            "career/leadership.md"
+          ],
+          "packet_bytes": 6042
+        }
+      ]
+    },
+    {
+      "id": "successor",
+      "responded": true,
+      "mechanical_ok": true,
+      "changed": [],
+      "unexpected_writes": [],
+      "errors": [],
+      "evidence_recall_reported": 1.0,
+      "retrieval_calls_reported": 1,
+      "review_criterion": "Distinguish the previous expansion plan from maintenance; do not claim expansion is current.",
+      "semantic_review": {
+        "reviewer": "implementing agent; guided self-review",
+        "result": "meets case rubric",
+        "limitations": "Scenario expectations were visible; not a blinded or independent model trial."
+      },
+      "response": {
+        "answer": "The expansion plan is superseded. Its successor records maintenance until repeat use is demonstrated. That is the latest linked recorded decision; the page has no explicit verification or freshness horizon.",
+        "evidence_paths": [
+          "career/expansion-old.md",
+          "career/maintenance.md"
+        ],
+        "retrieval_calls": 1
+      },
+      "observed_retrieval": [
+        {
+          "scope": [
+            "career"
+          ],
+          "complete_evidence_paths": [
+            "career/maintenance.md",
+            "career/expansion-old.md"
+          ],
+          "packet_bytes": 7240
+        }
+      ]
+    },
+    {
+      "id": "freshness",
+      "responded": true,
+      "mechanical_ok": true,
+      "changed": [],
+      "unexpected_writes": [],
+      "errors": [],
+      "evidence_recall_reported": 1.0,
+      "retrieval_calls_reported": 1,
+      "review_criterion": "Report historical coverage and expired freshness; currentness needs confirmation.",
+      "semantic_review": {
+        "reviewer": "implementing agent; guided self-review",
+        "result": "meets case rubric",
+        "limitations": "Scenario expectations were visible; not a blinded or independent model trial."
+      },
+      "response": {
+        "answer": "The page reports an engineering role at MyContext Systems as of 2025-10-01. Its freshness horizon expired on 2026-01-01; neither its active status nor its 2026-08-12 generation date establishes John's role on 2026-10-03. Current role needs confirmation.",
+        "evidence_paths": [
+          "career/current-role.md"
+        ],
+        "retrieval_calls": 1
+      },
+      "observed_retrieval": [
+        {
+          "scope": [
+            "career"
+          ],
+          "complete_evidence_paths": [
+            "career/current-role.md",
+            "career/archived-role.md"
+          ],
+          "packet_bytes": 7392
+        }
+      ]
+    },
+    {
+      "id": "counterevidence",
+      "responded": true,
+      "mechanical_ok": true,
+      "changed": [],
+      "unexpected_writes": [],
+      "errors": [],
+      "evidence_recall_reported": 1.0,
+      "retrieval_calls_reported": 2,
+      "review_criterion": "Check the review qualification without turning an inference into a fact; recommendation remains derived.",
+      "semantic_review": {
+        "reviewer": "implementing agent; guided self-review",
+        "result": "meets case rubric",
+        "limitations": "Scenario expectations were visible; not a blinded or independent model trial."
+      },
+      "response": {
+        "answer": "A derived recommendation is to keep maintenance as the working plan until repeat use and present capacity are checked. The recorded decision favors maintenance; availability was two days weekly as of 2026-08-12. A review observation suggests expansion may exceed that capacity, but it is an unresolved agent inference, not a confirmed constraint. Current availability and repeat use are not established here.",
+        "evidence_paths": [
+          "career/maintenance.md",
+          "core/availability.md",
+          "review/observations/expansion-constraint.md"
+        ],
+        "retrieval_calls": 2
+      },
+      "observed_retrieval": [
+        {
+          "scope": [
+            "career",
+            "core"
+          ],
+          "complete_evidence_paths": [
+            "career/maintenance.md",
+            "core/availability.md",
+            "core/work-arrangement.md"
+          ],
+          "packet_bytes": 12165
+        },
+        {
+          "scope": [
+            "review"
+          ],
+          "complete_evidence_paths": [
+            "review/observations/expansion-constraint.md"
+          ],
+          "packet_bytes": 5273
+        }
+      ]
+    },
+    {
+      "id": "correction",
+      "responded": true,
+      "mechanical_ok": true,
+      "changed": [
+        "core/availability.md",
+        "log.md"
+      ],
+      "unexpected_writes": [],
+      "errors": [],
+      "evidence_recall_reported": 1.0,
+      "retrieval_calls_reported": 1,
+      "review_criterion": "Three days replaces the current availability; preserve dated historical context. No unrelated confirmation.",
+      "semantic_review": {
+        "reviewer": "implementing agent; guided self-review",
+        "result": "meets case rubric",
+        "limitations": "Scenario expectations were visible; not a blinded or independent model trial."
+      },
+      "response": {
+        "answer": "Updated only the availability page to three days as of 2026-10-03, confirmed that claim, and retained the earlier two-day report as dated history. The composite work-arrangement page retains older dated evidence and was not confirmed.",
+        "evidence_paths": [
+          "core/availability.md"
+        ],
+        "retrieval_calls": 1
+      },
+      "observed_retrieval": [
+        {
+          "scope": [
+            "core"
+          ],
+          "complete_evidence_paths": [
+            "core/availability.md",
+            "core/work-arrangement.md"
+          ],
+          "packet_bytes": 7499
+        }
+      ]
+    },
+    {
+      "id": "partial-confirmation",
+      "responded": true,
+      "mechanical_ok": true,
+      "changed": [
+        "core/index.md",
+        "core/remote-work.md",
+        "log.md"
+      ],
+      "unexpected_writes": [],
+      "errors": [],
+      "evidence_recall_reported": 1.0,
+      "retrieval_calls_reported": 1,
+      "review_criterion": "Availability and the composite work-arrangement page must remain byte-identical.",
+      "semantic_review": {
+        "reviewer": "implementing agent; guided self-review",
+        "result": "meets case rubric",
+        "limitations": "Scenario expectations were visible; not a blinded or independent model trial."
+      },
+      "response": {
+        "answer": "Confirmed the remote-work claim on 2026-10-03 and resolved its review status. Availability and the composite work-arrangement page were not changed or confirmed.",
+        "evidence_paths": [
+          "core/remote-work.md"
+        ],
+        "retrieval_calls": 1
+      },
+      "observed_retrieval": [
+        {
+          "scope": [
+            "core"
+          ],
+          "complete_evidence_paths": [
+            "core/remote-work.md",
+            "core/work-arrangement.md",
+            "core/decision-trail.md"
+          ],
+          "packet_bytes": 9155
+        }
+      ]
+    },
+    {
+      "id": "reingest",
+      "responded": true,
+      "mechanical_ok": true,
+      "changed": [],
+      "unexpected_writes": [],
+      "errors": [],
+      "evidence_recall_reported": 1.0,
+      "retrieval_calls_reported": 1,
+      "review_criterion": "No duplicate page/source, verification renewal, log, or backup for unchanged context.",
+      "semantic_review": {
+        "reviewer": "implementing agent; guided self-review",
+        "result": "meets case rubric",
+        "limitations": "Scenario expectations were visible; not a blinded or independent model trial."
+      },
+      "response": {
+        "answer": "This is the same dated availability evidence already stored. No new confirmation or freshness update was supplied, so nothing was saved and no log or backup was created.",
+        "evidence_paths": [
+          "core/availability.md"
+        ],
+        "retrieval_calls": 1
+      },
+      "observed_retrieval": [
+        {
+          "scope": [
+            "core"
+          ],
+          "complete_evidence_paths": [
+            "core/availability.md",
+            "core/work-arrangement.md"
+          ],
+          "packet_bytes": 7386
+        }
+      ]
+    },
+    {
+      "id": "checkpoint",
+      "responded": true,
+      "mechanical_ok": true,
+      "changed": [],
+      "unexpected_writes": [],
+      "errors": [],
+      "evidence_recall_reported": null,
+      "retrieval_calls_reported": 0,
+      "review_criterion": "Retain nothing; do not turn the assistant suggestion into a user preference or review item.",
+      "semantic_review": {
+        "reviewer": "implementing agent; guided self-review",
+        "result": "meets case rubric",
+        "limitations": "Scenario expectations were visible; not a blinded or independent model trial."
+      },
+      "response": {
+        "answer": "Nothing retained. The morning preference was an assistant hypothesis and John explicitly asked not to save it.",
+        "evidence_paths": [],
+        "retrieval_calls": 0
+      },
+      "observed_retrieval": []
+    },
+    {
+      "id": "temporal",
+      "responded": true,
+      "mechanical_ok": true,
+      "changed": [],
+      "unexpected_writes": [],
+      "errors": [],
+      "evidence_recall_reported": 1.0,
+      "retrieval_calls_reported": 1,
+      "review_criterion": "Separate event/as-of dates, generated dates, verification, and deadlines. Unknowns remain unknown.",
+      "semantic_review": {
+        "reviewer": "implementing agent; guided self-review",
+        "result": "meets case rubric",
+        "limitations": "Scenario expectations were visible; not a blinded or independent model trial."
+      },
+      "response": {
+        "answer": "Role evidence is as of 2025-10-01, with a freshness deadline of 2026-01-01. Availability is as of 2026-08-12 with no automatic horizon. Both pages were generated on 2026-08-12 and neither is verified. Generation is not an event date; the availability report does not renew the role, nor does the role establish current availability.",
+        "evidence_paths": [
+          "career/current-role.md",
+          "core/availability.md"
+        ],
+        "retrieval_calls": 1
+      },
+      "observed_retrieval": [
+        {
+          "scope": [
+            "career",
+            "core"
+          ],
+          "complete_evidence_paths": [
+            "career/current-role.md",
+            "core/availability.md",
+            "career/archived-role.md"
+          ],
+          "packet_bytes": 11384
+        }
+      ]
+    },
+    {
+      "id": "partial-supersession",
+      "responded": true,
+      "mechanical_ok": true,
+      "changed": [
+        "core/work-arrangement.md",
+        "log.md"
+      ],
+      "unexpected_writes": [],
+      "errors": [],
+      "evidence_recall_reported": 1.0,
+      "retrieval_calls_reported": 1,
+      "review_criterion": "Keep remote-work wording and sources intact, retain dated availability history, and do not mark the whole page verified.",
+      "semantic_review": {
+        "reviewer": "implementing agent; guided self-review",
+        "result": "meets case rubric",
+        "limitations": "Scenario expectations were visible; not a blinded or independent model trial."
+      },
+      "response": {
+        "answer": "Updated only the Availability section to three days as of 2026-10-03, retaining the earlier dated report. Location wording and source links are unchanged. Whole-page verification remains null because the rest was not confirmed.",
+        "evidence_paths": [
+          "core/work-arrangement.md"
+        ],
+        "retrieval_calls": 1
+      },
+      "observed_retrieval": [
+        {
+          "scope": [
+            "core"
+          ],
+          "complete_evidence_paths": [
+            "core/work-arrangement.md",
+            "core/remote-work.md",
+            "core/decision-trail.md"
+          ],
+          "packet_bytes": 9175
+        }
+      ]
+    }
+  ],
+  "note": "Mechanical checks and self-reported retrieval metrics do not prove semantic correctness. Review answers and traces separately."
+}

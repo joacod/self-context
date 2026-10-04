@@ -723,10 +723,15 @@ def _filesystem_safety(root: Path) -> Dict[str, Any]:
 
 
 
-def _validate_state(root: Path) -> Dict[str, Any]:
+def _validate_state(
+    root: Path, *, staged_catalog: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
     compatibility = vault_utils.runtime_compatibility(root)
     ordinary_errors, ordinary_warnings = lint_vault.lint_vault(root, dt.date.today())
-    catalog = sync_indexes.synchronize(root, write=False)
+    # Only the private stage may reuse its already checked catalog: the sole
+    # intervening write is log.md, which does not participate in catalogs.
+    # Active validation always omits this argument and reads fresh state.
+    catalog = staged_catalog if staged_catalog is not None else sync_indexes.synchronize(root, write=False)
     controls = _validate_control_state(root)
     filesystem = _filesystem_safety(root)
     ordinary = {
@@ -1007,7 +1012,8 @@ def commit_mutation(vault: Path, proposal: Mapping[str, Any]) -> Dict[str, Any]:
             return receipt
         receipt["activations"] = activations
 
-        sync_write = sync_indexes.synchronize(stage, write=True)
+        stage_records = vault_utils.durable_page_records(stage)
+        sync_write = sync_indexes.synchronize(stage, write=True, records=stage_records)
         sync_errors = [
             item for item in sync_write.get("findings", []) if item.get("severity") == "error"
         ]
@@ -1023,7 +1029,7 @@ def commit_mutation(vault: Path, proposal: Mapping[str, Any]) -> Dict[str, Any]:
                 for item in sync_errors
             )
             return receipt
-        sync_after = sync_indexes.synchronize(stage, write=False)
+        sync_after = sync_indexes.synchronize(stage, write=False, records=stage_records)
         sync_after_errors = [
             item for item in sync_after.get("findings", []) if item.get("severity") == "error"
         ]
@@ -1116,10 +1122,10 @@ def commit_mutation(vault: Path, proposal: Mapping[str, Any]) -> Dict[str, Any]:
         receipt["planned_created"] = created
         receipt["planned_modified"] = modified
         receipt["planned_changed"] = sorted(set(created + modified))
-        receipt["proposed_snapshot_id"] = vault_utils.snapshot_id(stage)
+        receipt["proposed_snapshot_id"] = vault_state.snapshot_from_bytes(proposed_bytes)
 
         try:
-            proposed_validation = _validate_state(stage)
+            proposed_validation = _validate_state(stage, staged_catalog=sync_after)
         except Exception as error:  # pragma: no cover - defensive validation boundary
             proposed_validation = {
                 "ok": False,

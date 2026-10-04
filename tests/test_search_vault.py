@@ -349,6 +349,7 @@ class SearchVaultTests(unittest.TestCase):
             self.assertEqual(
                 report["results"][0],
                 {
+                    "accent_folded": False,
                     "assertion_kind": "user_stated_fact",
                     "description": "A page about an unrelated concept.",
                     "generated": "2026-08-12",
@@ -425,6 +426,7 @@ class SearchVaultTests(unittest.TestCase):
             self.assertTrue(report["results"])
             self.assertNotIn("Synthetic text that should not be emitted", json.dumps(report))
             expected = {
+                "accent_folded",
                 "path",
                 "type",
                 "title",
