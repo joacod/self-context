@@ -116,4 +116,3 @@ rollback, and returns one receipt. A true persistence no-op creates no backup
 or log entry. If the vault is missing or uninitialized, use the existing
 initialization procedure; ordinary commit does not bootstrap it. Schema
 migration and deep maintenance remain separate high-level workflows.
-
